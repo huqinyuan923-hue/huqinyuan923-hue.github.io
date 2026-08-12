@@ -51,12 +51,16 @@ export function SpotifyNowPlaying({
             </Link>
           </>
         ) : (
-          <p className="font-medium text-[--song-color]">Not Playing</p>
+          <p className="font-medium text-[--song-color]">Gaming enthusiast</p>
         )}
-        <span className="mx-2 text-[--artist-color]">{' – '}</span>
-        <p className="spotify-artist max-w-max truncate text-[--artist-color]">
-          {artist || 'Spotify'}
-        </p>
+        {songUrl && (
+          <>
+            <span className="mx-2 text-[--artist-color]">{' – '}</span>
+            <p className="spotify-artist max-w-max truncate text-[--artist-color]">
+              {artist || 'Spotify'}
+            </p>
+          </>
+        )}
       </div>
     </div>
   )
