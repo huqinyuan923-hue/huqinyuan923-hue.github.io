@@ -1,7 +1,7 @@
 // import { SITE_METADATA } from '~/data/site-metadata'
 import { BriefcaseBusiness, Github, Mail, MapPin } from 'lucide-react'
 import { Fragment } from 'react'
-import JuejinIcon from '~/icons/juejin.svg'
+// import JuejinIcon from '~/icons/juejin.svg'
 // import { Twemoji } from '~/components/ui/twemoji'
 import { AUTHOR_INFO } from '~/data/author-info'
 
@@ -28,13 +28,6 @@ const SOCIALS = [
   //   Icon: () => <Linkedin size={20} strokeWidth={1.5} />,
   //   umamiEvent: 'profile-card-linkedin',
   // },
-  {
-    platform: 'juejin',
-    handle: getAccountHandle(AUTHOR_INFO.social.juejin),
-    href: AUTHOR_INFO.social.juejin,
-    Icon: () => <JuejinIcon className="h-5 w-5" />,
-    umamiEvent: 'profile-card-x',
-  },
 ]
 
 export function ProfileCardInfo() {

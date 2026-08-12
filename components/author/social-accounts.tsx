@@ -2,7 +2,7 @@ import { clsx } from 'clsx'
 import { Facebook, Github, Linkedin, Mail, Youtube } from 'lucide-react'
 import { AUTHOR_INFO } from '~/data/author-info'
 import { SITE_METADATA } from '~/data/site-metadata'
-import Juejin from '~/icons/juejin.svg'
+// import Juejin from '~/icons/juejin.svg'
 
 export function SocialAccounts({ className }: { className?: string }) {
   return (
@@ -18,16 +18,6 @@ export function SocialAccounts({ className }: { className?: string }) {
         <Github strokeWidth={1.5} />
       </a>
       <a
-        href={AUTHOR_INFO.social.linkedin}
-        target="_blank"
-        data-umami-event="contact-linkedin"
-        className="text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
-        rel="noopener noreferrer"
-      >
-        <span className="sr-only">Linkedin</span>
-        <Linkedin strokeWidth={1.5} />
-      </a>
-      <a
         href={`mailto:${AUTHOR_INFO.email}`}
         target="_self"
         data-umami-event="contact-mail"
@@ -36,16 +26,6 @@ export function SocialAccounts({ className }: { className?: string }) {
       >
         <span className="sr-only">Mail</span>
         <Mail strokeWidth={1.5} />
-      </a>
-      <a
-        href={AUTHOR_INFO.social.juejin}
-        target="_self"
-        data-umami-event="contact-mail"
-        className="text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
-        rel="noopener noreferrer"
-      >
-        <span className="sr-only">Juejin</span>
-        <Juejin strokeWidth={1.5} className="h-6 w-6" />
       </a>
       {/* <a
         href={SITE_METADATA.x}

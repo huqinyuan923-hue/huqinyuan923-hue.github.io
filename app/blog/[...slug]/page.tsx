@@ -75,7 +75,10 @@ export async function generateMetadata(props: {
 }
 
 export const generateStaticParams = async () => {
-  return allBlogs.map((p) => ({ slug: p.slug.split('/').map((name) => decodeURI(name)) }))
+  const slugs = allBlogs.map((p) => ({ slug: p.slug.split('/').map((name) => decodeURI(name)) }))
+  // Next.js requires at least one static path for output: export.
+  // With no posts yet, emit a placeholder that renders a 404 page.
+  return slugs.length > 0 ? slugs : [{ slug: ['__no_posts__'] }]
 }
 
 export default async function Page(props: { params: Promise<{ slug: string[] }> }) {

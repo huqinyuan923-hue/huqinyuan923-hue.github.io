@@ -1,22 +1,21 @@
 export const SITE_METADATA = {
-  title: `Mengke's blog - Mengke's coding journey`,
-  author: 'Mengke',
-  headerTitle: `Mengke's blog`,
-  description:
-    'A personal space on the cloud where I document my programming journey, sharing lessons, insights, and resources for fellow developers.',
-  language: 'en-us',
+  title: `ADCakeyuan's blog`,
+  author: 'ADCakeyuan',
+  headerTitle: `ADCakeyuan's blog`,
+  description: '我是ADCakeyuan，一名广西大一学生。这是我的个人博客，用来记录我的学习、生活与思考。',
+  language: 'zh-CN',
   theme: 'system', // system, dark or light
   siteUrl: 'https://huqinyuan923-hue.github.io',
   siteRepo: 'https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io',
-  siteLogo: `${process.env.BASE_PATH || ''}/static/images/profile.webp`,
-  socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.jpeg`,
+  siteLogo: `${process.env.BASE_PATH || ''}/static/favicons/favicon-800x800.png`,
+  socialBanner: `${process.env.BASE_PATH || ''}/static/favicons/favicon-800x800.png`,
 
-  locale: 'en-US',
+  locale: 'zh-CN',
   stickyNav: true,
   analytics: {
     umamiAnalytics: {
       websiteId: process.env.NEXT_UMAMI_ID,
-      shareUrl: 'https://analytics.umami.is/share/EqvpZYPABxaQA3mr/mengke.me',
+      shareUrl: '',
     },
   },
   comments: {
@@ -32,7 +31,7 @@ export const SITE_METADATA = {
       theme: 'light',
       darkTheme: 'transparent_dark',
       themeURL: '',
-      lang: 'en',
+      lang: 'zh-CN',
     },
   },
   search: {

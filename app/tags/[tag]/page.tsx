@@ -29,6 +29,9 @@ export async function generateMetadata(props: {
 export const generateStaticParams = async () => {
   const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
+  // Next.js requires at least one static path for output: export.
+  // With no tags yet, emit a placeholder that renders a 404 page.
+  if (tagKeys.length === 0) return [{ tag: '__no_tags__' }]
   const paths = tagKeys.map((tag) => ({
     tag: encodeURI(tag),
   }))

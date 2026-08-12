@@ -5,12 +5,14 @@ import { FriendsList } from './friends-list'
 import friends from '~/json/friends.json'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { AUTHOR_INFO } from '~/data/author-info'
+import type { ImdbFriends } from '~/types/data'
 
 export const metadata = genPageMetadata({ title: 'Friends' })
 
 export default async function FriendsPage() {
-  const friendsList = friends.filter((f) => f.type === 'friend')
-  const bloggersList = friends.filter((f) => f.type === 'techStar')
+  const friendList = friends as ImdbFriends[]
+  const friendsList = friendList.filter((f) => f.type === 'friend')
+  const bloggersList = friendList.filter((f) => f.type === 'techStar')
 
   return (
     <Container as="div" className="pt-4 lg:pt-12">

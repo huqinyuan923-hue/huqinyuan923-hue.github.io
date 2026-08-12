@@ -6,6 +6,9 @@ import { sortPosts } from '~/utils/misc'
 
 export const generateStaticParams = async () => {
   const totalPages = Math.ceil(allBlogs.length / POSTS_PER_PAGE)
+  // Next.js requires at least one static path for output: export.
+  // With no posts yet, emit a placeholder page that renders an empty list.
+  if (totalPages === 0) return [{ page: '1' }]
   const paths = Array.from({ length: totalPages }, (_, i) => ({ page: (i + 1).toString() }))
   return paths
 }

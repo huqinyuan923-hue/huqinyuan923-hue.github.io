@@ -34,18 +34,24 @@ const LINKS = [
     emoji: 'smiling-face-with-sunglasses',
     event: 'home-link-about',
   },
-  {
-    title: `Traffic and insights`,
-    href: SITE_METADATA.analytics.umamiAnalytics.shareUrl,
-    emoji: 'bar-chart',
-    event: 'home-link-analytics',
-  },
 ]
 
 export function BlogLinks() {
+  const links = SITE_METADATA.analytics.umamiAnalytics.shareUrl
+    ? [
+        ...LINKS,
+        {
+          title: `Traffic and insights`,
+          href: SITE_METADATA.analytics.umamiAnalytics.shareUrl,
+          emoji: 'bar-chart',
+          event: 'home-link-analytics',
+        },
+      ]
+    : LINKS
+
   return (
     <div className="flex flex-col gap-2.5 md:gap-3">
-      {LINKS.map(({ title, href, emoji, event }) => (
+      {links.map(({ title, href, emoji, event }) => (
         <Link key={title} href={href} className="flex items-center gap-1.5">
           <Twemoji emoji={emoji} />
           <GrowingUnderline data-umami-event={event} className="leading-6">

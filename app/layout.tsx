@@ -83,7 +83,6 @@ export const metadata: Metadata = {
     title: SITE_METADATA.title,
     card: 'summary_large_image',
     images: [SITE_METADATA.socialBanner],
-    creator: '@_mk965',
   },
 }
 

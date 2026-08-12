@@ -75,7 +75,12 @@ export async function generateMetadata(props: {
 }
 
 export const generateStaticParams = async () => {
-  return allSnippets.map((s) => ({ slug: s.slug.split('/').map((name) => decodeURI(name)) }))
+  const slugs = allSnippets.map((s) => ({
+    slug: s.slug.split('/').map((name) => decodeURI(name)),
+  }))
+  // Next.js requires at least one static path for output: export.
+  // With no snippets yet, emit a placeholder that renders a 404 page.
+  return slugs.length > 0 ? slugs : [{ slug: ['__no_snippets__'] }]
 }
 
 export default async function Page(props: { params: Promise<{ slug: string[] }> }) {

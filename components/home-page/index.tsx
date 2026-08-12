@@ -25,14 +25,12 @@ export function Home({
             <Intro />
             <TypedBios />
             <div className="mb-6 mt-4 md:mb-8">
-              <p>I started learning to code in 2015 and have been hooked ever since.</p>
-              <p>I landed my first job as a Web developer in 2020.</p>
-              <p>I have a passion for JS/TS, web dev.</p>
-              <p>I started this blog to document and share my knowledge & experience.</p>
+              <p>我是ADCakeyuan，一名广西大一学生。</p>
+              <p>这里是我记录学习、生活与思考的地方。</p>
             </div>
             <BlogLinks />
             <p className="my-6 flex md:my-8">
-              <span className="mr-2">Happy reading</span>
+              <span className="mr-2">欢迎来访</span>
               <Twemoji emoji="clinking-beer-mugs" />
             </p>
           </div>

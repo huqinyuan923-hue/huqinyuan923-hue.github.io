@@ -22,14 +22,16 @@ export function FooterBottom() {
         <Link href="/feed.xml" aria-label="RSS Feed" data-umami-event="rss-feed" prefetch={false}>
           <Rss strokeWidth={1.5} size={20} />
         </Link>
-        <Link
-          href={SITE_METADATA.analytics.umamiAnalytics.shareUrl}
-          aria-label="Open analytics"
-          data-umami-event="nav-analytics"
-          className="ml-2"
-        >
-          <AreaChart strokeWidth={1.5} size={22} />
-        </Link>
+        {SITE_METADATA.analytics.umamiAnalytics.shareUrl && (
+          <Link
+            href={SITE_METADATA.analytics.umamiAnalytics.shareUrl}
+            aria-label="Open analytics"
+            data-umami-event="nav-analytics"
+            className="ml-2"
+          >
+            <AreaChart strokeWidth={1.5} size={22} />
+          </Link>
+        )}
       </div>
     </div>
   )

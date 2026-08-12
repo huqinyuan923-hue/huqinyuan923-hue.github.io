@@ -1,14 +1,14 @@
 {
-  "name": "Mengke's blog - Mengke's coding journey",
-  "short_name": "Mengke's blog",
-  "description": "A personal space on the cloud where I document my programming journey, sharing lessons, insights, and resources for fellow developers.",
+  "name": "ADCakeyuan's blog",
+  "short_name": "ADCakeyuan",
+  "description": "我是ADCakeyuan，一名广西大一学生。这是我的个人博客，用来记录我的学习、生活与思考。",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "lang": "en-US",
+  "lang": "zh-CN",
   "dir": "ltr",
-  "categories": ["blog", "technology", "programming"],
+  "categories": ["blog", "technology"],
   "icons": [
     {
       "src": "/static/favicons/favicon-16x16.png",
