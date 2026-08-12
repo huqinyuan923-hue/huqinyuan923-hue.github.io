@@ -1,8 +1,8 @@
 export const AUTHOR_INFO = {
   name: 'ADCakeyuan',
-  description: '我是ADCakeyuan，一名广西大一学生。',
+  description: "I'm ADCakeyuan, a first-year university student from Guangxi.",
   email: 'huqinyuan923@outlook.com',
-  identity: '大一学生 | 学习者',
+  identity: 'First-year university student',
   address: {
     city: 'Guangxi, China',
     flag: 'flag-china',

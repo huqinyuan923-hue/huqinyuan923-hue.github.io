@@ -42,16 +42,14 @@ export function TypedBios() {
     >
       <ul id="bios" className="hidden">
         <li>
-          我是 <span className="font-medium">ADCakeyuan</span>，一名广西大一学生。
+          I'm <span className="font-medium">ADCakeyuan</span>, a first-year university student from{' '}
+          <b className="font-medium">Guangxi</b>.
         </li>
-        <li>我在学习编程，喜欢捣鼓各种有趣的技术。</li>
+        <li>I'm learning programming and love tinkering with interesting tech.</li>
         <li>
-          我住在 <b className="font-medium">广西，中国</b>。
+          My first programming language was <b className="font-medium">JavaScript</b>.
         </li>
-        <li>
-          我的第一个编程语言是 <b className="font-medium">JavaScript</b>。
-        </li>
-        <li>我喜欢 Web 开发。</li>
+        <li>I love web development.</li>
         <li>
           I'm a cat-person. <Twemoji emoji="cat" />
         </li>

@@ -25,8 +25,8 @@ export function Home({
             <Intro />
             <TypedBios />
             <div className="mb-6 mt-4 md:mb-8">
-              <p>我是ADCakeyuan，一名广西大一学生。</p>
-              <p>这里是我记录学习、生活与思考的地方。</p>
+              <p>I'm ADCakeyuan, a first-year university student from Guangxi.</p>
+              <p>This is where I document my learning, life, and thoughts.</p>
             </div>
             <BlogLinks />
             <p className="my-6 flex md:my-8">

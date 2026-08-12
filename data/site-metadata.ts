@@ -2,15 +2,16 @@ export const SITE_METADATA = {
   title: `ADCakeyuan's blog`,
   author: 'ADCakeyuan',
   headerTitle: `ADCakeyuan's blog`,
-  description: '我是ADCakeyuan，一名广西大一学生。这是我的个人博客，用来记录我的学习、生活与思考。',
-  language: 'zh-CN',
+  description:
+    "I'm ADCakeyuan, a first-year university student from Guangxi. This is my personal blog for documenting my learning, life, and thoughts.",
+  language: 'en-US',
   theme: 'system', // system, dark or light
   siteUrl: 'https://huqinyuan923-hue.github.io',
   siteRepo: 'https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io',
   siteLogo: `${process.env.BASE_PATH || ''}/static/favicons/favicon-800x800.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/favicons/favicon-800x800.png`,
 
-  locale: 'zh-CN',
+  locale: 'en-US',
   stickyNav: true,
   analytics: {
     umamiAnalytics: {
