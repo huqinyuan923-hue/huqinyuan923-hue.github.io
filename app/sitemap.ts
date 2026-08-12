@@ -4,6 +4,8 @@ import { SITE_METADATA } from '~/data/site-metadata'
 import { POSTS_PER_PAGE } from '~/utils/const'
 import tagData from '~/json/tag-data.json'
 
+export const dynamic = 'force-static'
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = SITE_METADATA.siteUrl
 
