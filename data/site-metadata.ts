@@ -6,8 +6,8 @@ export const SITE_METADATA = {
     'A personal space on the cloud where I document my programming journey, sharing lessons, insights, and resources for fellow developers.',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://www.mengke.me',
-  siteRepo: 'https://github.com/mk965/mengke.me',
+  siteUrl: 'https://huqinyuan923-hue.github.io',
+  siteRepo: 'https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/profile.webp`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.jpeg`,
 

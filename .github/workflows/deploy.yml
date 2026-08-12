@@ -48,7 +48,7 @@ jobs:
       - name: Build static site
         env:
           EXPORT: 'true'
-          BASE_PATH: /my-blog
+          BASE_PATH: ''
           UNOPTIMIZED: 'true'
           INIT_CWD: ${{ github.workspace }}
           # Optional integrations - configure in repo Settings > Secrets and variables
