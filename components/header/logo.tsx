@@ -16,7 +16,7 @@ export function Logo({ className }: { className?: string }) {
       ])}
     >
       <Image
-        src="/static/favicons/favicon-800x800.png"
+        src="/static/images/avatar.jpg"
         alt={SITE_METADATA.headerTitle}
         width={100}
         height={100}

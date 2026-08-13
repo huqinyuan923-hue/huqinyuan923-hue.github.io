@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "type": "friend",
+    "name": "XFffff's Blog",
+    "slogan": "记录学习与生活的个人空间",
+    "imgSrc": "/static/images/friends/the37777777.webp",
+    "url": "https://blog.the37777777.top"
+  }
+]

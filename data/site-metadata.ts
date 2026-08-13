@@ -8,7 +8,7 @@ export const SITE_METADATA = {
   theme: 'system', // system, dark or light
   siteUrl: 'https://huqinyuan923-hue.github.io',
   siteRepo: 'https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io',
-  siteLogo: `${process.env.BASE_PATH || ''}/static/images/homepage-banner.png`,
+  siteLogo: `${process.env.BASE_PATH || ''}/static/images/homepage-banner.jpg`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/favicons/favicon-800x800.png`,
 
   locale: 'en-US',

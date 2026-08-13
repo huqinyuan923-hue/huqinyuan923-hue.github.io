@@ -50,7 +50,7 @@ export default function MomentPage() {
                   <div className="mb-4 flex items-center gap-3">
                     <div className="relative">
                       <Image
-                        src={SITE_METADATA.siteLogo}
+                        src="/static/images/avatar.jpg"
                         alt={AUTHOR_INFO.name}
                         width={40}
                         height={40}
