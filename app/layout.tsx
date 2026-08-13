@@ -20,7 +20,7 @@ const FONT_PLAYPEN_SANS = Playpen_Sans({
   subsets: ['latin'],
   display: 'swap',
   style: ['normal'],
-  weight: ['800'],
+  weight: ['400', '800'],
   variable: '--font-playpen-sans',
 })
 

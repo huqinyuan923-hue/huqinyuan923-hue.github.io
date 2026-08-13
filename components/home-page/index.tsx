@@ -25,8 +25,11 @@ export function Home({
             <Intro />
             <TypedBios />
             <div className="mb-6 mt-4 md:mb-8">
-              <p>I'm ADCakeyuan, a first-year university student from Guangxi.</p>
-              <p>This is where I document my learning, life, and thoughts.</p>
+              <p>
+                I'm ADCakeyuan, a first-year university student from Guangxi.
+                <Twemoji emoji="flag-china" className="ml-1.5" size="base" />
+              </p>
+              <p>Enjoys music, games, sports, travel, and food.</p>
             </div>
             <BlogLinks />
             <p className="my-6 flex md:my-8">
