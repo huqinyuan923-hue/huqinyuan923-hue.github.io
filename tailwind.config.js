@@ -44,6 +44,23 @@ module.exports = {
           '50%': { transform: 'scale(1.18)' },
           '100%': { transform: 'scale(1)' },
         },
+        'flow-1': {
+          '0%, 100%': { transform: 'translate(0) scale(1)' },
+          '25%': { transform: 'translate(5%, 10%) scale(1.05)' },
+          '50%': { transform: 'translate(-5%, 5%) scale(0.95)' },
+          '75%': { transform: 'translate(3%, -5%) scale(1.02)' },
+        },
+        'flow-2': {
+          '0%, 100%': { transform: 'translate(0) scale(1)' },
+          '33%': { transform: 'translate(-8%, -5%) scale(1.08)' },
+          '66%': { transform: 'translate(5%, 8%) scale(0.92)' },
+        },
+        'flow-3': {
+          '0%, 100%': { transform: 'translate(0) scale(1)' },
+          '20%': { transform: 'translate(10%, 6%) scale(1.06)' },
+          '55%': { transform: 'translate(-6%, -8%) scale(0.95)' },
+          '80%': { transform: 'translate(8%, 5%) scale(0.98)' },
+        },
       },
       animation: {
         wiggle: 'wiggle 7s linear infinite',
@@ -52,6 +69,9 @@ module.exports = {
         'music-bar-3': 'music-bar-3 .8s linear infinite',
         'music-bar-4': 'music-bar-4 .8s linear infinite',
         'scale-up': 'scale-up 150ms ease-in-out forwards',
+        'flow-1': 'flow-1 25s ease-in-out infinite',
+        'flow-2': 'flow-2 30s ease-in-out infinite',
+        'flow-3': 'flow-3 35s ease-in-out infinite',
       },
       boxShadow: {
         demure: 'rgba(0, 0, 0, 0.3) 0 35px 60px -15px',

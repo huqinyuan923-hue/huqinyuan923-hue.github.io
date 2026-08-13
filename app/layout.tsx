@@ -11,7 +11,7 @@ import { UmamiAnalytics } from '~/components/analytics/umami'
 import { Footer } from '~/components/footer'
 import { Header } from '~/components/header'
 import { KBarSearchProvider } from '~/components/search/kbar-provider'
-import { TiltedGridBackground } from '~/components/effects/tilted-grid-background'
+import { ReflectiveBlackBackground } from '~/components/effects/reflective-black-background'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -132,7 +132,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'dark:bg-dark dark:text-gray-100',
         ])}
       >
-        <TiltedGridBackground className="inset-x-0 top-0 z-[-1] h-[50vh]" />
+        <ReflectiveBlackBackground />
         <ThemeProviders>
           <UmamiAnalytics websiteId={SITE_METADATA.analytics.umamiAnalytics.websiteId} />
           <KBarSearchProvider configs={SITE_METADATA.search.kbarConfigs}>
