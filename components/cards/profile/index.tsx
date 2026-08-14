@@ -50,7 +50,7 @@ export function ProfileCard() {
 
   return (
     <div
-      className="z-10 mb-8 scale-100 transition-all duration-200 ease-out hover:z-50 md:mb-0 md:hover:scale-[1.15]"
+      className="z-10 mb-8 scale-100 transition-all duration-200 ease-out hover:z-50 md:mb-0 md:w-[34rem] md:hover:scale-[1.08]"
       style={{ perspective: '600px' }}
       ref={ref}
     >
@@ -70,9 +70,9 @@ export function ProfileCard() {
           height={350}
           style={{
             objectPosition: '50% 15%',
-            aspectRatio: '383/240',
+            aspectRatio: '2.4/1',
           }}
-          className="md:w-1/2 md:shrink-0"
+          className="md:w-3/5 md:shrink-0"
           loading="eager"
         />
         <div className="flex min-w-0 flex-1 flex-col">
