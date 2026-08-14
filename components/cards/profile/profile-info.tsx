@@ -47,9 +47,9 @@ export function ProfileCardInfo() {
             )} */}
           </p>
         </div>
-        <div className="flex items-center text-gray-700 dark:text-gray-200">
-          <Mail strokeWidth={1.5} size={20} />
-          <a className="px-2" href={`mailto:${AUTHOR_INFO.email}`}>
+        <div className="flex min-w-0 items-center text-gray-700 dark:text-gray-200">
+          <Mail strokeWidth={1.5} size={20} className="shrink-0" />
+          <a className="min-w-0 break-all px-2" href={`mailto:${AUTHOR_INFO.email}`}>
             {AUTHOR_INFO.email}
           </a>
         </div>
