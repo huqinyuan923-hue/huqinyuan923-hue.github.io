@@ -9,7 +9,7 @@ export function Logo({ className }: { className?: string }) {
       href="/"
       aria-label={SITE_METADATA.headerTitle}
       className={clsx([
-        'rounded-xl p-0.5',
+        'rounded-2xl p-0.5',
         'ring-1 ring-zinc-900/5 dark:ring-white/10',
         'shadow-lg shadow-zinc-800/5',
         className,
@@ -20,7 +20,7 @@ export function Logo({ className }: { className?: string }) {
         alt={SITE_METADATA.headerTitle}
         width={100}
         height={100}
-        className="h-10 w-10 rounded-xl"
+        className="h-10 w-10 rounded-2xl"
         loading="eager"
       />
     </Link>
