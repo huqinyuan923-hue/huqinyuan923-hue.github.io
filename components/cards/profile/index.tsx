@@ -57,7 +57,8 @@ export function ProfileCard() {
       <div
         style={style}
         className={clsx(
-          'flex flex-col overflow-hidden transition-all duration-200 ease-out md:rounded-lg',
+          'flex flex-col overflow-hidden transition-all duration-200 ease-out md:flex-row',
+          'rounded-[2rem]',
           'bg-white shadow-demure dark:bg-dark dark:shadow-mondegreen',
           'outline outline-1 outline-gray-100 dark:outline-gray-600'
         )}
@@ -71,17 +72,20 @@ export function ProfileCard() {
             objectPosition: '50% 15%',
             aspectRatio: '383/240',
           }}
+          className="md:w-1/2 md:shrink-0"
           loading="eager"
         />
-        <SpotifyNowPlaying
-          className={clsx([
-            'bg-gray-900 px-3 py-1.5 xl:px-5',
-            '[--song-color:theme(colors.gray.200)]',
-            '[--artist-color:theme(colors.gray.400)]',
-          ])}
-        />
-        <ProfileCardInfo />
-        <span className="h-1.5 bg-gradient-to-r from-green-300 via-blue-500 to-purple-600" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <ProfileCardInfo />
+          <SpotifyNowPlaying
+            className={clsx([
+              'mt-auto bg-gray-900 px-3 py-1.5 xl:px-5',
+              '[--song-color:theme(colors.gray.200)]',
+              '[--artist-color:theme(colors.gray.400)]',
+            ])}
+          />
+        </div>
+        <span className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 md:static" />
       </div>
     </div>
   )

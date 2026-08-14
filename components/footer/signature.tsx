@@ -11,19 +11,21 @@ export function Signature(props: SVGProps<SVGSVGElement>) {
       preserveAspectRatio="xMidYMid meet"
       {...props}
     >
-      <text
-        x="50%"
-        y="62%"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fontFamily="var(--font-nunito), sans-serif"
-        fontStyle="italic"
-        fontWeight="300"
-        fontSize="44"
-        fill="currentColor"
-      >
-        ADCakeyuan
-      </text>
+      <g transform="skewX(-20)">
+        <text
+          x="50%"
+          y="62%"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontFamily="var(--font-playpen-sans), 'Segoe Script', 'Brush Script MT', cursive"
+          fontStyle="italic"
+          fontWeight="400"
+          fontSize="44"
+          fill="currentColor"
+        >
+          ADCakeyuan
+        </text>
+      </g>
     </svg>
   )
 }
