@@ -1,0 +1,144 @@
+---
+title: 'How I Created This Blog'
+date: '2026-08-14'
+lastmod: '2026-08-14'
+tags: ['nextjs', 'github-pages', 'blog', 'static-site', 'tailwindcss']
+draft: false
+summary: 'A first-year university student from Guangxi shares how he built and deployed his own blog for free — with Next.js, Tailwind CSS, and GitHub Pages.'
+images: []
+authors: ['default']
+---
+
+<Twemoji emoji="rocket" />
+
+## Why I wanted a blog
+
+I'm **ADCakeyuan**, a first-year university student from Guangxi. I've always wanted a place to record what I learn, what I build, and the little things that happen in my life.
+
+There are plenty of blogging platforms out there, but I wanted something that felt **mine** — something I fully control, with no subscription fees, no ads, and no platform lock-in.
+
+So I decided to build my own.
+
+## Choosing the stack
+
+I looked around at a few options:
+
+| Option                     | Cost         | Control  | Effort     |
+| -------------------------- | ------------ | -------- | ---------- |
+| WordPress / Ghost          | Hosting fees | Medium   | Low        |
+| Notion / Medium            | Free         | Low      | Very low   |
+| **Next.js + GitHub Pages** | **Free**     | **Full** | **Medium** |
+
+I went with **Next.js 15 + Tailwind CSS** deployed to **GitHub Pages**. Why?
+
+- **Free forever** — GitHub Pages is completely free for public repos.
+- **Full control** — the source code lives in my own repository.
+- **Static export** — the whole site is pre-rendered to plain HTML at build time, which is fast, secure, and works anywhere.
+- **GitHub Actions** — every `git push` triggers an automatic rebuild and deploy. I write, push, and my blog is live in about a minute.
+
+## Setting up the project
+
+I started from the **tailwind-nextjs-starter-blog** template (a popular, minimal, well-structured Next.js blog starter) and forked it into my own repository: `huqinyuan923-hue/huqinyuan923-hue.github.io`.
+
+The first thing I did was make the site **mine**:
+
+- Updated `data/site-metadata.ts` — the site name, description, and URL.
+- Rewrote `data/author-info.ts` and `data/authors/default.mdx` — my name, my bio, my GitHub link.
+- Deleted all the sample posts, snippets, and moments, then cleared the projects, friends, and supporter data.
+
+## Making it work with GitHub Pages
+
+Next.js normally runs on a Node.js server, but GitHub Pages can only serve static files. The project already supported static export through environment variables, which I set in the GitHub Actions workflow:
+
+```js
+// next.config.js
+const output = process.env.EXPORT ? 'export' : undefined
+const basePath = process.env.BASE_PATH || undefined
+const unoptimized = process.env.UNOPTIMIZED ? true : undefined
+```
+
+A few things needed attention for a pure static build:
+
+- **API routes are not supported** in static export — my workflow temporarily moves `app/api` aside before building. The components that used those APIs gracefully fall back to placeholder text instead of crashing.
+- **Images must be unoptimized** — `next/image` can't run its optimizer on a static host, so I set `UNOPTIMIZED=true`.
+- **Dynamic routes need static params** — empty blog/tag pages need at least one placeholder path so the exporter doesn't complain.
+- **`robots.txt` and `sitemap.xml`** — I marked them `force-static` so they render at build time.
+
+## The deployment pipeline
+
+Here's the heart of it — a single `.github/workflows/deploy.yml` file:
+
+```yaml
+name: Deploy static content to Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: mv app/api api.disabled
+      - run: pnpm install
+      - run: pnpm build
+        env:
+          EXPORT: 'true'
+          BASE_PATH: ''
+          UNOPTIMIZED: 'true'
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: ./out }
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+Once this workflow is in the repo and **Pages is enabled with "GitHub Actions" as the source**, the entire flow becomes:
+
+1. `git push` to `main`
+2. GitHub Actions installs dependencies and runs `next build` → static export to `out/`
+3. The `out/` folder is uploaded as an artifact and deployed to Pages
+4. My site is live at `https://huqinyuan923-hue.github.io/` in under two minutes
+
+## Making it feel like mine
+
+The default template works, but the fun part is the personalization. Since GitHub Pages can't preview images for me, I relied on structure and classes to get the look right:
+
+- **Black reflective background** — a dark gradient with three slow-drifting blurred glow orbs, inspired by a friend's blog.
+- **My own avatar and banner** — header logo, profile card, and favicon all use my image.
+- **A wide profile card** with big rounded corners.
+- **My signature** — thin, italic, cursive "ADCakeyuan" in the footer.
+- **A friend link** to XFffff's Blog — building a blog also means building a community.
+
+## What's next
+
+This is just the beginning. I plan to:
+
+- Write more posts about my journey as a student developer
+- Keep the design evolving — maybe add my own photo gallery
+- Exchange friend links with more people
+
+If you're thinking about starting your own blog, my advice is simple: **just do it**. Pick a static starter, put it on GitHub Pages, and push. It's free, it's yours, and there's no better way to learn than building something you'll actually use.
+
+Happy writing <Twemoji emoji="writing-hand" />
