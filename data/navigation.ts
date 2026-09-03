@@ -9,6 +9,7 @@ export const HEADER_NAV_LINKS = [
 export const MORE_NAV_LINKS = [
   { href: '/tags', title: 'Tags', emoji: 'label' },
   { href: '/friends', title: 'Friends', emoji: 'woman-and-man-holding-hands' },
+  { href: '/play/minesweeper', title: '扫雷', emoji: 'video-game' },
   // { href: SITE_METADATA.analytics.umamiAnalytics.shareUrl, title: 'Blog stats', emoji: 'bar-chart' },
 ]
 
