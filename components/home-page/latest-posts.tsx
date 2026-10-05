@@ -47,7 +47,11 @@ export function LatestPosts({
           </button>
         </div>
         <div className="flex items-center justify-end text-base font-medium leading-6">
-          <Link href={view === 'posts' ? '/blog' : '/snippets'} className="" aria-label="All posts">
+          <Link
+            href={view === 'posts' ? '/blog' : '/snippets'}
+            className=""
+            aria-label={`View all ${view}`}
+          >
             <GrowingUnderline data-umami-event="all-posts">
               <span className="hidden md:inline-block">View all {view}</span>
               <span className="md:hidden">More</span> &rarr;

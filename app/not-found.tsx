@@ -12,11 +12,11 @@ export default function NotFound() {
         <div className="space-x-2 pt-8 md:space-y-5 md:pt-12 xl:pt-16">
           <div className="max-w-md text-center">
             <p className="mb-4 text-xl font-bold leading-normal md:text-2xl">
-              Hmm... it looks like you're lost.
+              Hmm... it looks like you&apos;re lost.
               <Twemoji emoji={'face-with-monocle'} />
             </p>
             <p className="mb-8">
-              But don't worry, you can find plenty of other things on my homepage.
+              But don&apos;t worry, you can find plenty of other things on my homepage.
             </p>
             <Link href="/">
               <Button>Back to homepage</Button>

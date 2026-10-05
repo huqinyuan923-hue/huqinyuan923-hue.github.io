@@ -33,8 +33,8 @@ const SOCIALS = [
 export function ProfileCardInfo() {
   return (
     <div className="hidden py-4 md:block md:px-5">
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{AUTHOR_INFO.name}</h3>
-      <h4 className="py-2 text-gray-500 dark:text-gray-400">{AUTHOR_INFO.identity}</h4>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{AUTHOR_INFO.name}</h2>
+      <h3 className="py-2 text-gray-500 dark:text-gray-400">{AUTHOR_INFO.identity}</h3>
       <div className="mb-2 mt-4 space-y-4">
         <div className="flex items-center text-gray-700 dark:text-gray-200">
           <MapPin strokeWidth={1.5} size={20} />

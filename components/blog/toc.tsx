@@ -25,13 +25,13 @@ function useActiveTocItem(ids: string[]) {
         (entries) => {
           for (const { intersectionRatio, target } of entries) {
             if (intersectionRatio > 0) {
-              if (!inViewIds.includes(target.id)) {
-                setInViewIds([...inViewIds, target.id])
-              }
+              setInViewIds((prev) => (prev.includes(target.id) ? prev : [...prev, target.id]))
             } else {
-              if (inViewIds.includes(target.id) && inViewIds.length > 1) {
-                setInViewIds(inViewIds.filter((id) => id !== target.id))
-              }
+              setInViewIds((prev) =>
+                prev.includes(target.id) && prev.length > 1
+                  ? prev.filter((id) => id !== target.id)
+                  : prev
+              )
             }
           }
         },

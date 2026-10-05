@@ -59,7 +59,7 @@ export default async function TagPage(props: { params: Promise<{ tag: string }> 
       title={title}
       description={
         <>
-          Things I've written about <span className="ml-1 font-semibold">#{tag}</span>
+          Things I&apos;ve written about <span className="ml-1 font-semibold">#{tag}</span>
         </>
       }
       posts={filteredPosts}

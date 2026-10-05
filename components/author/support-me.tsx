@@ -82,7 +82,7 @@ export function SupportMe({ className }: { className?: string }) {
                 </span>
                 {supporter.message && (
                   <span className="ml-2 italic text-gray-600 dark:text-gray-300">
-                    "{supporter.message}"
+                    &ldquo;{supporter.message}&rdquo;
                   </span>
                 )}
               </li>

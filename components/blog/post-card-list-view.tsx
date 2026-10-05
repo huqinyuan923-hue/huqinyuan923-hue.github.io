@@ -72,7 +72,7 @@ export function PostCardListView({
             <Link
               href={`/blog/${slug}`}
               className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300"
-              aria-label={`Read "${title}"`}
+              aria-label={`Read article: ${title}`}
             >
               <GrowingUnderline data-umami-event="latest-post-read-more">
                 Read article →

@@ -42,16 +42,16 @@ export function TypedBios() {
     >
       <ul id="bios" className="hidden">
         <li>
-          I'm <span className="font-medium">ADCakeyuan</span>, a first-year university student from{' '}
-          <b className="font-medium">Guangxi</b>.
+          I&apos;m <span className="font-medium">ADCakeyuan</span>, a first-year university student
+          from <b className="font-medium">Guangxi</b>.
         </li>
-        <li>I'm learning programming and love tinkering with interesting tech.</li>
+        <li>I&apos;m learning programming and love tinkering with interesting tech.</li>
         <li>
           My first programming language was <b className="font-medium">JavaScript</b>.
         </li>
         <li>I love web development.</li>
         <li>
-          I'm a cat-person. <Twemoji emoji="cat" />
+          I&apos;m a cat-person. <Twemoji emoji="cat" />
         </li>
       </ul>
       <span ref={el} className="text-neutral-900 dark:text-neutral-200" />
