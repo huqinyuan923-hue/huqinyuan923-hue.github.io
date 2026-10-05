@@ -54,3 +54,10 @@ yarn-error.log*
 .eslintcache
 
 scripts/imdb-movies.csv
+
+# test & build artifacts
+test-results/
+playwright-report/
+tsconfig.tsbuildinfo
+.mimosa/
+out/

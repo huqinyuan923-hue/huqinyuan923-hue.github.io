@@ -10,6 +10,9 @@
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint --fix --dir pages --dir app --dir components --dir lib --dir layouts --dir scripts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "prepare": "husky"
   },
   "dependencies": {
@@ -23,7 +26,6 @@
     "@prisma/client": "^6.7.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.12",
-    "@vercel/speed-insights": "^1.2.0",
     "autoprefixer": "^10.4.13",
     "body-scroll-lock": "^4.0.0-beta.0",
     "class-variance-authority": "^0.7.1",
@@ -71,13 +73,19 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@playwright/test": "^1.63.0",
     "@svgr/webpack": "^8.1.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/mdx": "^2.0.12",
     "@types/node": "^22.15.18",
+    "@types/probe-image-size": "^7.2.5",
     "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.3.0",
     "@types/unist": "^3.0.3",
     "cross-env": "^7.0.3",
     "csv-parser": "^3.1.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.2.8",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
     "prettier": "^3.4.2",
@@ -85,7 +93,9 @@
     "prisma": "^6.7.0",
     "rss-parser": "^3.13.0",
     "tsx": "^4.19.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vfile": "^6.0.3",
+    "vitest": "^5.0.3"
   },
   "lint-staged": {
     "*.+(js|jsx|ts|tsx|json|css|md|mdx)": [
