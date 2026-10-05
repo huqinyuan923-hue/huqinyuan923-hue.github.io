@@ -50,9 +50,9 @@ const computedFields: ComputedFields = {
 /**
  * Count the occurrences of all tags across blog posts and write to json file
  */
-function createTagCount(documents) {
+function createTagCount(documents: { tags?: string[]; draft?: boolean }[]) {
   const tagCount: Record<string, number> = {}
-  documents.forEach((file) => {
+  documents.forEach((file: { tags?: string[]; draft?: boolean }) => {
     if (file.tags && (!isProduction || file.draft !== true)) {
       file.tags.forEach((tag: string) => {
         const formattedTag = slug(tag)
@@ -68,7 +68,7 @@ function createTagCount(documents) {
   console.log('🏷️. Tag list generated.')
 }
 
-function createSearchIndex(allBlogs) {
+function createSearchIndex(allBlogs: Parameters<typeof sortPosts>[0]) {
   const searchDocsPath = SITE_METADATA.search.kbarConfigs.searchDocumentsPath
   if (searchDocsPath) {
     writeFileSync(

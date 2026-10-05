@@ -46,14 +46,14 @@ export async function fetchRepoData(repo: string): Promise<GithubRepository | nu
         },
       }
     )
-    repository.languages = repository.languages.edges.map((edge) => {
+    repository.languages = repository.languages.edges.map((edge: any) => {
       return {
         color: edge.node.color,
         name: edge.node.name,
       }
     })
     repository.repositoryTopics = repository.repositoryTopics.edges.map(
-      (edge) => edge.node.topic.name
+      (edge: any) => edge.node.topic.name
     )
     return repository
   } catch (err) {

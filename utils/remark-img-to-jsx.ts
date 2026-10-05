@@ -19,25 +19,30 @@ export function remarkImgToJsx() {
     visit(
       tree,
       // only visit p tags that contain an img element
-      (node: Parent): node is Parent =>
-        node.type === 'paragraph' && node.children.some((n) => n.type === 'image'),
+      (node: Node): node is Parent =>
+        node.type === 'paragraph' &&
+        'children' in node &&
+        (node as Parent).children.some((n) => n.type === 'image'),
       (node: Parent) => {
         const imageNodeIndex = node.children.findIndex((n) => n.type === 'image')
         const imageNode = node.children[imageNodeIndex] as ImageNode
 
         // only local files
         if (fs.existsSync(`${process.cwd()}/public${imageNode.url}`)) {
-          const dimensions = sizeOf(fs.readFileSync(`${process.cwd()}/public${imageNode.url}`))
+          const dimensions = sizeOf(fs.readFileSync(`${process.cwd()}/public${imageNode.url}`)) ?? {
+            width: 1200,
+            height: 630,
+          }
 
           // Convert original node to next/image
-          ;(imageNode.type = 'mdxJsxFlowElement'),
+          ;((imageNode.type = 'mdxJsxFlowElement'),
             (imageNode.name = 'Image'),
             (imageNode.attributes = [
               { type: 'mdxJsxAttribute', name: 'alt', value: imageNode.alt },
               { type: 'mdxJsxAttribute', name: 'src', value: imageNode.url },
               { type: 'mdxJsxAttribute', name: 'width', value: dimensions.width },
               { type: 'mdxJsxAttribute', name: 'height', value: dimensions.height },
-            ])
+            ]))
           // Change node type from p to div to avoid nesting error
           node.type = 'div'
           node.children[imageNodeIndex] = imageNode

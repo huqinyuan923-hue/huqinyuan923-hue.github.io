@@ -2,6 +2,8 @@ import { slug } from 'github-slugger'
 import { toString } from 'mdast-util-to-string'
 import { remark } from 'remark'
 import { visit } from 'unist-util-visit'
+import type { Node } from 'unist'
+import type { VFile } from 'vfile'
 export type TocItem = {
   value: string
   url: string
@@ -12,9 +14,9 @@ export type Toc = TocItem[]
  * Extracts TOC headings from markdown file and adds it to the file's data object.
  */
 function remarkTocHeadings() {
-  return (tree, file) => {
+  return (tree: Node, file: VFile) => {
     const toc: Toc = []
-    visit(tree, 'heading', (node) => {
+    visit(tree, 'heading', (node: any) => {
       const textContent = toString(node).replace(/<[^>]*(>|$)/g, '')
       if (textContent) {
         toc.push({

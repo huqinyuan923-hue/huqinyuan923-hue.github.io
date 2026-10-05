@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import type { Author, Snippet } from 'contentlayer/generated'
 import { allAuthors, allSnippets } from 'contentlayer/generated'
 // import 'css/prism.css'
@@ -13,7 +14,7 @@ import { MDXLayoutRenderer } from '~/components/mdx/layout-renderer'
 import { sortPosts } from '~/utils/misc'
 
 const DEFAULT_LAYOUT = 'PostSimple'
-const LAYOUTS = {
+const LAYOUTS: Record<string, ComponentType<any>> = {
   PostSimple,
   PostLayout,
   PostBanner,

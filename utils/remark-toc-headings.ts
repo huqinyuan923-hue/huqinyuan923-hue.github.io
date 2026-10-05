@@ -3,6 +3,7 @@ import { toString } from 'mdast-util-to-string'
 import { remark } from 'remark'
 import type { Parent } from 'unist'
 import { visit } from 'unist-util-visit'
+import type { VFile } from 'vfile'
 
 export type TocItem = {
   value: string
@@ -16,7 +17,7 @@ export type Toc = TocItem[]
  * Extracts TOC headings from markdown file and adds it to the file's data object.
  */
 function remarkTocHeadings() {
-  return (tree: Parent, file) => {
+  return (tree: Parent, file: VFile) => {
     const toc: Toc = []
     visit(tree, 'heading', (node) => {
       const textContent = toString(node).replace(/<[^>]*(>|$)/g, '')

@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import type { Author, Blog } from 'contentlayer/generated'
 import { allAuthors, allBlogs } from 'contentlayer/generated'
 // import 'css/prism.css'
@@ -13,7 +14,7 @@ import { allCoreContent, coreContent } from '~/utils/contentlayer'
 import { sortPosts } from '~/utils/misc'
 
 const DEFAULT_LAYOUT = 'PostLayout'
-const LAYOUTS = {
+const LAYOUTS: Record<string, ComponentType<any>> = {
   PostSimple,
   PostLayout,
   PostBanner,

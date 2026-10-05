@@ -8,8 +8,8 @@ const esca = {
   '"': '&quot;',
 }
 
-function pe(m: keyof typeof esca) {
-  return esca[m]
+function pe(m: string) {
+  return (esca as Record<string, string>)[m]
 }
 
 /**

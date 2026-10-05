@@ -20,7 +20,7 @@ export async function GET(req: Request, props: { params: Promise<Params> }) {
       slug,
     })
   } catch (e) {
-    return NextResponse.json({ message: e.message })
+    return NextResponse.json({ message: e instanceof Error ? e.message : String(e) })
   }
 }
 
@@ -47,6 +47,6 @@ export async function POST(req: Request, props: { params: Promise<Params> }) {
       slug,
     })
   } catch (e) {
-    return NextResponse.json({ message: e.message })
+    return NextResponse.json({ message: e instanceof Error ? e.message : String(e) })
   }
 }
