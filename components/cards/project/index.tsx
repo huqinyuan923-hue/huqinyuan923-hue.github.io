@@ -8,6 +8,7 @@ import { Image } from '~/components/ui/image'
 import { Link } from '~/components/ui/link'
 import type { PROJECTS } from '~/data/projects'
 import type { GithubRepository, NpmPackage } from '~/types/data'
+import { IS_STATIC_EXPORT } from '~/utils/is-static-export'
 import { fetcher } from '~/utils/misc'
 
 function NpmStats({ npmPackageName, downloads }: { npmPackageName: string; downloads: number }) {
@@ -57,12 +58,12 @@ export function ProjectCard({ project }: { project: (typeof PROJECTS)[0] }) {
   const { title, description, imgSrc, url, repo, npmPackageName, builtWith } = project
 
   const { data: repository } = useSWR<GithubRepository>(
-    repo ? `/api/github?repo=${repo}` : null,
+    !IS_STATIC_EXPORT && repo ? `/api/github?repo=${repo}` : null,
     fetcher
   )
 
   const { data: npmPackage } = useSWR<NpmPackage>(
-    npmPackageName ? `/api/npm?package=${npmPackageName}` : null,
+    !IS_STATIC_EXPORT && npmPackageName ? `/api/npm?package=${npmPackageName}` : null,
     fetcher
   )
 

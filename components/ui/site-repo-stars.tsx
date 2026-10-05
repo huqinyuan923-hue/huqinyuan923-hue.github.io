@@ -7,10 +7,14 @@ import { Link } from '~/components/ui/link'
 import { SITE_METADATA } from '~/data/site-metadata'
 import type { GithubRepository } from '~/types/data'
 import { fetcher } from '~/utils/misc'
+import { IS_STATIC_EXPORT } from '~/utils/is-static-export'
 
 export function SiteRepoStars() {
   const siteRepo = SITE_METADATA.siteRepo.replace('https://github.com/', '')
-  const { data: repo } = useSWR<GithubRepository>(`/api/github?repo=${siteRepo}`, fetcher)
+  const { data: repo } = useSWR<GithubRepository>(
+    IS_STATIC_EXPORT ? null : `/api/github?repo=${siteRepo}`,
+    fetcher
+  )
 
   return (
     <Link

@@ -1,5 +1,5 @@
 import type { Blog, Snippet } from 'contentlayer/generated'
-import { mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { slug } from 'github-slugger'
 import path from 'path'
 import { allBlogs, allSnippets } from '~/.contentlayer/generated/index.mjs'
@@ -26,7 +26,7 @@ function generateRssItem(item: Blog | Snippet) {
 			<pubDate>${new Date(item.date).toUTCString()}</pubDate>
 			<author>${email} (${author})</author>
 			${item.tags?.length ? item.tags?.map((t) => `<category>${t}</category>`).join('') : ''}
-      ${item.images?.length ? item.images?.map((i) => `<enclosure url="${siteUrl}${i}" length="0" type="${mime.getType(i)}" />`).join('') : ''}
+      ${item.images?.length ? item.images?.map((i: string) => `<enclosure url="${siteUrl}${i}" length="0" type="${mime.getType(i)}" />`).join('') : ''}
 		</item>
 	`
 }
@@ -54,10 +54,25 @@ function generateRss(items: (Blog | Snippet)[], page = RSS_PAGE) {
 export async function generateRssFeed() {
   const publishPosts = blogs.filter((post) => post.draft !== true)
   const publishSnippets = snippets.filter((post) => post.draft !== true)
+  // post-build runs after `next build`, so the static export dir exists then;
+  // writing there makes feed.xml part of the build artifact instead of
+  // relying on deploy tooling to copy it out of public/.
+  const outputRoots = existsSync('./out') ? ['./public', './out'] : ['./public']
+  const writeAll = (relPath: string, content: string) => {
+    for (const root of outputRoots) {
+      const base = path.resolve(root)
+      const target = path.resolve(base, relPath)
+      if (target !== base && !target.startsWith(base + path.sep)) {
+        throw new Error(`RSS output path escapes output root: ${relPath}`)
+      }
+      mkdirSync(path.dirname(target), { recursive: true })
+      writeFileSync(target, content)
+    }
+  }
   // RSS for blog post & snippet
   if (publishPosts.length > 0 || publishSnippets.length > 0) {
     const rss = generateRss(sortPosts([...publishPosts, ...publishSnippets]))
-    writeFileSync(`./public/${RSS_PAGE}`, rss)
+    writeAll(RSS_PAGE, rss)
   }
 
   if (publishPosts.length > 0 || publishSnippets.length > 0) {
@@ -65,10 +80,11 @@ export async function generateRssFeed() {
     for (const tag of Object.keys(tagData)) {
       const filteredPosts = blogs.filter((p) => p.tags.map((t) => slug(t)).includes(tag))
       const filteredSnippets = snippets.filter((s) => s.tags.map((t) => slug(t)).includes(tag))
-      const rss = generateRss([...filteredPosts, ...filteredSnippets], `tags/${tag}/feed.xml`)
-      const rssPath = path.join('public', 'tags', tag)
-      mkdirSync(rssPath, { recursive: true })
-      writeFileSync(path.join(rssPath, RSS_PAGE), rss)
+      const rss = generateRss(
+        [...filteredPosts, ...filteredSnippets],
+        path.join('tags', tag, RSS_PAGE)
+      )
+      writeAll(path.join('tags', tag, RSS_PAGE), rss)
     }
   }
   console.log('🗒️. RSS feed generated.')

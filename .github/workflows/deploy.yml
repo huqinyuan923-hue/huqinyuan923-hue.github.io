@@ -51,6 +51,9 @@ jobs:
           BASE_PATH: ''
           UNOPTIMIZED: 'true'
           INIT_CWD: ${{ github.workspace }}
+          # /api routes are disabled in static export; client code uses this flag
+          # to skip fetching them (avoids 404s at runtime).
+          NEXT_PUBLIC_STATIC_EXPORT: 'true'
           # Optional integrations - configure in repo Settings > Secrets and variables
           NEXT_PUBLIC_GISCUS_REPO: ${{ vars.NEXT_PUBLIC_GISCUS_REPO || '' }}
           NEXT_PUBLIC_GISCUS_REPOSITORY_ID: ${{ vars.NEXT_PUBLIC_GISCUS_REPOSITORY_ID || '' }}

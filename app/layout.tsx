@@ -14,7 +14,6 @@ import { KBarSearchProvider } from '~/components/search/kbar-provider'
 import { ReflectiveBlackBackground } from '~/components/effects/reflective-black-background'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const FONT_PLAYPEN_SANS = Playpen_Sans({
   subsets: ['latin'],
@@ -142,7 +141,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </KBarSearchProvider>
           <Footer />
         </ThemeProviders>
-        <SpeedInsights />
       </body>
     </html>
   )
