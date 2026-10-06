@@ -3,7 +3,7 @@ export const SITE_METADATA = {
   author: 'ADCakeyuan',
   headerTitle: `ADCakeyuan's blog`,
   description:
-    "I'm ADCakeyuan, a first-year university student from Guangxi. This is my personal blog for documenting my learning, life, and thoughts.",
+    "I'm ADCakeyuan, a university student from Guangxi. This is my personal blog for documenting my learning, life, and thoughts.",
   language: 'en-US',
   theme: 'system', // system, dark or light
   siteUrl: 'https://adcakeyuan.top',

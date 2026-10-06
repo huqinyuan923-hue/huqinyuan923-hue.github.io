@@ -42,8 +42,8 @@ export function TypedBios() {
     >
       <ul id="bios" className="hidden">
         <li>
-          I&apos;m <span className="font-medium">ADCakeyuan</span>, a first-year university student
-          from <b className="font-medium">Guangxi</b>.
+          I&apos;m <span className="font-medium">ADCakeyuan</span>, a university student from{' '}
+          <b className="font-medium">Guangxi</b>.
         </li>
         <li>I&apos;m learning programming and love tinkering with interesting tech.</li>
         <li>
