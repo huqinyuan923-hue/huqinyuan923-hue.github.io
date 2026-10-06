@@ -36,7 +36,7 @@ export function MobileNav() {
       <div
         className={clsx([
           'rounded p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700',
-          'flex items-center justify-center sm:hidden',
+          'flex items-center justify-center md:hidden',
         ])}
         data-umami-event="mobile-nav-toggle"
       >

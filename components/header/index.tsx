@@ -95,7 +95,7 @@ export function Header() {
       <div className="flex items-center justify-between gap-3">
         <Logo />
         <div className="flex items-center gap-4">
-          <div className="hidden gap-1.5 sm:flex">
+          <div className="hidden gap-1.5 md:flex">
             {HEADER_NAV_LINKS.map(({ title, href }) => {
               const isActive = pathname.startsWith(href)
               return (
