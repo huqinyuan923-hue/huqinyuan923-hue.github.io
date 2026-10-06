@@ -1,63 +1,56 @@
-# 迁移到 Cloudflare Pages 指南
+# 迁移到 Cloudflare 完整部署教程
 
-本博客是 **Next.js 纯静态导出**（`EXPORT=true` 时 `output: 'export'`），产物为纯静态文件，可以直接托管到 Cloudflare Pages，无需任何代码改动。
+> 本博客是 **Next.js 纯静态导出**。仓库里已有 `wrangler.jsonc`（声明 Worker 名称 `huqinyuan923-hue-github-io`、静态资源目录 `./out`、404 页处理），Cloudflare 构建时会自动使用它。
 
-## 方式一：Git 集成（推荐）
+## 一、项目设置（Cloudflare 面板）
 
-1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git**，选择本仓库（`huqinyuan923-hue/huqinyuan923-hue.github.io`）。
-2. 构建配置填写：
+项目：`huqinyuan923-hue-github-io` → **设置 → 构建 → 编辑**
 
-   | 配置项 | 值 |
-   | --- | --- |
-   | Framework preset | `Next.js (Static HTML Export)`（没有就选 None） |
-   | Build command | 见下方 |
-   | Build output directory | `out` |
-   | Root directory | （留空，仓库根） |
+| 配置项 | 值 |
+| --- | --- |
+| 构建命令 | `mv app/api api.disabled && pnpm install --frozen-lockfile && EXPORT=true UNOPTIMIZED=true NEXT_PUBLIC_STATIC_EXPORT=true pnpm build && cp -r public/. out/` |
+| 部署命令 | `npx wrangler deploy` |
+| 根目录 | `/`（留空） |
 
-3. **Build command**（整段复制，与 `.github/workflows/deploy.yml` 等价）：
+**构建变量**（同一个设置页，**只加这 3 条**）：
 
-   ```bash
-   mv app/api api.disabled && pnpm install && pnpm build && cp -r public/. out/
-   ```
+| 名称 | 值 |
+| --- | --- |
+| `EXPORT` | `true` |
+| `UNOPTIMIZED` | `true` |
+| `NEXT_PUBLIC_STATIC_EXPORT` | `true` |
 
-   说明：
-   - `mv app/api api.disabled`：静态导出不支持 API 路由，先移走（`NEXT_PUBLIC_STATIC_EXPORT=true` 会让前端跳过对 /api 的请求）
-   - `pnpm build` 内部会执行 `prisma generate && next build && postbuild`（postbuild 生成 RSS）
-   - `cp -r public/. out/`：把 RSS feed 和 `_headers` 复制进产物
+> ⚠️ **不要创建 `BASE_PATH`**。如果之前加过（无论留空还是 `""`），**整条删除**——留空字符串会让 Next 报 `Specified basePath has to start with a /` 构建失败。
 
-4. **环境变量**（Settings → Environment variables，Production 和 Preview 都配）：
+各段命令的作用：
+- `mv app/api api.disabled`：静态导出不支持 API 路由，先移走（前端有 `NEXT_PUBLIC_STATIC_EXPORT` 标记会跳过对 /api 的请求）
+- `EXPORT=true`：让 next.config.js 启用 `output: 'export'` 静态导出
+- `UNOPTIMIZED=true`：静态托管下 next/image 必须关闭优化
+- `cp -r public/. out/`：把 postbuild 生成的 RSS（`/feed.xml`）和 `_headers` 安全响应头复制进产物
 
-   | 变量 | 值 |
-   | --- | --- |
-   | `EXPORT` | `true` |
-   | `BASE_PATH` | ``（空字符串） |
-   | `UNOPTIMIZED` | `true` |
-   | `NEXT_PUBLIC_STATIC_EXPORT` | `true` |
-   | `NEXT_PUBLIC_GISCUS_*` / `NEXT_UMAMI_ID` | （可选，同 GitHub 仓库 Variables 的值） |
+## 二、部署
 
-   Node 版本：仓库已带 `.nvmrc`（22），Cloudflare Pages 会自动读取；也可在面板手动设 `NODE_VERSION=22`。
+**部署页 → 重试部署**（或随便 push 一个提交触发）。构建成功后：
 
-5. Save and Deploy。首次构建成功后即获得 `xxx.pages.dev` 域名，之后每次 push 到 main 自动重新部署。
+- 预览地址：`https://huqinyuan923-hue-github-io.2978599735.workers.dev`（大陆访问不了 workers.dev，属正常，用自定义域验证）
+- 正式地址：`https://adcakeyuan.top`（自定义域已在「域」页绑定）
 
-6. （可选）绑定自定义域名：Pages 项目 → Custom domains → 添加你的域名，按提示加 CNAME。
+## 三、自定义域名
 
-## 方式二：直接上传产物（Wrangler）
+「域」页应显示 `adcakeyuan.top`（生产）。DNS 由 Cloudflare 自动接管，不需要手动 A/CNAME 记录。
 
-```bash
-mv app/api api.disabled
-pnpm install
-EXPORT=true UNOPTIMIZED=true NEXT_PUBLIC_STATIC_EXPORT=true pnpm build
-cp -r public/. out/
-npx wrangler pages deploy out --project-name=blog
-```
+可选：再添加一个自定义域，子域名填 `www`，让 `www.adcakeyuan.top` 也能访问。
 
-## 迁移时的注意事项
+## 四、日常更新
 
-- **`_headers` 已就位**：`public/_headers` 会在部署时复制到产物根目录，Cloudflare Pages 会应用与 `next.config.js` 相同的安全响应头（CSP 已包含 `static.cloudflareinsights.com`，接入 Cloudflare Web Analytics 无需改 CSP）。
-- **图片**：静态导出下 next/image 已是 `unoptimized`（`UNOPTIMIZED=true`），CF 上行为一致。
-- **GitHub Pages 可以共存**：先在 CF 上跑通 pages.dev 验证无误，再把域名切过去，最后视情况停用本仓库的 `deploy.yml` 或 GitHub Pages。
-- **prisma / 数据库**：博客构建期只做 `prisma generate`（生成客户端），站点本身无服务端数据库连接；如果以后要用 ISR/SSR，需要改用 `@cloudflare/next-on-pages` 或切换到 SSG 全静态方案。
+写完文章 / 改完代码 → `git push` 到 main → CF 自动构建部署（约 3 分钟）。GitHub Pages 的同名部署与它互不干扰，旧地址会 301 跳转过来。
 
-## 回滚
+## 五、常见报错对照
 
-GitHub Pages 的 `deploy.yml` 在迁移期间保持开启即可——两边同时部署互不影响，域名指回 GitHub Pages 就完成回滚。
+| 报错 | 原因 | 解决 |
+| --- | --- | --- |
+| `Specified basePath has to start with a /, found """"` | 构建变量里存在 `BASE_PATH`（值为空/引号） | 删除 `BASE_PATH` 变量 |
+| `WORKER_SELF_REFERENCE references Worker 'xxx' not found` | 仓库缺 `wrangler.jsonc` 或被删 | 确认仓库根有 `wrangler.jsonc`（已提交） |
+| `Specified "rewrites"/"headers" will not automatically work` | 静态导出的预期警告 | 忽略，安全头由 `public/_headers` 提供 |
+| workers.dev 打不开 | 大陆网络封锁 workers.dev | 用自定义域 adcakeyuan.top 验证 |
+| 页面 404 但首页正常 | 少了 `cp -r public/. out/` 或 `mv app/api` 步骤 | 检查构建命令是否完整复制 |
