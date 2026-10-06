@@ -78,8 +78,17 @@ function dateSortDesc(a: string, b: string) {
 }
 
 /**
- * Sorts a list of MDX documents by date in descending order
+ * Sorts a list of MDX documents by date in descending order.
+ * 排序键仅限 'date' | 'lastmod' 两个白名单值，使用静态属性访问（防止任意键注入），
+ * 并复制数组避免就地修改调用方数据。
  */
-export function sortPosts<T extends MDXDocumentDate>(allBlogs: T[], dateKey: string = 'date'): T[] {
-  return allBlogs.sort((a, b) => dateSortDesc(a[dateKey], b[dateKey]))
+export function sortPosts<T extends MDXDocumentDate>(
+  allBlogs: T[],
+  dateKey: 'date' | 'lastmod' = 'date'
+): T[] {
+  return [...allBlogs].sort((a, b) =>
+    dateKey === 'lastmod'
+      ? dateSortDesc(a.lastmod ?? a.date, b.lastmod ?? b.date)
+      : dateSortDesc(a.date, b.date)
+  )
 }

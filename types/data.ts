@@ -151,6 +151,7 @@ export interface ViewCounterProps {
 export type MDXDocument = Document & { body: MDX }
 export type MDXDocumentDate = MDXDocument & {
   date: string
+  lastmod?: string
 }
 
 export type CoreContent<T> = Omit<T, 'body' | '_raw' | '_id'>
