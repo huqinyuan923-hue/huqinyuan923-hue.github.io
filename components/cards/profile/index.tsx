@@ -50,15 +50,15 @@ export function ProfileCard() {
 
   return (
     <div
-      className="z-10 mb-8 scale-100 transition-all duration-200 ease-out hover:z-50 md:mb-0 md:w-[38rem] md:hover:scale-[1.05]"
+      className="z-10 mb-8 w-full max-w-xs transition-all duration-200 ease-out hover:z-50 md:mb-0 md:hover:scale-[1.03]"
       style={{ perspective: '600px' }}
       ref={ref}
     >
       <div
         style={style}
         className={clsx(
-          'flex flex-col overflow-hidden transition-all duration-200 ease-out md:flex-row',
-          'rounded-[2rem]',
+          'flex flex-col overflow-hidden transition-all duration-200 ease-out',
+          'rounded-3xl',
           'bg-white shadow-demure dark:bg-dark dark:shadow-mondegreen',
           'outline outline-1 outline-gray-100 dark:outline-gray-600'
         )}
@@ -72,20 +72,20 @@ export function ProfileCard() {
             objectPosition: '50% 15%',
             aspectRatio: '2.4/1',
           }}
-          className="md:w-1/2 md:shrink-0"
+          className="w-full shrink-0"
           loading="eager"
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <ProfileCardInfo />
           <SpotifyNowPlaying
             className={clsx([
-              'mt-auto bg-gray-900 px-3 py-1.5 xl:px-5',
+              'mt-auto bg-gray-900 px-3 py-1.5',
               '[--song-color:theme(colors.gray.200)]',
               '[--artist-color:theme(colors.gray.400)]',
             ])}
           />
         </div>
-        <span className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 md:static" />
+        <span className="h-1.5 bg-gradient-to-r from-green-300 via-blue-500 to-purple-600" />
       </div>
     </div>
   )
