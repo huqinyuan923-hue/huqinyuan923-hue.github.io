@@ -1,0 +1,78 @@
+---
+title: '我如何做一个纯静态学习网站：DeepLearn 制作记'
+date: '2026-10-06'
+lastmod: '2026-10-06'
+tags: ['nextjs', 'vercel', 'postgres', 'static-site', 'learning']
+draft: false
+summary: '学习路线图打卡、章节测验、抽认卡、留言板——我是怎么用 Next.js 静态导出 + Hono + Neon Postgres，把好的学习模式做成一个人人可访问的中文学习网站的。'
+authors: ['default']
+---
+
+<Twemoji emoji="books" />
+
+## 为什么做这个
+
+我经常看 [DeepTutor](https://github.com/HKUDS/DeepTutor) 这类项目的学习模式：路线图掌握度打卡、章节测验、抽认卡间隔复习。这些模式确实有效，但要么需要装环境，要么是英文界面，对刚入门的同学不够友好。
+
+于是我做了 [DeepLearn（深学）](https://github.com/huqinyuan923-hue/deeplearn)——把这套学习模式做成**人人可访问的纯静态中文学习网站**，内置四条学习线 15 章原创内容：AI·LLM·Agent、前端开发、Python 编程、计算机基础。
+
+## 架构：静态页面 + 一个 Serverless 函数
+
+我想让网站快、免费、好维护，所以架构刻意做减法：
+
+```text
+浏览器 ── 静态页面 ──> Vercel 全球 CDN（纯静态导出）
+   │
+   └── /api/* ──> Vercel Serverless（Hono，香港 hkg1）
+                        │
+                        └──> Neon Postgres（新加坡）
+```
+
+- **前端**：Next.js 15 开 `output: 'export'`，整个站点导出成 `out/` 静态文件，走 CDN，快且几乎零成本
+- **API**：整个后端就是一个 `api/index.js` 里的 **Hono 应用**，挂在单个 Serverless 函数上
+- **数据库**：Neon Postgres 免费档，5 张表（学习者 / 进度 / 测验成绩 / 抽认卡复习 / 留言板）
+
+一个偷懒但很好用的细节：API **收到首次请求时自动 `CREATE TABLE IF NOT EXISTS` 建表**，部署完不用手动跑迁移，开箱即用。
+
+## 内容即数据：用 frontmatter 承载测验和抽认卡
+
+这个项目我最满意的设计是**内容与代码完全分离**。每章就是一个 Markdown 文件，测验和抽认卡直接写在 frontmatter 里：
+
+```markdown
+---
+title: 章节标题
+order: 5
+minutes: 8
+summary: 一句话简介。
+quiz:
+  - question: 题干
+    options: [选项 A, 选项 B, 选项 C, 选项 D]
+    answer: 1
+    explanation: 解析
+flashcards:
+  - front: 术语
+    back: 解释
+---
+
+正文 Markdown……
+```
+
+构建时解析这些数据，路线图、课程页、测验、抽认卡**自动收录新章节**。也就是说：以后加新课只需要写一个 Markdown 文件，一行代码都不用改。
+
+## 进度同步：免登录的设备标识
+
+学习进度要能跨设备保存，但我不想逼用户注册。折中方案：给每个访客生成一个**设备 ID** 存在本地，进度、测验成绩、抽认卡复习记录都挂在这个 ID 下同步到数据库。体验上是无感的——打开页面打卡，换设备就不同步了，但对一个学习站来说够用，注册门槛降为零。
+
+抽认卡借鉴了间隔复习的思路：翻卡时可以标「还不熟」，不熟卡片会单独回炉，直到你把它划掉。
+
+## 踩坑与取舍
+
+- **静态导出的限制**：`output: 'export'` 下没有服务端路由，所有动态能力必须走 API，所以表单交互（测验判分、留言）都要设计成对 API 的独立请求。
+- **Serverless 冷启动**：Hono 单函数 + Neon 的 HTTP 驱动基本解决了这个问题，数据库选新加坡区、函数选香港区，实测延迟可接受。
+- **内容是大头**：15 章原创中文内容写得比代码久。但这就是内容型网站的规律——代码是一次性的，内容是持续生长的，所以我把「加内容零代码」放在架构设计的第一优先级。
+
+## 致谢与源码
+
+学习模式借鉴 [HKUDS/DeepTutor](https://github.com/HKUDS/DeepTutor)，路线图交互参考 [roadmap.sh](https://github.com/kamranahmedse/developer-roadmap)，教程组织参考 [javascript.info](https://github.com/javascript-tutorial/en.javascript.info)——站在巨人的肩膀上。
+
+源码 MIT 开源：[huqinyuan923-hue/deeplearn](https://github.com/huqinyuan923-hue/deeplearn)，README 里有完整的一键部署指引（Vercel + Neon 全免费档），欢迎部署一份自己的。

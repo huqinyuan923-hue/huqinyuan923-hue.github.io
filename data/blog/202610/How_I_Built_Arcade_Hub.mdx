@@ -1,0 +1,79 @@
+---
+title: '我如何做一个在线游戏厅：Arcade Hub 制作记'
+date: '2026-10-06'
+lastmod: '2026-10-06'
+tags: ['nextjs', 'vercel', 'postgres', 'fullstack', 'game']
+draft: false
+summary: '40 款经典小游戏、排行榜、用户系统和管理后台——我是怎么用 Next.js 16 + Drizzle + Neon Postgres 把一个在线街机游戏厅从零搭建起来的。'
+authors: ['default']
+---
+
+<Twemoji emoji="video-game" />
+
+## 起因
+
+我一直喜欢经典小游戏：2048、贪吃蛇、俄罗斯方块、扫雷……这些游戏网上到处都是，但散落在各个网站里，没有统一的账号，也没有排行榜可以和朋友比拼。
+
+于是我决定自己做一个**在线街机游戏厅**：站内自带几十款游戏，注册登录之后可以收藏、评分、提交成绩冲击排行榜。这就是 [Arcade Hub](https://arcade-hub-nu.vercel.app)。
+
+## 技术选型
+
+| 需求   | 选择                                   | 理由                               |
+| ------ | -------------------------------------- | ---------------------------------- |
+| 框架   | Next.js 16（App Router）+ React 19     | 页面和 API 都在一个项目里          |
+| 样式   | Tailwind CSS v4                        | 暗色霓虹主题写起来快               |
+| 数据库 | Neon Serverless Postgres               | HTTP 驱动，Serverless 环境零冷启动 |
+| ORM    | Drizzle                                | 类型安全，SQL 心智负担低           |
+| 认证   | bcryptjs + jose JWT（httpOnly Cookie） | 不引第三方登录，自己可控           |
+| 部署   | Vercel（函数区域 hkg1 香港）           | 和数据库配合开箱即用               |
+
+## 最有意思的设计：游戏桥接协议
+
+站内游戏每款都是一个**单文件 HTML**，放在 `public/games/<slug>/` 下，通过 iframe 嵌入门户页面。游戏本身完全不知道门户的存在——它们只需要引入一个 16 行的桥接脚本：
+
+```js
+;(function () {
+  window.ArcadeBridge = {
+    submitScore: function (score) {
+      try {
+        parent.postMessage({ type: 'arcade:score', score: Math.round(score) }, '*')
+      } catch (e) {
+        /* 不在 iframe 中时忽略 */
+      }
+    },
+  }
+})()
+```
+
+游戏结算时调用 `ArcadeBridge.submitScore(score)`，外层门户页面监听 `message` 事件，校验来源后再 `POST /api/games/[slug]/scores` 写入数据库（按用户保留最高分）。
+
+这样做的好处是：**游戏和平台彻底解耦**。新游戏只要遵守这一个约定就能进排行榜，哪怕是从别处抄来的单文件游戏也能无缝接入；第三方游戏则直接用 iframe 地址上架，零成本。
+
+## 音效：程序化合成，零音频文件
+
+40 款游戏如果每款都带音效文件，体积会很可怕。我用 **WebAudio API 写了一个全站共享的芯片音乐/音效引擎**，所有声音都是程序化合成的——8-bit 风格的跳跃音、得分音、背景 BGM，全部实时生成，一个音频文件都没有。音量滑块和静音状态全站同步，切到后台自动暂停 BGM。
+
+## 用户系统与排行榜
+
+注册登录用最朴素的方案：bcryptjs 哈希密码，jose 签发 JWT 放进 httpOnly Cookie，`middleware.ts` 保护 `/admin` 路由。
+
+排行榜有三层：
+
+- 每款游戏的 Top10
+- 玩家总榜（各游戏最高分之和）
+- 游戏纪录榜（可按游戏筛选）
+
+管理后台则提供游戏上架/下架/编辑、精选位管理、用户角色管理和数据统计，全部自己写，没有依赖任何 admin 模板。
+
+## 踩过的坑
+
+印象最深的一个：**Vercel 项目设置里的 `framework` 字段如果是空的**，构建产物就不会包含 Next.js 的页面和 API 函数——线上只剩 `public/` 下的静态文件，所有路由都返回平台级 404（响应头 `X-Vercel-Error: NOT_FOUND`），而且报错信息完全不提示原因。这个坑我踩过一次，排查了很久才发现是项目配置问题而不是代码问题。
+
+## 成果
+
+- 🎮 站内 40 款游戏，全部支持排行榜
+- 🔊 零音频文件的合成音效引擎
+- ❤️ 注册/收藏/评分/战绩总览
+- 🛠️ 完整管理后台
+
+源码开源在 [GitHub](https://github.com/huqinyuan923-hue/arcade-hub)，欢迎来 [打两把](https://arcade-hub-nu.vercel.app)，榜上见。
