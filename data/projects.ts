@@ -37,7 +37,7 @@ export const PROJECTS: Project[] = [
     description:
       '纯前端的日常小工具集：JSON 格式化、时间戳转换、进制/编码、UUID、二维码、密码生成、Markdown 预览、每日一签等 15+ 工具，零框架零构建，数据不上传、可离线使用。',
     imgSrc: '/static/images/projects/toolbox.jpg',
-    url: 'https://huqinyuan923-hue.github.io/toolbox/',
+    url: 'https://toolbox.adcakeyuan.top/',
     repo: 'huqinyuan923-hue/toolbox',
     builtWith: ['Html', 'CSS', 'JavaScript', 'GitHub'],
   },
@@ -47,7 +47,7 @@ export const PROJECTS: Project[] = [
     description:
       '输入 GitHub 用户名，一键生成年度提交、星标、语言分布与活跃概览的可分享报告卡片，纯前端零依赖，数据来自 GitHub 公开 API，支持 Token 提升限额。',
     imgSrc: '/static/images/projects/github-wrapped.jpg',
-    url: 'https://huqinyuan923-hue.github.io/github-wrapped/',
+    url: 'https://wrapped.adcakeyuan.top/',
     repo: 'huqinyuan923-hue/github-wrapped',
     builtWith: ['JavaScript', 'Html', 'CSS', 'GitHub'],
   },
