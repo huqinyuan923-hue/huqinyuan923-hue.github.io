@@ -1,90 +1,52 @@
 ---
 title: 'How I Created This Blog'
 date: '2026-08-14'
-lastmod: '2026-08-14'
+lastmod: '2026-10-06'
 tags: ['nextjs', 'github-pages', 'blog', 'static-site', 'tailwindcss']
 draft: false
-summary: 'A first-year university student from Guangxi shares how he built and deployed his own blog for free — with Next.js, Tailwind CSS, and GitHub Pages.'
+summary: '从 fork 一个模板到把 API 路由藏起来骗过构建器——记我搭这个博客的过程，以及 GitHub Pages 教会我的事。'
 images: ['/static/images/blog/202608/How_I_Created_This_Blog/cover.png']
 authors: ['default']
 ---
 
 <Twemoji emoji="rocket" />
 
-## Why I wanted a blog
+我大一，在广西读书。这个博客是我做的第一个"正经"网站——所谓正经，意思是有真实用途、得一直活下去的网站，而不是写完就扔的作业。
 
-I'm **ADCakeyuan**, a first-year university student from Guangxi. I've always wanted a place to record what I learn, what I build, and the little things that happen in my life.
+## 为什么不用现成的
 
-There are plenty of blogging platforms out there, but I wanted something that felt **mine** — something I fully control, with no subscription fees, no ads, and no platform lock-in.
+博客平台多得是，Notion 免费，WordPress 也行。我纠结过一阵，最后拒绝它们的理由其实很小：我想改页脚，想加一个自己的签名，想在背景里放几团慢慢飘的光斑。这些事在平台上要么做不到，要么要开会员。
 
-So I decided to build my own.
+还有一个不太光鲜的原因：我想知道博客到底是怎么跑起来的。用平台写十年，我也不知道"发布"按钮背后发生了什么。
 
-## Choosing the stack
+## 从 fork 开始
 
-I looked around at a few options:
+起点是 [tailwind-nextjs-starter-blog](https://github.com/timlind/mengke.me) 这个模板。fork 下来的第一周我基本没写文章，全在删东西——删示例文章、删 snippets、删 projects 数据，把 `site-metadata.ts` 里的名字换成我的。删完之后站点突然就"是我的"了，这种感觉挺奇妙：原来把别人的东西清空，和自己从零写，工作量差不了太多。
 
-| Option                     | Cost         | Control  | Effort     |
-| -------------------------- | ------------ | -------- | ---------- |
-| WordPress / Ghost          | Hosting fees | Medium   | Low        |
-| Notion / Medium            | Free         | Low      | Very low   |
-| **Next.js + GitHub Pages** | **Free**     | **Full** | **Medium** |
+技术栈没什么可炫耀的：Next.js 15 + Tailwind CSS，部署在 GitHub Pages。选它纯粹因为免费，而且源码在自己仓库里，哪天想搬家随时能搬。
 
-I went with **Next.js 15 + Tailwind CSS** deployed to **GitHub Pages**. Why?
+## 静态导出的几个小坎
 
-- **Free forever** — GitHub Pages is completely free for public repos.
-- **Full control** — the source code lives in my own repository.
-- **Static export** — the whole site is pre-rendered to plain HTML at build time, which is fast, secure, and works anywhere.
-- **GitHub Actions** — every `git push` triggers an automatic rebuild and deploy. I write, push, and my blog is live in about a minute.
+GitHub Pages 只能托管静态文件，而 Next.js 平时是跑在 Node 服务器上的。模板留了环境变量开关，构建时把整个站点导出成一堆 HTML。听起来顺滑，实际有几个坑：
 
-## Setting up the project
+API 路由在静态导出下不被支持。我的解决办法不太体面但有效——CI 里先 `mv app/api api.disabled` 把它们藏起来再构建，页面上用到这些接口的地方都写了兜底，拿不到数据就显示占位符。
 
-I started from the **tailwind-nextjs-starter-blog** template (a popular, minimal, well-structured Next.js blog starter) and forked it into my own repository: `huqinyuan923-hue/huqinyuan923-hue.github.io`.
+`next/image` 的图片优化也用不了，因为那需要服务端跑优化器，只能 `UNOPTIMIZED=true` 关掉。空的文章列表、空的标签页还得准备占位路由，不然导出器会抱怨参数缺失。
 
-The first thing I did was make the site **mine**:
+这些事单个都不难，难在它们不会一次性告诉你。构建报错、修、再报错、再修，如此往复两三天，`out/` 目录终于完整地躺在那里。
 
-- Updated `data/site-metadata.ts` — the site name, description, and URL.
-- Rewrote `data/author-info.ts` and `data/authors/default.mdx` — my name, my bio, my GitHub link.
-- Deleted all the sample posts, snippets, and moments, then cleared the projects, friends, and supporter data.
+## 部署就是一次 git push
 
-## Making it work with GitHub Pages
+CI 是一个很普通的 GitHub Actions workflow：装依赖，跑构建，把 `out/` 传给 Pages。之后我写文章的流程变成了：markdown 文件扔进 `data/blog/`，`git push`，一分钟后刷新页面就能看到。
 
-Next.js normally runs on a Node.js server, but GitHub Pages can only serve static files. The project already supported static export through environment variables, which I set in the GitHub Actions workflow:
-
-```js
-// next.config.js
-const output = process.env.EXPORT ? 'export' : undefined
-const basePath = process.env.BASE_PATH || undefined
-const unoptimized = process.env.UNOPTIMIZED ? true : undefined
-```
-
-A few things needed attention for a pure static build:
-
-- **API routes are not supported** in static export — my workflow temporarily moves `app/api` aside before building. The components that used those APIs gracefully fall back to placeholder text instead of crashing.
-- **Images must be unoptimized** — `next/image` can't run its optimizer on a static host, so I set `UNOPTIMIZED=true`.
-- **Dynamic routes need static params** — empty blog/tag pages need at least one placeholder path so the exporter doesn't complain.
-- **`robots.txt` and `sitemap.xml`** — I marked them `force-static` so they render at build time.
-
-## The deployment pipeline
-
-Here's the heart of it — a single `.github/workflows/deploy.yml` file:
+<details>
+<summary>deploy.yml 长这样（点开看）</summary>
 
 ```yaml
 name: Deploy static content to Pages
-
 on:
   push:
     branches: ['main']
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: 'pages'
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -103,42 +65,18 @@ jobs:
           UNOPTIMIZED: 'true'
       - uses: actions/upload-pages-artifact@v3
         with: { path: ./out }
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
 ```
 
-Once this workflow is in the repo and **Pages is enabled with "GitHub Actions" as the source**, the entire flow becomes:
+</details>
 
-1. `git push` to `main`
-2. GitHub Actions installs dependencies and runs `next build` → static export to `out/`
-3. The `out/` folder is uploaded as an artifact and deployed to Pages
-4. My site is live at `https://huqinyuan923-hue.github.io/` in under two minutes
+## 那些没什么用但让我高兴的部分
 
-## Making it feel like mine
+背景是三团模糊的光斑在 30 秒里慢慢漂移，灵感来自一个朋友的博客。页脚放了我的手写签名，斜体细字。个人卡片原本是横着的一大块，后来被我改成了竖着的小卡片——原来的尺寸会把 About 页的正文挡住，改完顺手把全站的横向滚动条也治好了。
 
-The default template works, but the fun part is the personalization. Since GitHub Pages can't preview images for me, I relied on structure and classes to get the look right:
+还有友链。XFffff 的博客挂在我的页脚旁边，做博客这件事大概就是这样，一个人写，但不是一个人玩。
 
-- **Black reflective background** — a dark gradient with three slow-drifting blurred glow orbs, inspired by a friend's blog.
-- **My own avatar and banner** — header logo, profile card, and favicon all use my image.
-- **A wide profile card** with big rounded corners.
-- **My signature** — thin, italic, cursive "ADCakeyuan" in the footer.
-- **A friend link** to XFffff's Blog — building a blog also means building a community.
+## 接下来
 
-## What's next
+文章会慢慢写。最近做的两个项目——一个在线游戏厅和一个学习网站——的制作过程已经整理成文章放在站上了。如果你也想搭自己的博客，我的建议就一句：找个静态模板 push 上去，遇到什么修什么，两三天后它就是你的了。
 
-This is just the beginning. I plan to:
-
-- Write more posts about my journey as a student developer
-- Keep the design evolving — maybe add my own photo gallery
-- Exchange friend links with more people
-
-If you're thinking about starting your own blog, my advice is simple: **just do it**. Pick a static starter, put it on GitHub Pages, and push. It's free, it's yours, and there's no better way to learn than building something you'll actually use.
-
-Happy writing <Twemoji emoji="writing-hand" />
+<Twemoji emoji="writing-hand" />

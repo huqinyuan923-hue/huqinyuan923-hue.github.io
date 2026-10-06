@@ -49,6 +49,11 @@ export function Comments({ configs, className }: CommentsProps) {
         ? darkTheme
         : theme
       : themeURL
+
+  // giscus env vars come from CI repository variables; without a repo the
+  // widget would just hammer giscus.app with 403s, so render nothing.
+  if (!repo) return null
+
   return (
     <div id="comment" className={className}>
       <GiscusComponent
