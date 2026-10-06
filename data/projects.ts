@@ -27,7 +27,7 @@ export const PROJECTS: Project[] = [
     description:
       '写给零基础小白的 GitHub 入门网站：Git 与 GitHub 区别、10 个核心概念比喻讲解、8 步上手教程、Pages 建站与首个 PR 实战，以及 ZCode / OpenCode / DSH 三款 AI 编程工具详解。',
     imgSrc: '/static/images/projects/github-guide.jpg',
-    url: 'https://huqinyuan923-hue.github.io/github-guide/',
+    url: 'https://guide.adcakeyuan.top/',
     repo: 'huqinyuan923-hue/github-guide',
     builtWith: ['Html', 'CSS', 'JavaScript', 'GitHub'],
   },
