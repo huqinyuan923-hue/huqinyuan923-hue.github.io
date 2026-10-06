@@ -1,1 +1,24 @@
-{ "nextjs": 1, "github-pages": 1, "blog": 1, "static-site": 1, "tailwindcss": 1 }
+{
+  "nextjs": 5,
+  "github-pages": 1,
+  "blog": 1,
+  "static-site": 2,
+  "tailwindcss": 1,
+  "vercel": 2,
+  "postgres": 4,
+  "fullstack": 1,
+  "game": 1,
+  "learning": 1,
+  "html": 2,
+  "css": 1,
+  "tutorial": 1,
+  "github": 1,
+  "javascript": 2,
+  "github-api": 1,
+  "canvas": 1,
+  "rss": 1,
+  "vercel-cron": 1,
+  "pwa": 1,
+  "tools": 1,
+  "bookmarks": 1
+}

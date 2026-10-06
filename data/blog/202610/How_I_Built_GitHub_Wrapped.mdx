@@ -1,0 +1,42 @@
+---
+images: ['/static/images/blog/how-i-built-github-wrapped.svg']
+title: '10 秒生成一份 GitHub 年度报告：Wrapped 制作记'
+date: '2026-10-06'
+lastmod: '2026-10-06'
+tags: ['javascript', 'github-api', 'canvas']
+draft: false
+summary: '纯前端调 GitHub 公开 API，算出你今年的提交、星标和语言分布，再用 Canvas 手绘一张可下载的分享卡片——全程不到 900 行。'
+authors: ['default']
+---
+
+<Twemoji emoji="chart-increasing" />
+
+年底那阵子各大平台都在推年度报告，我也想要一份 GitHub 的——但官方没有，第三方做得好的要登录授权，不放心。那就自己算：GitHub 的公开 REST API 不需要登录就能查用户和仓库数据，浏览器里就能把一份年度报告算出来。
+
+于是有了 [GitHub Wrapped](https://wrapped.adcakeyuan.top/)：输入任意用户名，十秒左右出一份报告——今年提交数（估算）、公开仓库数、累计星标、粉丝、码龄、被 Fork 六个指标，加语言分布、星标之最、公开动态三个面板，最后生成一张 1200×630 的 PNG 卡片可以直接发出去。
+
+## 全部数据，三次 API
+
+后端不存在，整个站 865 行，全在浏览器里跑。数据来源就三类接口：`/users` 拿账号信息和码龄，`/repos` 翻最多三页仓库算星标和语言，动态取 `/events/public`。最值得讲的是提交数怎么算的——逐个仓库数提交要发几百个请求，必然撞限流。实际用的是 Search API 一次拿总数：
+
+```js
+const q = `author:${login} author-date:>=${year}-01-01`
+const data = await ghFetch(`/search/commits?q=${encodeURIComponent(q)}&per_page=1`)
+return data.total_count || 0
+```
+
+一个请求，全年数字就出来了。代价是口径问题：它只统计公开仓库，不含私有提交。我在页面底部放了张「统计口径说明」表，把这个坦白写清楚——估算数据就得说清楚是怎么估的。
+
+## 限流是最大的敌人
+
+匿名调用 GitHub API 只有 60 次/小时，被限流是常态。处理分三层：报告结果在 sessionStorage 缓存十分钟，重复查询不打 API；403/429 时读响应头里的 `x-ratelimit-reset`，换算成「约 N 分钟后恢复」直接告诉用户；首页常驻一个折叠的「被限流了？」入口，填一个只读 Token（只存本地 localStorage）把限额提到 5000。
+
+错误也分三类处理：用户不存在、被限流、网络异常，各自的提示文案不一样。搜索接口失败不阻塞主报告——提交数拿不到就显示 0，其余五项照常出。
+
+## Canvas 手绘分享卡
+
+报告页最费工的是那张 1200×630 的分享卡，全部用 Canvas API 手绘：三层线性渐变打底、两个径向光斑、「今年提交」的主数字用 110px 紫蓝绿渐变字，四张统计卡在数字超过 6 位时自动缩小字号防溢出，语言标签用 `ctx.measureText` 逐个测宽排版。头像加载失败就画首字母徽标，下载失败（画布被跨域图片污染时会这样）按钮临时显示「导出失败」两秒。
+
+这张卡片画完我也没沾沾自喜多久——后来检查发现页面 meta 里的 og:url 还写着旧的 GitHub Pages 地址，引号都没闭合。一个教别人怎么分享卡片的工具，自己的分享链接是坏的，这个讽刺我记下了，改了。
+
+源码在 [GitHub](https://github.com/huqinyuan923-hue/github-wrapped)，输入你的用户名试试：[wrapped.adcakeyuan.top](https://wrapped.adcakeyuan.top/)。

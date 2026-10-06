@@ -1,0 +1,36 @@
+---
+images: ['/static/images/blog/how-i-built-rss-reader.svg']
+title: '把 RSS 阅读器架在自己名下：订阅站制作记'
+date: '2026-10-06'
+lastmod: '2026-10-06'
+tags: ['nextjs', 'rss', 'postgres', 'vercel-cron']
+draft: false
+summary: 'Vercel Cron 每天凌晨定时抓取，粘贴博客首页就能自动发现订阅源，未读数据存自己的 Neon——给自己用的信息聚合器。'
+authors: ['default']
+---
+
+<Twemoji emoji="newspaper" />
+
+我关注的博客越来越多，浏览器书签栏里那排"每日巡检"列表越来越长——打开、扫一眼、没更新、关掉，一天十几次。RSS 本来就是干这个的，但市面上的阅读器要么免费版限源数量，要么要我接受一份"你的阅读记录可能用于个性化推荐"的协议。
+
+阅读记录这种东西不想交给别人。于是有了[订阅站](https://rss.adcakeyuan.top)：单密码登录的私有 RSS 聚合服务，Vercel Cron 每天定时抓取，数据躺在自己的 Neon Postgres 里。
+
+## 怎么用
+
+登录后两个动作：把订阅源地址（或直接粘贴对方博客首页）贴进侧栏，点订阅。粘贴首页也行是因为服务端会自动发现页面里的 `<link rel="alternate">` 标签，找到真实订阅地址，然后立刻拉取首批文章让你马上有东西可读。之后每天 Vercel Cron 定时跑一次抓取，你只需要隔几天打开看未读：单篇标已读、全部已读、勾选只看未读，没了。顶部有个「立即刷新」按钮，走的是和 Cron 完全相同的抓取管道。
+
+技术栈是 Next.js + Drizzle + Neon，和 Arcade Hub 同一套。两张表：feeds 存订阅源（带 lastError 记录抓取失败原因），articles 存文章，`(feedId, guid)` 联合唯一索引天然去重。
+
+## 抓取管道写了三分之二的防御代码
+
+看起来就是个"拉 URL 解析 XML"的事，实际 `lib/fetch-feed.ts` 里三分之二的代码在防御：
+
+抓取前先做 SSRF 检查——localhost、127 开头、10./192.168./172.16-31 这些内网段、169.254 链路本地、`.internal` 域名，全部拒绝，防止有人订阅一个内网地址把我的服务器当跳板。请求限时 10 秒，流式读取到 512KB 直接 cancel，防止对方丢一个 2GB 文件过来。网络抖动延迟 1.5 秒重试一次，但 4xx 不重试——重试也不会好。拿回来的内容先嗅探前 2000 字节像不像 feed，不像就走自动发现；403 时返回的报错文案是「目标站点拒绝了抓取，请直接粘贴它的 RSS/Atom 地址」，而不是一个裸异常。
+
+入库用批量插入加 `onConflictDoNothing`，重复文章静默跳过；每个源只保留最近 200 条，裁剪时先查出要保留的 id 再删其余，全程参数绑定。单个源失败只把错误写进它自己的 lastError 字段，不影响其他源——十个源里有一个挂了，另外九个照常到账。
+
+## Hobby 计划的 Cron 限制
+
+Vercel 免费档的 Cron 精度只有一天一次（`0 3 * * *`，UTC 凌晨三点），这对 RSS 够用，但对"我刚发布一篇文章想马上看到"不够。所以手动刷新按钮和 Cron 共享同一个 `refreshAll()`：`Promise.allSettled` 并发抓全部源，返回各源的成败汇总。README 里写了怎么外接 cron-job.org 提高频率——要带一个独立的 Bearer 鉴权，毕竟定时抓取接口不能裸奔。
+
+这个项目和 Treasury 是同一晚前后脚写的，账号体系、SSRF 黑名单、恒定时间密码比较这几块代码两边是同一份，算是一个"私部署小服务模板"的第一次复用。源码在 [GitHub](https://github.com/huqinyuan923-hue/rss-reader)。
