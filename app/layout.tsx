@@ -6,7 +6,7 @@ import 'katex/dist/katex.css'
 
 import clsx from 'clsx'
 import type { Metadata, Viewport } from 'next'
-import { JetBrains_Mono, Nunito, Playpen_Sans } from 'next/font/google'
+import localFont from 'next/font/local'
 import { UmamiAnalytics } from '~/components/analytics/umami'
 import { Footer } from '~/components/footer'
 import { Header } from '~/components/header'
@@ -14,6 +14,35 @@ import { KBarSearchProvider } from '~/components/search/kbar-provider'
 import { ReflectiveBlackBackground } from '~/components/effects/reflective-black-background'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
+
+// 字体改用本地文件（fontsource 包随依赖安装），
+// 构建时不再请求 Google Fonts——CI 网络抖动不再导致构建失败
+const FONT_PLAYPEN_SANS = localFont({
+  src: [
+    { path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-800-normal.woff2', weight: '800', style: 'normal' },
+  ],
+  display: 'swap',
+  variable: '--font-playpen-sans',
+})
+
+const FONT_NUNITO = localFont({
+  src: [
+    { path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2', weight: '300 800', style: 'normal' },
+    { path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-italic.woff2', weight: '300 800', style: 'italic' },
+  ],
+  display: 'swap',
+  variable: '--font-nunito',
+})
+
+const FONT_JETBRAINS_MONO = localFont({
+  src: [
+    { path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2', weight: '500', style: 'normal' },
+  ],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+})
 
 const FONT_PLAYPEN_SANS = Playpen_Sans({
   subsets: ['latin'],
