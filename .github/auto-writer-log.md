@@ -55,3 +55,4 @@
 - 202610/How_I_Built_Rss_Reader
 - 202610/How_I_Built_Toolbox
 - 202610/How_I_Built_Treasury
+- 2026-10-07 | 11 个项目都部署在哪：Cloudflare / Vercel / GitHub Pages 实战选型 | 部署选型实录，与全部制作记不重叠 | PR 待填
