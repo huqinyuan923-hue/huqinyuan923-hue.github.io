@@ -26,6 +26,15 @@ import rehypeKatex from 'rehype-katex'
 const root = process.cwd()
 const isProduction = process.env.NODE_ENV === 'production'
 
+// blog/202610/How_I_Built_Arcade_Hub -> how-i-built-arcade-hub
+// 文章 URL 去掉日期前缀和下划线，生成干净的 kebab-case slug
+function blogSlug(flattenedPath: string) {
+  return flattenedPath
+    .replace(/^blog\/\d{6}\//, '')
+    .toLowerCase()
+    .replace(/_/g, '-')
+}
+
 // heroicon mini link
 const icon = fromHtmlIsomorphic(
   `
@@ -79,6 +88,23 @@ function createSearchIndex(allBlogs: Parameters<typeof sortPosts>[0]) {
   }
 }
 
+/**
+ * URL 变更为 kebab-case 后，记录旧 slug（日期前缀 + 下划线）到新 slug 的映射，
+ * post-build 阶段据此生成 _redirects 与 HTML 跳转页，保证旧链接不失效。
+ */
+function createSlugRedirects(allBlogs: { _raw: { flattenedPath: string } }[]) {
+  const redirects: Record<string, string> = {}
+  for (const doc of allBlogs) {
+    const oldSlug = doc._raw.flattenedPath.replace(/^.+?(\/)/, '')
+    const newSlug = blogSlug(doc._raw.flattenedPath)
+    if (oldSlug !== newSlug) {
+      redirects[`/blog/${oldSlug}`] = `/blog/${newSlug}`
+    }
+  }
+  writeFileSync('./json/slug-redirects.json', JSON.stringify(redirects, null, 2))
+  console.log(`🔗 Slug redirect map generated (${Object.keys(redirects).length} entries).`)
+}
+
 export const Blog = defineDocumentType(() => ({
   name: 'Blog',
   filePathPattern: 'blog/**/*.mdx',
@@ -90,6 +116,7 @@ export const Blog = defineDocumentType(() => ({
     lastmod: { type: 'date' },
     draft: { type: 'boolean' },
     summary: { type: 'string' },
+    tldr: { type: 'string' },
     images: { type: 'json' },
     authors: { type: 'list', of: { type: 'string' } },
     layout: { type: 'string' },
@@ -98,6 +125,8 @@ export const Blog = defineDocumentType(() => ({
   },
   computedFields: {
     ...computedFields,
+    slug: { type: 'string', resolve: (doc) => blogSlug(doc._raw.flattenedPath) },
+    path: { type: 'string', resolve: (doc) => `blog/${blogSlug(doc._raw.flattenedPath)}` },
     structuredData: {
       type: 'json',
       resolve: (doc) => ({
@@ -108,7 +137,7 @@ export const Blog = defineDocumentType(() => ({
         dateModified: doc.lastmod || doc.date,
         description: doc.summary,
         image: doc.images ? doc.images[0] : SITE_METADATA.socialBanner,
-        url: `${SITE_METADATA.siteUrl}/${doc._raw.flattenedPath}`,
+        url: `${SITE_METADATA.siteUrl}/blog/${blogSlug(doc._raw.flattenedPath)}`,
       }),
     },
   },
@@ -218,7 +247,7 @@ export default makeSource({
         {
           theme: {
             dark: 'github-dark-dimmed',
-            light: 'solarized-light',
+            light: 'one-light',
           },
         },
       ],
@@ -234,6 +263,7 @@ export default makeSource({
     const allPosts = [...allBlogs, ...allSnippets]
     createTagCount(allPosts)
     createSearchIndex(allPosts)
+    createSlugRedirects(allBlogs)
     console.log('✨ Content source generated successfully!')
   },
 })

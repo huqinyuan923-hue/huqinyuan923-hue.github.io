@@ -1,28 +1,36 @@
 # 迁移到 Cloudflare 完整部署教程
 
-> 本博客是 **Next.js 纯静态导出**。仓库里已有 `wrangler.jsonc`（声明 Worker 名称 `huqinyuan923-hue-github-io`、静态资源目录 `./out`、404 页处理），Cloudflare 构建时会自动使用它。
+> 本博客是 **Next.js 纯静态导出**。仓库里已有 `wrangler.jsonc`（Worker 名称 `huqinyuan923-hue-github-io`、静态资源目录 `./out`、404 页处理、**AI 绑定与 /api 路由**），Cloudflare 构建时会自动使用它。
+
+## 〇、AI 功能（语义搜索 + 站内问答）
+
+- `scripts/build-semantic-index.mjs`：构建期把全部文章分块并用 `bge-small-zh-v1.5` 向量化，生成 `public/search-vectors.json`（不进 git，CI 每次构建重新生成；`pnpm index` 可手动执行）
+- `worker/index.ts`：Worker 入口，提供 `GET /api/semantic-search`（语义搜索）与 `POST /api/ask`（RAG 问答，SSE 流式），模型经 Workers AI 免费额度调用，可在 `wrangler.jsonc` 的 `vars` 里换模型
+- 前端：kbar 搜索弹窗中的「AI 语义搜索」区块、右下角「问 AI」浮窗、文章页 TL;DR 盒子与相关文章推荐
+- 失败兜底：索引生成失败不阻塞构建，前端自动退回关键词搜索
 
 ## 一、项目设置（Cloudflare 面板）
 
 项目：`huqinyuan923-hue-github-io` → **设置 → 构建 → 编辑**
 
-| 配置项 | 值 |
-| --- | --- |
+| 配置项   | 值                                                                                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 构建命令 | `mv app/api api.disabled && pnpm install --frozen-lockfile && EXPORT=true UNOPTIMIZED=true NEXT_PUBLIC_STATIC_EXPORT=true pnpm build && cp -r public/. out/` |
-| 部署命令 | `npx wrangler deploy` |
-| 根目录 | `/`（留空） |
+| 部署命令 | `npx wrangler deploy`                                                                                                                                        |
+| 根目录   | `/`（留空）                                                                                                                                                  |
 
 **构建变量**（同一个设置页，**只加这 3 条**）：
 
-| 名称 | 值 |
-| --- | --- |
-| `EXPORT` | `true` |
-| `UNOPTIMIZED` | `true` |
+| 名称                        | 值     |
+| --------------------------- | ------ |
+| `EXPORT`                    | `true` |
+| `UNOPTIMIZED`               | `true` |
 | `NEXT_PUBLIC_STATIC_EXPORT` | `true` |
 
 > ⚠️ **不要创建 `BASE_PATH`**。如果之前加过（无论留空还是 `""`），**整条删除**——留空字符串会让 Next 报 `Specified basePath has to start with a /` 构建失败。
 
 各段命令的作用：
+
 - `mv app/api api.disabled`：静态导出不支持 API 路由，先移走（前端有 `NEXT_PUBLIC_STATIC_EXPORT` 标记会跳过对 /api 的请求）
 - `EXPORT=true`：让 next.config.js 启用 `output: 'export'` 静态导出
 - `UNOPTIMIZED=true`：静态托管下 next/image 必须关闭优化
@@ -47,10 +55,10 @@
 
 ## 五、常见报错对照
 
-| 报错 | 原因 | 解决 |
-| --- | --- | --- |
-| `Specified basePath has to start with a /, found """"` | 构建变量里存在 `BASE_PATH`（值为空/引号） | 删除 `BASE_PATH` 变量 |
-| `WORKER_SELF_REFERENCE references Worker 'xxx' not found` | 仓库缺 `wrangler.jsonc` 或被删 | 确认仓库根有 `wrangler.jsonc`（已提交） |
-| `Specified "rewrites"/"headers" will not automatically work` | 静态导出的预期警告 | 忽略，安全头由 `public/_headers` 提供 |
-| workers.dev 打不开 | 大陆网络封锁 workers.dev | 用自定义域 adcakeyuan.top 验证 |
-| 页面 404 但首页正常 | 少了 `cp -r public/. out/` 或 `mv app/api` 步骤 | 检查构建命令是否完整复制 |
+| 报错                                                         | 原因                                            | 解决                                    |
+| ------------------------------------------------------------ | ----------------------------------------------- | --------------------------------------- |
+| `Specified basePath has to start with a /, found """"`       | 构建变量里存在 `BASE_PATH`（值为空/引号）       | 删除 `BASE_PATH` 变量                   |
+| `WORKER_SELF_REFERENCE references Worker 'xxx' not found`    | 仓库缺 `wrangler.jsonc` 或被删                  | 确认仓库根有 `wrangler.jsonc`（已提交） |
+| `Specified "rewrites"/"headers" will not automatically work` | 静态导出的预期警告                              | 忽略，安全头由 `public/_headers` 提供   |
+| workers.dev 打不开                                           | 大陆网络封锁 workers.dev                        | 用自定义域 adcakeyuan.top 验证          |
+| 页面 404 但首页正常                                          | 少了 `cp -r public/. out/` 或 `mv app/api` 步骤 | 检查构建命令是否完整复制                |

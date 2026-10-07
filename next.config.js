@@ -161,5 +161,15 @@ module.exports = () => {
 
       return config
     },
+    // Turbopack（next dev --turbo）用同样的 svgr 规则处理 SVG，
+    // 绕过 Next 15.2 webpack dev 模式渲染 MDX 页面 500 的已知问题
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   })
 }

@@ -8,7 +8,7 @@ export function EditOnGithub({ filePath }: { filePath: string }) {
       href={`${SITE_METADATA.siteRepo}/blob/main/data/${filePath}?plain=1`}
     >
       <GrowingUnderline data-umami-event="discuss-on-x">
-        Edit on <span className="font-semibold">GitHub</span>
+        在 <span className="font-semibold">GitHub</span> 上编辑
       </GrowingUnderline>
     </Link>
   )

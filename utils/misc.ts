@@ -68,7 +68,16 @@ export function getTimeAgo(time: string | number | Date, now = Date.now()) {
 
   const v = Math.floor(amount)
 
-  return `${v === 1 ? (amount === hours ? 'an' : 'a') : v} ${cycle}${v > 1 ? 's' : ''} ago`
+  const unit = {
+    year: '年',
+    month: '个月',
+    week: '周',
+    day: '天',
+    hour: '小时',
+    minute: '分钟',
+    second: '秒',
+  }[cycle]
+  return `${v} ${unit}前`
 }
 
 function dateSortDesc(a: string, b: string) {

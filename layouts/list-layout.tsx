@@ -97,7 +97,7 @@ export function ListLayout({
         description="写我做过的项目、踩过的坑，偶尔记录生活。用下面的搜索框按标题过滤。"
         className="border-b border-gray-200 dark:border-gray-700"
       >
-        <SearchArticles label="Search articles" onChange={(e) => setSearchValue(e.target.value)} />
+        <SearchArticles label="搜索文章" onChange={(e) => setSearchValue(e.target.value)} />
       </PageHeader>
       {!filteredBlogPosts.length ? (
         <div className="py-10">No posts found.</div>

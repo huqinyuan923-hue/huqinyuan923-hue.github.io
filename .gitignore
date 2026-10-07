@@ -61,3 +61,6 @@ playwright-report/
 tsconfig.tsbuildinfo
 .mimosa/
 out/
+
+# semantic search index (generated at build time by scripts/build-semantic-index.mjs)
+/public/search-vectors.json

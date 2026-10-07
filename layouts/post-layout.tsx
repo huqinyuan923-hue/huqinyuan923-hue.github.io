@@ -7,9 +7,12 @@ import { Comments } from '~/components/blog/comments'
 import { EditOnGithub } from '~/components/blog/edit-on-github'
 import { PostNav } from '~/components/blog/post-nav'
 import { PostTitle } from '~/components/blog/post-title'
+import { RelatedPosts } from '~/components/blog/related-posts'
 import { ScrollButtons } from '~/components/blog/scroll-buttons'
+import { ScrollProgress } from '~/components/blog/scroll-progress'
 import { SocialShare } from '~/components/blog/social-share'
 import { TagsList } from '~/components/blog/tags'
+import { TldrBox } from '~/components/blog/tldr-box'
 import { TableOfContents } from '~/components/blog/toc'
 import { Container } from '~/components/ui/container'
 import { GradientDivider } from '~/components/effects/gradient-divider'
@@ -25,11 +28,13 @@ interface LayoutProps {
 }
 
 export function PostLayout({ content, next, prev, children }: LayoutProps) {
-  const { slug, images, lastmod, readingTime, date, title, tags, filePath, toc, type } = content
+  const { slug, images, lastmod, readingTime, date, title, tags, filePath, toc, type, tldr } =
+    content
   const postUrl = `${SITE_METADATA.siteUrl}/${type.toLowerCase()}/${slug}`
 
   return (
     <Container className="pt-4 lg:pt-12">
+      <ScrollProgress />
       <ScrollButtons />
       <article className="pt-6">
         <div className="space-y-4">
@@ -46,17 +51,20 @@ export function PostLayout({ content, next, prev, children }: LayoutProps) {
         <GradientDivider className="mb-2 mt-1" />
         <div className="grid grid-cols-1 gap-12 pb-10 pt-8 lg:grid-cols-12 lg:pt-10">
           <div className="divide-y divide-gray-200 dark:divide-gray-700 lg:col-span-8 xl:col-span-9">
-            <div className="prose max-w-none dark:prose-invert lg:prose-lg lg:pb-8">{children}</div>
+            <div className="prose max-w-none dark:prose-invert lg:prose-lg lg:pb-8">
+              <TldrBox tldr={tldr} />
+              {children}
+            </div>
           </div>
           <div className="hidden lg:col-span-4 lg:block xl:col-span-3">
             <div className="space-y-4 divide-y divide-gray-200 dark:divide-gray-700 lg:sticky lg:top-24">
               <BackToPosts
-                label="Back to posts"
-                className="opacity-25 transition-opacity hover:opacity-100"
+                label="返回文章列表"
+                className="opacity-50 transition-opacity hover:opacity-100 dark:opacity-40 dark:hover:opacity-100"
               />
               <TableOfContents
                 toc={toc}
-                className="pt-4 opacity-25 transition-opacity hover:opacity-100"
+                className="pt-4 opacity-50 transition-opacity hover:opacity-100 dark:opacity-40 dark:hover:opacity-100"
               />
               <div className="flex flex-col gap-2 pt-4">
                 <EditOnGithub filePath={filePath} />
@@ -66,7 +74,8 @@ export function PostLayout({ content, next, prev, children }: LayoutProps) {
         </div>
         <GradientDivider />
         <div className="space-y-4">
-          <PostNav next={next} nextLabel="Next post" prev={prev} prevLabel="Previous post" />
+          <RelatedPosts slug={slug} />
+          <PostNav next={next} nextLabel="下一篇" prev={prev} prevLabel="上一篇" />
           <Comments configs={{ reactions: '1' }} />
         </div>
       </article>

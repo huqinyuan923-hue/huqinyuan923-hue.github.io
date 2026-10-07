@@ -7,6 +7,7 @@ import 'katex/dist/katex.css'
 import clsx from 'clsx'
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
+import { AskAI } from '~/components/ai/ask-ai'
 import { UmamiAnalytics } from '~/components/analytics/umami'
 import { Footer } from '~/components/footer'
 import { Header } from '~/components/header'
@@ -168,6 +169,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <KBarSearchProvider configs={SITE_METADATA.search.kbarConfigs}>
             <Header />
             <main className="mb-auto grow">{children}</main>
+            <AskAI />
           </KBarSearchProvider>
           <Footer />
         </ThemeProviders>

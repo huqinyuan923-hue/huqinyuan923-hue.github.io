@@ -23,7 +23,7 @@ export function BlogMeta({ date, lastmod, slug, readingTime }: BlogMetaProps) {
           <>
             <span className="text-gray-400">/</span>
             <time dateTime={date} className="flex items-center justify-center">
-              <span>Updated</span>
+              <span>更新于</span>
               <span className="ml-1.5">{getTimeAgo(lastmod)}</span>
             </time>
           </>
@@ -31,7 +31,7 @@ export function BlogMeta({ date, lastmod, slug, readingTime }: BlogMetaProps) {
         <span className="text-gray-400">/</span>
         <div className="flex items-center">
           <Twemoji emoji="three-o-clock" size="base" />
-          <span className="ml-1.5 md:ml-2">{Math.ceil(readingTime.minutes)} mins read</span>
+          <span className="ml-1.5 md:ml-2">{Math.ceil(readingTime.minutes)} 分钟读完</span>
         </div>
         <span className="text-gray-400">/</span>
         <div className="flex items-center">

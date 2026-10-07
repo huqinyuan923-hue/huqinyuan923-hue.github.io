@@ -5,6 +5,7 @@ allowBuilds:
   contentlayer2: true
   core-js: true
   esbuild: true
+  onnxruntime-node: true
   prisma: true
   protobufjs: true
   sharp: true

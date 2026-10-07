@@ -41,14 +41,14 @@ export function TypedBios() {
       ])}
     >
       <ul id="bios" className="hidden">
-        <li>I&apos;m learning programming and love tinkering with interesting tech.</li>
+        <li>我正在学编程，喜欢折腾各种有意思的技术。</li>
         <li>
-          My first programming language was <b className="font-medium">JavaScript</b>.
+          学的第一门编程语言是 <b className="font-medium">JavaScript</b>。
         </li>
-        <li>I love web development.</li>
-        <li>I build small things and write about them.</li>
+        <li>我喜欢 Web 开发。</li>
+        <li>会做一些小东西，然后把过程写下来。</li>
         <li>
-          I&apos;m a cat-person. <Twemoji emoji="cat" />
+          我是猫奴。 <Twemoji emoji="cat" />
         </li>
       </ul>
       <span ref={el} className="text-neutral-900 dark:text-neutral-200" />

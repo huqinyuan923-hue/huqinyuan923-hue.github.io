@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "start": "next dev",
-    "dev": "PORT=3434 cross-env INIT_CWD=$PWD next dev",
-    "build": "cross-env INIT_CWD=$PWD prisma generate && next build && npm run postbuild",
+    "dev": "PORT=3434 cross-env INIT_CWD=$PWD next dev --turbo",
+    "index": "node scripts/build-semantic-index.mjs",
+    "build": "cross-env INIT_CWD=$PWD prisma generate && node scripts/build-semantic-index.mjs && next build && npm run postbuild",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' tsx ./scripts/post-build.ts",
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true next build",
@@ -73,6 +74,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@huggingface/transformers": "^3.7.0",
     "@playwright/test": "^1.63.0",
     "@svgr/webpack": "^8.1.0",
     "@types/js-yaml": "^4.0.9",
@@ -100,6 +102,12 @@
   "lint-staged": {
     "*.+(js|jsx|ts|tsx|json|css|md|mdx)": [
       "prettier --write"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "onnxruntime-node",
+      "sharp"
     ]
   }
 }

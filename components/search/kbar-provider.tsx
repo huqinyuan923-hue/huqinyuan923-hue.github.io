@@ -40,7 +40,7 @@ export function KBarSearchProvider({
           id: post.path,
           name: post.title,
           keywords: post?.summary || '',
-          section: 'Content',
+          section: '文章',
           subtitle: formatDate(post.date),
           perform: () => router.push('/' + post.path),
         })
