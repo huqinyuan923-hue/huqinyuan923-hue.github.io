@@ -1,13 +1,15 @@
 # 迁移到 Cloudflare 完整部署教程
 
-> 本博客是 **Next.js 纯静态导出**。仓库里已有 `wrangler.jsonc`（Worker 名称 `huqinyuan923-hue-github-io`、静态资源目录 `./out`、404 页处理、**AI 绑定与 /api 路由**），Cloudflare 构建时会自动使用它。
+> 本博客是 **Next.js 纯静态导出**，部署在 **Cloudflare Pages** 项目 `huqinyuan923-hue-github-io`（自定义域 adcakeyuan.top）。
+> `wrangler.jsonc` 是 **Pages 形态**（`pages_build_output_dir` + AI 绑定 + vars），`/api/*` 由仓库根的 `functions/api/[[route]].ts` 提供。
 
 ## 〇、AI 功能（语义搜索 + 站内问答）
 
 - `scripts/build-semantic-index.mjs`：构建期把全部文章分块并用 `bge-small-zh-v1.5` 向量化，生成 `public/search-vectors.json`（不进 git，CI 每次构建重新生成；`pnpm index` 可手动执行）
-- `worker/index.ts`：Worker 入口，提供 `GET /api/semantic-search`（语义搜索）与 `POST /api/ask`（RAG 问答，SSE 流式），模型经 Workers AI 免费额度调用，可在 `wrangler.jsonc` 的 `vars` 里换模型
+- `functions/api/[[route]].ts`：Pages Functions 路由，转发给 `worker/index.ts` 的 `handleApiRequest`，提供 `GET /api/semantic-search`（语义搜索）与 `POST /api/ask`（RAG 问答，SSE 流式），模型经 Workers AI 免费额度调用，可在 `wrangler.jsonc` 的 `vars` 里换模型
 - 前端：kbar 搜索弹窗中的「AI 语义搜索」区块、右下角「问 AI」浮窗、文章页 TL;DR 盒子与相关文章推荐
 - 失败兜底：索引生成失败不阻塞构建，前端自动退回关键词搜索
+- 本地调试：`wrangler pages dev` 需要 `CLOUDFLARE_API_TOKEN`（AI 绑定走远程代理）；未登录时只能验证静态部分
 
 ## 一、项目设置（Cloudflare 面板）
 

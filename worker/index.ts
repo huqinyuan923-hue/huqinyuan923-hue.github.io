@@ -1,10 +1,7 @@
 /**
- * 博客 Worker 入口：静态资源 + AI 问答
- *
- * 路由规则（见 wrangler.jsonc）：
- *   - 匹配静态资源的请求直接由 assets 服务，不进入本 Worker
- *   - /api/* 强制走本 Worker（run_worker_first）
- *   - 其余未匹配路径转发给 ASSETS（404 页由 not_found_handling 处理）
+ * 博客 AI 服务逻辑（同一份实现，两种部署形态共用）：
+ *  - Cloudflare Pages：functions/api/[[route]].ts 调用 handleApiRequest（当前实际使用）
+ *  - Workers with assets：默认导出 fetch 调用 handleApiRequest（保留兼容）
  *
  * 端点：
  *   GET  /api/health            存活检查
@@ -16,16 +13,16 @@
  *   生成 @cf/meta/llama-3.3-70b-instruct-fp8-fast
  */
 
-interface Env {
-  AI: { run: (model: string, input: Record<string, unknown>) => Promise<any> }
-  ASSETS: { fetch: (request: Request) => Promise<Response> }
+export interface Env {
+  AI?: { run: (model: string, input: Record<string, unknown>) => Promise<any> }
+  ASSETS?: { fetch: (request: Request) => Promise<Response> }
   SITE_URL?: string
   EMBED_MODEL?: string
   QA_MODEL?: string
 }
 
 interface Chunk {
-  s: string // 文章 slug，如 '202610/How_I_Built_Arcade_Hub'
+  s: string // 文章 slug
   t: string // 文章标题
   h: string // 小节标题（可空）
   x: string // 文本块
@@ -48,9 +45,9 @@ const MAX_QUESTION_LEN = 500
 
 let indexCache: { data: SearchIndex; at: number } | null = null
 
-async function loadIndex(env: Env): Promise<SearchIndex> {
+async function loadIndex(request: Request): Promise<SearchIndex> {
   if (indexCache && Date.now() - indexCache.at < INDEX_TTL_MS) return indexCache.data
-  const res = await env.ASSETS.fetch(new Request('http://local.assets/search-vectors.json'))
+  const res = await fetch(new URL('/search-vectors.json', request.url))
   if (!res.ok) throw new Error('search-vectors.json 不可用')
   const data = (await res.json()) as SearchIndex
   if (!Array.isArray(data.chunks)) throw new Error('索引格式非法')
@@ -239,26 +236,31 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
   })
 }
 
+/** /api/* 的统一处理入口，Pages Functions 与 Workers 入口都转发到这里 */
+export async function handleApiRequest(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url)
+  const { pathname } = url
+  try {
+    if (pathname === '/api/health') return json({ ok: true, ts: Date.now() })
+    if (pathname === '/api/semantic-search' && request.method === 'GET') {
+      return await handleSemanticSearch(request, env)
+    }
+    if (pathname === '/api/ask' && request.method === 'POST') {
+      return await handleAsk(request, env)
+    }
+    return json({ error: 'Not Found' }, 404)
+  } catch (err) {
+    return json({ error: err instanceof Error ? err.message : '服务异常' }, 500)
+  }
+}
+
 export default {
+  // Workers with assets 形态的入口（Pages 形态见 functions/api/[[route]].ts）
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
-    const { pathname } = url
-    try {
-      if (pathname === '/api/health') return json({ ok: true, ts: Date.now() })
-      if (pathname === '/api/semantic-search' && request.method === 'GET') {
-        return await handleSemanticSearch(request, env)
-      }
-      if (pathname === '/api/ask' && request.method === 'POST') {
-        return await handleAsk(request, env)
-      }
-      if (pathname.startsWith('/api/')) return json({ error: 'Not Found' }, 404)
-      // 非 API 请求交回静态资源（未命中时返回 404 页）
-      return env.ASSETS.fetch(request)
-    } catch (err) {
-      if (pathname.startsWith('/api/')) {
-        return json({ error: err instanceof Error ? err.message : '服务异常' }, 500)
-      }
+    if (!url.pathname.startsWith('/api/') && env.ASSETS) {
       return env.ASSETS.fetch(request)
     }
+    return handleApiRequest(request, env)
   },
 }
