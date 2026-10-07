@@ -81,4 +81,34 @@ export const PROJECTS: Project[] = [
     repo: 'huqinyuan923-hue/imgbed',
     builtWith: ['TypeScript', 'JavaScript', 'Html', 'CSS', 'GitHub'],
   },
+  {
+    type: 'self',
+    title: 'FileKit · 文件工具箱',
+    description:
+      '纯前端的文件处理三件套：图片压缩与格式转换（JPEG/WebP/PNG、质量与最长边可调），PDF 多文件按序合并，以及按页码范围提取或逐页拆分。Canvas + 内置 pdf-lib 本地处理，文件全程不出浏览器。',
+    imgSrc: '/static/images/projects/filekit.jpg',
+    url: 'https://filekit.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/filekit',
+    builtWith: ['JavaScript', 'Html', 'CSS', 'GitHub'],
+  },
+  {
+    type: 'self',
+    title: 'SalaryCalc · 薪资个税计算器',
+    description:
+      '打工人刚需的工资计算器：五险一金逐项明细、税前税后双向互算、按年度综合所得税率表算个税，年终奖单独计税与并入综合所得自动对比并标出更优方案，各项比例与基数可调以适配不同城市。',
+    imgSrc: '/static/images/projects/salarycalc.jpg',
+    url: 'https://salary.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/salarycalc',
+    builtWith: ['JavaScript', 'Html', 'CSS', 'GitHub'],
+  },
+  {
+    type: 'self',
+    title: 'PomoBox · 番茄专注钟',
+    description:
+      '番茄工作法计时器：专注 / 短休 / 长休自动流转，任务清单随番茄计数，最近 7 天专注柱状图，标签页图标实时显示剩余分钟，WebAudio 合成提示音，数据只存在本机浏览器。',
+    imgSrc: '/static/images/projects/pomobox.jpg',
+    url: 'https://pomo.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/pomobox',
+    builtWith: ['JavaScript', 'Html', 'CSS', 'GitHub'],
+  },
 ]
