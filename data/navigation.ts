@@ -9,6 +9,7 @@ export const HEADER_NAV_LINKS = [
 export const MORE_NAV_LINKS = [
   { href: '/tags', title: 'Tags', emoji: 'label' },
   { href: '/friends', title: 'Friends', emoji: 'woman-and-man-holding-hands' },
+  { href: '/playground', title: '茶 Playground', emoji: 'tea' },
   { href: '/play/minesweeper', title: '扫雷', emoji: 'video-game' },
   { href: 'https://toolbox.adcakeyuan.top', title: 'Toolbox 工具箱', emoji: 'hammer-and-wrench' },
   { href: 'https://filekit.adcakeyuan.top', title: 'FileKit 文件工具', emoji: 'inbox-tray' },

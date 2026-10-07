@@ -141,6 +141,14 @@ if (match('SEMICOLON')) {
 - esbuild 打包单文件 `dist/cha.cjs`（57KB），`node dist/cha.cjs` 开箱即用
 - 解析器新增空语句容忍（REPL 反哺的成果）
 
+## 亲手试试
+
+REPL 不想只活在这篇文章的文字里。同一个解释器编译成 28KB 的 Worker 脚本嵌在下面，会话模式与本地 REPL 一致——变量跨次运行保留，执行超过 5 秒由主线程自动终止：
+
+<ChaPlayground example="fib" compact />
+
+完整版（含系列目录与全部示例）在[茶 Playground](/playground)。
+
 到这里，这门语言的「体感层」全部完成。下一章把镜头对准一直穿插在系列里的暗线：**错误体验**——四阶段错误（词法/语法/作用域/运行时）怎么统一成结构化对象、行列号从哪来、以及中文报错文案「亲切但不啰嗦」的分寸拿捏。
 
 > 本系列代码开源在 [cha-lang](https://github.com/huqinyuan923-hue/cha-lang)，REPL 实现在 [src/repl.ts](https://github.com/huqinyuan923-hue/cha-lang/blob/main/src/repl.ts)，commit `bc9b91c` 是本章完成时的状态。

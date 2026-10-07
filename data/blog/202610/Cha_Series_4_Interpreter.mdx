@@ -60,7 +60,9 @@ a(); a();
 print(a());   // 3 —— count 活在 makeCounter 的环境里
 ```
 
-树遍历架构里闭包是免费的，这是它最被低估的优点。
+树遍历架构里闭包是免费的，这是它最被低估的优点。上面这段计数器可以直接跑（会话模式下多次「运行」共享同一份变量）：
+
+<ChaPlayground example="closures" compact />
 
 ## 用异常做非局部跳转
 
@@ -99,7 +101,7 @@ print("有" and "后值");   // "后值"
 ```ts
 if (expr.op === 'or') {
   const left = this.evaluate(expr.left)
-  return isTruthy(left) ? left : this.evaluate(expr.right)   // 左边为真时右边根本不算
+  return isTruthy(left) ? left : this.evaluate(expr.right) // 左边为真时右边根本不算
 }
 ```
 
@@ -113,9 +115,9 @@ JS 的 `0.1 + 0.2` 显示成 `0.30000000000000004`，IEEE 754 的经典行为。
 
 ```ts
 export function formatNumber(n: number): string {
-  if (Number.isInteger(n)) return String(n)          // 2.0 → "2"
+  if (Number.isInteger(n)) return String(n) // 2.0 → "2"
   if (!Number.isFinite(n)) return n > 0 ? 'inf' : Number.isNaN(n) ? 'nan' : '-inf'
-  return String(Number(n.toPrecision(15)))           // 浮点误差清洗
+  return String(Number(n.toPrecision(15))) // 浮点误差清洗
 }
 ```
 

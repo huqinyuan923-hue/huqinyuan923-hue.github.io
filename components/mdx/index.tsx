@@ -1,4 +1,5 @@
 import type { MDXComponents } from 'mdx/types'
+import { ChaPlayground } from '~/components/cha/playground'
 import { Image, Zoom, type ImageProps } from '~/components/ui/image'
 import { Link } from '~/components/ui/link'
 import { Twemoji } from '~/components/ui/twemoji'
@@ -17,6 +18,7 @@ export const MDX_COMPONENTS: MDXComponents = {
   },
   Twemoji,
   Player,
+  ChaPlayground,
   CodeTitle,
   a: Link,
   pre: Pre,
