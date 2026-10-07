@@ -71,4 +71,14 @@ export const PROJECTS: Project[] = [
     repo: 'huqinyuan923-hue/treasury',
     builtWith: ['NextJS', 'React', 'TailwindCSS', 'TypeScript', 'Vercel'],
   },
+  {
+    type: 'self',
+    title: 'PixNest · 私有图床',
+    description:
+      'Cloudflare Pages + KV 的个人图床：粘贴/拖拽/点击上传，SHA-1 内容寻址自动去重，直链边缘缓存外发，自带图库管理与令牌鉴权，为博客写作提供图片服务。',
+    imgSrc: '/static/images/projects/picnest.jpg',
+    url: 'https://img.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/imgbed',
+    builtWith: ['TypeScript', 'JavaScript', 'Html', 'CSS', 'GitHub'],
+  },
 ]
