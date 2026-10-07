@@ -22,6 +22,7 @@
     "@fontsource/playpen-sans": "^5.2.8",
     "@giscus/react": "^3.0.0",
     "@headlessui/react": "2.2.0",
+    "@huggingface/transformers": "^3.7.0",
     "@next/bundle-analyzer": "15.1.2",
     "@octokit/graphql": "^8.1.1",
     "@prisma/client": "^6.7.0",
@@ -76,7 +77,6 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
-    "@huggingface/transformers": "^3.7.0",
     "@playwright/test": "^1.63.0",
     "@svgr/webpack": "^8.1.0",
     "@types/js-yaml": "^4.0.9",

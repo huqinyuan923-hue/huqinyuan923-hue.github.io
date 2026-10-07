@@ -179,17 +179,30 @@ async function main() {
   let extractor
   try {
     const { pipeline } = await import('@huggingface/transformers')
-    try {
-      extractor = await pipeline('feature-extraction', MODEL_ID, { dtype: 'q8' })
-    } catch {
-      log('q8 量化模型不可用，退回 fp32')
-      extractor = await pipeline('feature-extraction', MODEL_ID)
+    for (const dtype of ['q8', 'fp16', 'fp32']) {
+      try {
+        extractor = await pipeline('feature-extraction', MODEL_ID, { dtype })
+        log(`模型加载成功（dtype=${dtype}）`)
+        break
+      } catch (err) {
+        log(`dtype=${dtype} 加载失败：${err.message}`)
+      }
     }
+    if (!extractor) throw new Error('所有精度的模型均不可用')
   } catch (err) {
     log('⚠️ 嵌入模型加载失败：', err.message)
     if (existsSync(VECTORS_OUT)) {
-      log('保留已有 search-vectors.json，本次不更新。')
-      return
+      // 仅保留同一模型生成的旧索引：换模型后旧向量与查询向量不在同一空间，宁可置空
+      try {
+        const old = JSON.parse(readFileSync(VECTORS_OUT, 'utf8'))
+        if (old.model === MODEL_ID) {
+          log('保留同模型旧索引，本次不更新。')
+          return
+        }
+        log('旧索引模型不符（' + old.model + '），写空索引兜底。')
+      } catch {
+        log('旧索引不可解析，写空索引兜底。')
+      }
     }
     mkdirSync(path.dirname(VECTORS_OUT), { recursive: true })
     mkdirSync(path.dirname(RELATED_OUT), { recursive: true })
@@ -277,8 +290,18 @@ async function main() {
 main().catch((err) => {
   console.error('[semantic-index] 失败：', err)
   if (existsSync(VECTORS_OUT)) {
-    console.error('[semantic-index] 保留已有索引，继续构建。')
-    process.exit(0)
+    // 模型不一致的旧索引比空索引更危险（查询向量对不上文档向量，排序全错），
+    // 仅当旧索引由同一模型生成时才保留
+    try {
+      const old = JSON.parse(readFileSync(VECTORS_OUT, 'utf8'))
+      if (old.model === MODEL_ID) {
+        console.error('[semantic-index] 保留同模型旧索引，继续构建。')
+        process.exit(0)
+      }
+      console.error('[semantic-index] 旧索引模型不符（' + old.model + '），写空索引兜底。')
+    } catch {
+      console.error('[semantic-index] 旧索引不可解析，写空索引兜底。')
+    }
   }
   // 没有旧索引也要写出空产物，保证 next build 的静态 import 不缺文件
   mkdirSync(path.dirname(VECTORS_OUT), { recursive: true })

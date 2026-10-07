@@ -8,7 +8,6 @@
   },
   "vars": {
     "SITE_URL": "https://adcakeyuan.top",
-    "EMBED_MODEL": "@cf/baai/bge-small-zh-v1.5",
     "QA_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
   }
 }

@@ -4,13 +4,13 @@
  *  - Workers with assets：默认导出 fetch 调用 handleApiRequest（保留兼容）
  *
  * 端点：
- *   GET  /api/health            存活检查
- *   GET  /api/semantic-search?q= 语义搜索（查询向量 × 本地索引余弦排序）
- *   POST /api/ask               RAG 问答（SSE 流式返回，附引用来源）
+ *   GET  /api/health  存活检查
+ *   POST /api/ask     RAG 问答（SSE 流式返回，附引用来源）
  *
- * 模型通过 wrangler.jsonc 的 vars 配置，默认：
- *   嵌入 @cf/baai/bge-small-zh-v1.5（与构建期 scripts/build-semantic-index.mjs 同一模型）
- *   生成 @cf/meta/llama-3.3-70b-instruct-fp8-fast
+ * 检索：查询向量由前端浏览器内计算（与构建期同一模型，见 utils/embedding.ts），
+ *       服务端对全站向量索引排序后取 Top-K 交给 LLM。
+ * 生成：Workers AI（默认 @cf/meta/llama-3.3-70b-instruct-fp8-fast，
+ *       可在 wrangler.jsonc 的 vars.QA_MODEL 里更换）
  */
 
 export interface Env {
@@ -35,11 +35,9 @@ interface SearchIndex {
   chunks: Chunk[]
 }
 
-// bge 中文检索官方推荐的查询侧指令前缀（文档侧不加）
-const QUERY_PREFIX = '为这个句子生成表示以用于检索相关文章：'
+// 查询向量由前端在浏览器内用同一嵌入模型（Xenova/bge-small-zh-v1.5）计算后随请求带来，
+// 服务端只做排序与生成——Workers AI 嵌入目录无中文小模型，且客户端计算保证向量空间一致
 const INDEX_TTL_MS = 5 * 60 * 1000
-const MAX_Q_LEN = 120
-const SEARCH_TOP_K = 8
 const ASK_TOP_K = 6
 const MAX_QUESTION_LEN = 500
 
@@ -60,12 +58,13 @@ function aiBinding(env: Env) {
   return env.AI
 }
 
-async function embedQuery(env: Env, question: string): Promise<number[]> {
-  const model = env.EMBED_MODEL || '@cf/baai/bge-small-zh-v1.5'
-  const result = await aiBinding(env).run(model, { text: [QUERY_PREFIX + question] })
-  const vec = result?.data?.[0]
-  if (!Array.isArray(vec) || vec.length === 0) throw new Error('向量化失败')
-  return vec
+function isFiniteVec(v: unknown): v is number[] {
+  return (
+    Array.isArray(v) &&
+    v.length >= 64 &&
+    v.length <= 4096 &&
+    v.every((x) => typeof x === 'number' && Number.isFinite(x))
+  )
 }
 
 function rank(index: SearchIndex, queryVec: number[], topK: number) {
@@ -111,30 +110,6 @@ function clientIp(request: Request): string {
   return request.headers.get('cf-connecting-ip') || 'unknown'
 }
 
-async function handleSemanticSearch(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url)
-  const q = (url.searchParams.get('q') || '').trim().slice(0, MAX_Q_LEN)
-  if (!q) return json({ results: [] })
-  if (!rateLimit(`search:${clientIp(request)}`, 120, 60_000)) {
-    return json({ error: '请求过于频繁' }, 429)
-  }
-  const index = await loadIndex(request)
-  if (index.chunks.length === 0) return json({ results: [] })
-  const queryVec = await embedQuery(env, q)
-  const top = rank(index, queryVec, SEARCH_TOP_K)
-  const siteUrl = env.SITE_URL || 'https://adcakeyuan.top'
-  return json({
-    results: top.map(({ chunk, score }) => ({
-      slug: chunk.s,
-      title: chunk.t,
-      heading: chunk.h,
-      snippet: chunk.x.slice(0, 140) + (chunk.x.length > 140 ? '…' : ''),
-      score: Math.round(score * 1000) / 1000,
-      url: `${siteUrl}/blog/${chunk.s}`,
-    })),
-  })
-}
-
 function buildContext(top: { chunk: Chunk; score: number }[], siteUrl: string) {
   const blocks: string[] = []
   const sources: { n: number; title: string; url: string }[] = []
@@ -152,7 +127,11 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
   if (!rateLimit(`ask:${clientIp(request)}`, 15, 60_000)) {
     return json({ error: '提问太频繁了，稍等一分钟再试。' }, 429)
   }
-  let body: { question?: string; history?: { role: string; content: string }[] }
+  let body: {
+    question?: string
+    queryVec?: number[]
+    history?: { role: string; content: string }[]
+  }
   try {
     body = await request.json()
   } catch {
@@ -162,6 +141,9 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
     .trim()
     .slice(0, MAX_QUESTION_LEN)
   if (question.length < 2) return json({ error: '问题太短了' }, 400)
+  if (!isFiniteVec(body.queryVec)) {
+    return json({ error: '缺少有效的查询向量（queryVec）' }, 400)
+  }
 
   const history = (Array.isArray(body.history) ? body.history : [])
     .filter(
@@ -174,8 +156,7 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
   if (index.chunks.length === 0) {
     return json({ error: '语义索引为空，暂时无法回答。' }, 503)
   }
-  const queryVec = await embedQuery(env, question.slice(0, MAX_Q_LEN))
-  const top = rank(index, queryVec, ASK_TOP_K)
+  const top = rank(index, body.queryVec, ASK_TOP_K)
   const siteUrl = env.SITE_URL || 'https://adcakeyuan.top'
   const { context, sources } = buildContext(top, siteUrl)
 
@@ -243,13 +224,9 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
 
 /** /api/* 的统一处理入口，Pages Functions 与 Workers 入口都转发到这里 */
 export async function handleApiRequest(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url)
-  const { pathname } = url
+  const { pathname } = new URL(request.url)
   try {
     if (pathname === '/api/health') return json({ ok: true, ts: Date.now() })
-    if (pathname === '/api/semantic-search' && request.method === 'GET') {
-      return await handleSemanticSearch(request, env)
-    }
     if (pathname === '/api/ask' && request.method === 'POST') {
       return await handleAsk(request, env)
     }

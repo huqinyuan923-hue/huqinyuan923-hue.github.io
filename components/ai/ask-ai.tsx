@@ -2,6 +2,7 @@
 
 import { Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { embedQuery, getEmbedder } from '~/utils/embedding'
 
 interface Source {
   n: number
@@ -40,6 +41,11 @@ export function AskAI() {
     }
   }, [messages, open])
 
+  // 打开面板时预热本地嵌入模型（首次约 25MB，之后走浏览器缓存）
+  useEffect(() => {
+    if (open) getEmbedder().catch(() => {})
+  }, [open])
+
   useEffect(() => () => abortRef.current?.abort(), [])
 
   async function ask(question: string) {
@@ -58,10 +64,13 @@ export function AskAI() {
     const controller = new AbortController()
     abortRef.current = controller
     try {
+      const queryVec = await embedQuery(question).catch((e) => {
+        throw new Error('本地语义模型加载失败，请检查网络后重试（首次约 25MB）')
+      })
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ question, history }),
+        body: JSON.stringify({ question, history, queryVec }),
         signal: controller.signal,
       })
       if (!res.ok || !res.body) {

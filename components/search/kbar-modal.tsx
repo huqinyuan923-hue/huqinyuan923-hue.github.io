@@ -12,6 +12,8 @@ import {
 import { Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation.js'
 import { useEffect, useState } from 'react'
+import { embedQuery, getEmbedder } from '~/utils/embedding'
+import { cosineRank, loadSearchIndex, type SemanticHit } from '~/utils/semantic-search'
 
 export function KBarModal({ actions, isLoading }: { actions: Action[]; isLoading: boolean }) {
   useRegisterActions(actions, [actions])
@@ -60,76 +62,78 @@ export function KBarModal({ actions, isLoading }: { actions: Action[]; isLoading
   )
 }
 
-interface SemanticHit {
-  slug: string
-  title: string
-  heading: string
-  snippet: string
-  score: number
-  url: string
-}
-
 const semanticCache = new Map<string, SemanticHit[]>()
 
 /**
- * AI 语义搜索：不走 kbar 的关键词匹配，直接请求 Worker
- * /api/semantic-search（查询向量化后与全站文章块做余弦排序）。
- * 请求失败（如本地 dev 无 Worker）时静默隐藏，不影响关键词搜索。
+ * AI 语义搜索（纯本地）：查询向量在浏览器内计算（首次需下载约 25MB 模型，
+ * 之后走浏览器缓存），与构建期生成的全站向量索引做余弦排序。
+ * 任何失败都静默隐藏，不影响关键词搜索。
  */
 function SemanticResults() {
-  // 注意：useKBar 的返回值始终是 { ...collected, query, options } 包装对象，
-  // 选择器只能用于挑选字段，不能直接拿返回值当裸字符串用
-  const { searchQuery } = useKBar((state) => ({ searchQuery: state.searchQuery }))
+  const searchQuery = useKBar((state) => state.searchQuery)
   const { query } = useKBar()
   const router = useRouter()
   const [hits, setHits] = useState<SemanticHit[]>([])
-  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState('') // 非空 = 正在加载模型/索引
 
   const q = searchQuery.trim()
   useEffect(() => {
     if (q.length < 2) {
       setHits([])
-      setLoading(false)
+      setStatus('')
       return
     }
     const cached = semanticCache.get(q)
     if (cached) {
       setHits(cached)
-      setLoading(false)
+      setStatus('')
       return
     }
-    const controller = new AbortController()
-    setLoading(true)
+    let stale = false
+    setStatus('准备中…')
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/semantic-search?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        })
-        if (!res.ok) return
-        const data = await res.json()
-        const results: SemanticHit[] = Array.isArray(data.results) ? data.results : []
+        const index = await loadSearchIndex()
+        if (stale) return
+        setStatus('加载语义模型…')
+        const vec = await embedQuery(q)
+        if (stale) return
+        setStatus('')
+        const results = cosineRank(index, vec, 6)
         semanticCache.set(q, results)
         setHits(results)
       } catch {
         // 语义搜索不可用时保持静默，关键词搜索照常工作
-      } finally {
-        setLoading(false)
+        if (!stale) setStatus('')
       }
-    }, 350)
+    }, 400)
     return () => {
+      stale = true
       clearTimeout(timer)
-      controller.abort()
     }
   }, [q])
 
+  // 模型下载进度只在第一次加载时出现：监听全局进度回调
+  useEffect(() => {
+    if (q.length < 2) return
+    const off = onModelProgress((p) => {
+      if (p.file?.endsWith('.onnx') && typeof p.progress === 'number') {
+        setStatus(`加载语义模型 ${Math.round(p.progress)}%…`)
+      } else if (p.status === 'ready') {
+        setStatus('')
+      }
+    })
+    return off
+  }, [q.length])
+
   if (q.length < 2) return null
 
-  if (loading && hits.length === 0) {
+  if (status) {
     return (
       <div className="border-t border-gray-100 px-4 py-3 text-sm text-gray-400 dark:border-gray-800 dark:text-gray-600">
         <span className="inline-flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-          AI 语义搜索中…
+          {status}
         </span>
       </div>
     )
@@ -143,13 +147,13 @@ function SemanticResults() {
         AI 语义搜索
       </div>
       <ul>
-        {hits.slice(0, 6).map((hit) => (
+        {hits.map((hit) => (
           <li key={hit.slug + hit.heading}>
             <button
               type="button"
               onClick={() => {
                 query.toggle()
-                router.push(new URL(hit.url).pathname)
+                router.push(hit.url)
               }}
               className="block w-full px-4 py-2 text-left hover:bg-primary-600/10 dark:hover:bg-primary-400/10"
             >
@@ -168,6 +172,24 @@ function SemanticResults() {
       </ul>
     </div>
   )
+}
+
+// ---- 模型下载进度广播（getEmbedder 只接受一次回调，这里做全局转发） ----
+type ProgressListener = (p: { status: string; progress?: number; file?: string }) => void
+const progressListeners = new Set<ProgressListener>()
+let progressHooked = false
+
+function onModelProgress(listener: ProgressListener): () => void {
+  progressListeners.add(listener)
+  if (!progressHooked) {
+    progressHooked = true
+    getEmbedder((p) => {
+      for (const l of progressListeners) l(p)
+    }).catch(() => {
+      // 静默：具体调用方自行处理失败
+    })
+  }
+  return () => progressListeners.delete(listener)
 }
 
 function RenderResults() {
@@ -225,7 +247,7 @@ function RenderResults() {
   } else {
     return (
       <div className="block border-t border-gray-100 px-4 py-8 text-center text-gray-400 dark:border-gray-800 dark:text-gray-600">
-        没有找到相关结果…
+        No results for your search...
       </div>
     )
   }
