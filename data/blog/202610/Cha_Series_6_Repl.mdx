@@ -1,0 +1,146 @@
+---
+title: '手写一门编程语言（六）：REPL——改了三遍才像样的第一印象'
+date: '2026-10-07'
+lastmod: '2026-10-07'
+tags: ['compiler', 'typescript', 'programming-language']
+draft: false
+summary: 'Cha 语言系列第 6 章：REPL 是语言的第一印象，也是压力最大的测试环境。三次返工实录：Session 让变量跨行存活、表达式自动回显的试探与降级、多行续输入的错误分类学——以及 REPL 的压力如何反哺了解析器（空语句就是这么被逼出来的）。'
+tldr: 'REPL 三大件：Session（每行独立解析、共享全局环境，否则变量活不过一行）；表达式回显（非语句开头的输入包一层 print，失败降级按语句重试）；多行续输入（精确识别四类「还没写完」的解析错误，茶> 变 …>）。REPL 还反哺了语言：fn 声明后的多余分号逼出了空语句规则。'
+authors: ['default']
+---
+
+<Twemoji emoji="wrench" />
+
+解释器的零件全部到齐后，我做了一个当时以为十分钟就能搞定、结果改了三遍的东西：REPL。交互环境是语言的第一印象——Python 之所以给人「随手算个数」的气质，一半功劳在它的 `>>>`。这一章是三次返工的完整实录，主角是一个从「每行独立程序」进化到「会话」的组件。
+
+## 第一遍：每行一个程序，变量活不过一行
+
+最直觉的实现：把每行输入当独立程序跑 `run()`。
+
+```ts
+rl.on('line', (line) => {
+  const result = run(sourceOf(line))   // 每行都是全新的世界
+  ...
+})
+```
+
+跑起来第一分钟就穿帮：
+
+```text
+茶> var x = 5
+茶> x * 2
+  ⚠ 运行时错误：未定义的变量 'x'
+```
+
+原因写在架构里：`run()` 每次都新建解释器实例，全局环境是实例私有的。**REPL 的语义从来不是「一串独立的小程序」，而是「一段程序被分行喂进来」**——变量、函数必须跨行存活。
+
+修复是给 `index.ts` 加一个 `Session` 类：解释器实例只建一次，每行代码独立走「解析 → 作用域解析 → 执行」，但共享同一个全局环境：
+
+```ts
+export class Session {
+  private interpreter: Interpreter
+  constructor(options) {
+    this.interpreter = new Interpreter(new Map(), options)
+  }
+  run(source: string): RunResult {
+    const program = parse(source)
+    this.interpreter.setResolutions(resolve(program)) // 每行有自己的距离表
+    this.interpreter.run(program)
+    return { output: [] }
+  }
+}
+```
+
+每行独立的解析和作用域解析，共享的全局环境——这组组合拳正好接住了上一章的分工设计：距离表只管嵌套作用域，全局按名字回溯。上一章那个「全局不出距离表」的决定，在 REPL 这里收回了投资。
+
+## 第二遍：表达式回显，与 `{` 的两面派
+
+Python REPL 里敲 `1 + 1` 直接回显 `2`，没有人愿意在交互环境里写 `print(1 + 1)`。Cha 也要这个体验。
+
+试探法很朴素：**不以语句关键字开头的输入，包一层 print**：
+
+```ts
+function asSource(input: string): string {
+  return looksLikeExpression(input) ? `print(${input});` : `${input};`
+}
+function looksLikeExpression(input: string): boolean {
+  return !/^(var|fn|if|while|for|return|break|continue)\b/.test(input)
+}
+```
+
+立刻撞上歧义：语句开头的 `{` 是代码块，但试探法会把 `{ x += 1 }` 当成 map 表达式去解析，然后报一个莫名其妙的「map 的键应是字符串、数字、标识符或 [表达式]」。
+
+解法是**降级重试**：包 print 的版本解析失败时，按原样当语句再试一遍：
+
+```ts
+let result = session.run(asSource(input))
+if (looksLikeExpression(input) && result.error?.phase === 'parse') {
+  result = session.run(`${input};`) // 不是表达式？当语句再来一次
+}
+```
+
+试探失败就降级，两次都失败才报错——用户看到的错误信息永远来自「更接近他意图」的那次解析。
+
+这一遍还顺手修了个更蠢的 bug：修完降级重试后 `var x = 5` 突然开始报「var 声明应以 ';' 结尾」——因为重写 `asSource` 时，语句分支忘了补分号。两个改动的耦合测试就是这么抓虫的。
+
+## 第三遍：哪些错误代表「还没写完」
+
+多行输入是 REPL 的及格线：
+
+```text
+茶> fn factorial(n) {
+…>   if (n <= 1) return 1;
+…>   return n * factorial(n - 1);
+…> }
+```
+
+判断「用户还没写完」的关键是**错误分类学**：解析错误里，有些意味着代码写完了但写错了（该报错），有些意味着代码根本没写完（该等下一行）。第一版我用了个粗放匹配——报错信息里含 `}` 或 `)` 就续行——结果 `fn f() {};` 之后的正常报错也被吞进续行模式，用户敲什么都没反应。
+
+最终版是白名单，四个精确到标点的模式：
+
+```ts
+function isOpenEnded(error): boolean {
+  if (error.phase !== 'parse') return false
+  return (
+    /缺少收尾的 \}/.test(error.message) || // 块没闭合
+    /缺少匹配的 '\)'/.test(error.message) || // 括号没闭合
+    /应以 '\)' 结尾/.test(error.message) ||
+    /字符串缺少收尾的双引号/.test(error.message) // 字符串没闭合
+  )
+}
+```
+
+命中白名单就进入续行模式，提示符从 `茶>` 变成 `…>`，攒够完整程序再整体解析。不命中就正常报错。**宁可漏掉一次续行让用户重敲，也不能错把报错吞掉**——静默吞错比烦人更伤第一印象。
+
+## 意外收获：REPL 反哺了语言
+
+三遍返工里最意外的一课：**REPL 是语言设计压力最大的测试环境**。日常脚本里没人写的写法，在 REPL 里每行都会被问到。
+
+最典型的是这个：
+
+```cha
+fn f(n) { return n + 1; };    // 手滑多打的分号
+```
+
+脚本里这行少见，REPL 里我一天打八遍（肌肉记忆来自 JS）。旧解析器在 `fn` 声明后遇到多余分号直接报错。与其教用户「函数声明后别加分号」，不如让解析器学会**空语句**——三行代码的事：
+
+```ts
+if (match('SEMICOLON')) {
+  const at = previous()!
+  return { type: 'block', body: [], line: at.line, col: at.col } // 无害地吞掉
+}
+```
+
+类似的还有第二章埋的那个词法歧义（`"${1 + 2"` 的收尾引号二义性）——REPL 的多行续输入让它从「罕见边界情况」升级成「高频痛点」，优先级天然靠前。**交互环境不是语言的附属品，是语言设计的验收现场。**
+
+## 交付物
+
+- `Session` 类：跨行共享全局环境，每行独立解析（`index.ts` 导出，Playground 将来直接复用）
+- `repl.ts`：表达式回显 + 降级重试 + 四模式续行判定，提示符 `茶>` / `…>`
+- 直接运行的守卫：`import.meta.url === pathToFileURL(process.argv[1]).href` 时才自启动，被 `cli.ts` 导入时零副作用——这个 Node ESM 惯用法救过一次「REPL 静默不启动」的谜案
+- esbuild 打包单文件 `dist/cha.cjs`（57KB），`node dist/cha.cjs` 开箱即用
+- 解析器新增空语句容忍（REPL 反哺的成果）
+
+到这里，这门语言的「体感层」全部完成。下一章把镜头对准一直穿插在系列里的暗线：**错误体验**——四阶段错误（词法/语法/作用域/运行时）怎么统一成结构化对象、行列号从哪来、以及中文报错文案「亲切但不啰嗦」的分寸拿捏。
+
+> 本系列代码开源在 [cha-lang](https://github.com/huqinyuan923-hue/cha-lang)，REPL 实现在 [src/repl.ts](https://github.com/huqinyuan923-hue/cha-lang/blob/main/src/repl.ts)，commit `bc9b91c` 是本章完成时的状态。
