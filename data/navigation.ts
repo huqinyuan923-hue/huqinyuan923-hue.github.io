@@ -10,10 +10,10 @@ export const MORE_NAV_LINKS = [
   { href: '/tags', title: 'Tags', emoji: 'label' },
   { href: '/friends', title: 'Friends', emoji: 'woman-and-man-holding-hands' },
   { href: '/play/minesweeper', title: '扫雷', emoji: 'video-game' },
-  { href: 'https://toolbox.adcakeyuan.top', title: 'Toolbox 工具箱', emoji: 'wrench' },
-  { href: 'https://wrapped.adcakeyuan.top', title: 'GitHub Wrapped', emoji: 'gift' },
+  { href: 'https://toolbox.adcakeyuan.top', title: 'Toolbox 工具箱', emoji: 'hammer-and-wrench' },
+  { href: 'https://wrapped.adcakeyuan.top', title: 'GitHub Wrapped', emoji: 'party-popper' },
   { href: 'https://guide.adcakeyuan.top', title: 'GitHub 教程', emoji: 'open-book' },
-  { href: 'https://rss.adcakeyuan.top', title: 'RSS 订阅（私有）', emoji: 'satellite-antenna' },
+  { href: 'https://rss.adcakeyuan.top', title: 'RSS 订阅（私有）', emoji: 'books' },
   // { href: SITE_METADATA.analytics.umamiAnalytics.shareUrl, title: 'Blog stats', emoji: 'bar-chart' },
 ]
 
