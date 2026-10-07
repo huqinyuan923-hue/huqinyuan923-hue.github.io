@@ -62,3 +62,8 @@
 | `Specified "rewrites"/"headers" will not automatically work` | 静态导出的预期警告                              | 忽略，安全头由 `public/_headers` 提供   |
 | workers.dev 打不开                                           | 大陆网络封锁 workers.dev                        | 用自定义域 adcakeyuan.top 验证          |
 | 页面 404 但首页正常                                          | 少了 `cp -r public/. out/` 或 `mv app/api` 步骤 | 检查构建命令是否完整复制                |
+
+## 六、已知问题与本地开发
+
+- **`next dev` 下文章页/关于页 500**（`TypeError: Cannot read properties of undefined (reading 'A')`）：Next.js 15.2 webpack dev 模式渲染 MDX 的上游 bug（vercel/next.js#77554），**不影响生产构建**——`next build` 产物与线上均正常。本地预览文章效果请用 `EXPORT=true UNOPTIMIZED=true NEXT_PUBLIC_STATIC_EXPORT=true pnpm build` 后直接部署或静态伺服 `out/`；根治需升级 Next ≥ 15.3 后改用 `next dev --turbo`（需同步为 Turbopack 补充 svgr 加载器规则）。
+- **文章 URL 已迁移为 kebab-case**（如 `/blog/how-i-built-arcade-hub`）：构建时自动生成 `out/_redirects`（Cloudflare 301）与 47+ 个旧路径 HTML 跳转页兜底，旧链接（`/blog/202610/Old_Name`）不会 404。
