@@ -19,8 +19,16 @@ import { ThemeProviders } from './theme-providers'
 // 构建时不再请求 Google Fonts——CI 网络抖动不再导致构建失败
 const FONT_PLAYPEN_SANS = localFont({
   src: [
-    { path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-400-normal.woff2', weight: '400', style: 'normal' },
-    { path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-800-normal.woff2', weight: '800', style: 'normal' },
+    {
+      path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../node_modules/@fontsource/playpen-sans/files/playpen-sans-latin-800-normal.woff2',
+      weight: '800',
+      style: 'normal',
+    },
   ],
   display: 'swap',
   variable: '--font-playpen-sans',
@@ -28,8 +36,16 @@ const FONT_PLAYPEN_SANS = localFont({
 
 const FONT_NUNITO = localFont({
   src: [
-    { path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2', weight: '300 800', style: 'normal' },
-    { path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-italic.woff2', weight: '300 800', style: 'italic' },
+    {
+      path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2',
+      weight: '300 800',
+      style: 'normal',
+    },
+    {
+      path: '../node_modules/@fontsource-variable/nunito/files/nunito-latin-wght-italic.woff2',
+      weight: '300 800',
+      style: 'italic',
+    },
   ],
   display: 'swap',
   variable: '--font-nunito',
@@ -37,32 +53,17 @@ const FONT_NUNITO = localFont({
 
 const FONT_JETBRAINS_MONO = localFont({
   src: [
-    { path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2', weight: '400', style: 'normal' },
-    { path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    {
+      path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
   ],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-})
-
-const FONT_PLAYPEN_SANS = Playpen_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  style: ['normal'],
-  weight: ['400', '800'],
-  variable: '--font-playpen-sans',
-})
-
-const FONT_NUNITO = Nunito({
-  subsets: ['latin'],
-  display: 'swap',
-  style: ['normal', 'italic'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-nunito',
-})
-
-const FONT_JETBRAINS_MONO = JetBrains_Mono({
-  weight: ['400', '500'],
-  subsets: ['latin'],
   display: 'swap',
   variable: '--font-jetbrains-mono',
 })
