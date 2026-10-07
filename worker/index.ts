@@ -55,9 +55,14 @@ async function loadIndex(request: Request): Promise<SearchIndex> {
   return data
 }
 
+function aiBinding(env: Env) {
+  if (!env.AI) throw new Error('AI 绑定不可用（需部署在启用 Workers AI 的 Cloudflare 环境中）')
+  return env.AI
+}
+
 async function embedQuery(env: Env, question: string): Promise<number[]> {
   const model = env.EMBED_MODEL || '@cf/baai/bge-small-zh-v1.5'
-  const result = await env.AI.run(model, { text: [QUERY_PREFIX + question] })
+  const result = await aiBinding(env).run(model, { text: [QUERY_PREFIX + question] })
   const vec = result?.data?.[0]
   if (!Array.isArray(vec) || vec.length === 0) throw new Error('向量化失败')
   return vec
@@ -113,7 +118,7 @@ async function handleSemanticSearch(request: Request, env: Env): Promise<Respons
   if (!rateLimit(`search:${clientIp(request)}`, 120, 60_000)) {
     return json({ error: '请求过于频繁' }, 429)
   }
-  const index = await loadIndex(env)
+  const index = await loadIndex(request)
   if (index.chunks.length === 0) return json({ results: [] })
   const queryVec = await embedQuery(env, q)
   const top = rank(index, queryVec, SEARCH_TOP_K)
@@ -165,7 +170,7 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
     .slice(-4)
     .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }))
 
-  const index = await loadIndex(env)
+  const index = await loadIndex(request)
   if (index.chunks.length === 0) {
     return json({ error: '语义索引为空，暂时无法回答。' }, 503)
   }
@@ -194,7 +199,7 @@ async function handleAsk(request: Request, env: Env): Promise<Response> {
       const send = (obj: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`))
       try {
-        const result = await env.AI.run(model, { messages, stream: true, max_tokens: 1024 })
+        const result = await aiBinding(env).run(model, { messages, stream: true, max_tokens: 1024 })
         const reader = result.getReader()
         const decoder = new TextDecoder()
         let buf = ''
