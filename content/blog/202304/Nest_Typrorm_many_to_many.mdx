@@ -1,0 +1,118 @@
+---
+title: "Nest.js Typrorm 多对多关系如何创建"
+date: '2023-04-11'
+summary: "Nest.js Typrorm 多对多关系如何创建"
+tags: ["Nest.js"]
+---
+使用 Typeorm 创建多对多关系的时候，可按以下方法进行。
+
+以 Article 和 Tag 的关系为例：
+
+```
+@Entity()
+export class Article extends CommonEntity {
+  // ...
+ 
+  // 标签
+  @ManyToMany(() => Tag, (tag) => tag.articles)
+  @JoinTable()
+  tags: Tag[]
+}
+```
+
+```
+@Entity()
+export class Tag extends CommonEntity {
+  // 标签名
+  @Column()
+  @IsNotEmpty()
+  label: string
+ 
+  // 使用的文章
+  @ManyToMany(() => Article, (article) => article.tags)
+  articles: Article[]
+}
+```
+
+```
+@Module({
+  imports: [TypeOrmModule.forFeature([Tag])],
+  controllers: [TagController],
+  providers: [TagService],
+  exports: [TagService],
+})
+export class TagModule {}
+```
+
+```
+@Module({
+  imports: [TypeOrmModule.forFeature([Article]), TagModule],
+  controllers: [ArticleController],
+  providers: [ArticleService],
+})
+export class ArticleModule {}
+```
+
+在 article.service.ts 中调用 Tag.Service.ts 中的方法：
+
+```
+@Injectable()
+export class ArticleService {
+  list: any[]
+  constructor(
+    @InjectRepository(Article)
+    private readonly articleRepository: Repository<Article>,
+    private readonly tagService: TagService
+  ) {}
+ 
+  /**
+   * 创建文章
+   * @param articleCreateDto
+   * @returns
+   */
+  async create(articleCreateDto: ArticleCreateDto) {
+    // ...
+ 
+    // 在此处就可以使用 this.tagService 来调用 Tag.service 中的方法了
+    const tags = await this.tagService.findByIds(ids)
+    console.log('所有 tag id：', ids, '文章中的tags', tags)
+ 
+    // ...
+  }
+}
+```
+
+**⚠️ 注意：**
+
+-   在 article.service 中调用 tag.service 中的方法的时候要先在 article.module 中 imports 导入 TagModule 模块。
+    
+-   还需要在 tag.module 中 exports TagService，否则报以下错。
+    
+    ```
+    Nest can't resolve dependencies of the ArticleService (ArticleRepository, ?). Please make sure that the argument TagService at index [1] is available in the ArticleModule context.
+     
+    Potential solutions:
+    - Is ArticleModule a valid NestJS module?
+    - If TagService is a provider, is it part of the current ArticleModule?
+    - If TagService is exported from a separate @Module, is that module imported within ArticleModule?
+      @Module({
+        imports: [ /* the Module containing TagService */ ]
+      })
+    ```
+    
+
+我一开始以为像普通 js 一样直接在 article.service 中导入就可以使用 tag.service 中的方法，导致一直报错，后来发现需要在 article.module 中导入 TagModule 模块才可以。
+
+后来导入之后还是报错，就是上边这个错⬆️，最后才发现要先导出 tag.module 中先导出 TagService 才可以。
+
+angular 的思想和普通 js 差别好大啊 😂 …
+
+[Back to posts](/blog)
+
+On this page
+
+[Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202304/Nest_Typrorm_many_to_many.mdx?plain=1)
+
+← Previous post[Strapi 快速入门](/blog/202304/Strapi_introduction)
+
+Next post →[Pinia 快速上手指南](/blog/202304/Pinia_Started_Guide)
