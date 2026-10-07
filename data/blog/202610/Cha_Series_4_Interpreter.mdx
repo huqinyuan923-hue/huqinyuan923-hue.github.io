@@ -1,0 +1,141 @@
+---
+title: '手写一门编程语言（四）：求值器——一门语言的「运行时」长什么样'
+date: '2026-10-07'
+lastmod: '2026-10-07'
+tags: ['compiler', 'typescript', 'programming-language']
+draft: false
+summary: 'Cha 语言系列第 4 章：树遍历求值器。环境链与作用域距离、用异常做非局部跳转、and/or 返回操作数的实用主义、把 0.1+0.2 清洗成 0.3 的一个决定，以及 14 个内建函数的安装方式。'
+tldr: '求值器就是一个 Expr→Value 的大 switch，配合一条作用域链表。return/break/continue 用异常实现最省心；数字显示用 15 位有效数字清洗浮点误差；内建函数抛错不带行列号，由调用点统一兜底改写。闭包在这个架构里是免费的。'
+authors: ['default']
+---
+
+<Twemoji emoji="rocket" />
+
+语法树建好了，接下来是整个项目里最有成就感的一步：**让树跑起来**。
+
+求值器的核心小得让人不安——一个 `Expr → Value` 的大 switch：
+
+```ts
+private evaluate(expr: Expr): Value {
+  switch (expr.type) {
+    case 'literal':  return expr.value
+    case 'identifier': return this.lookup(expr)
+    case 'binary':   { /* 先算左、再算右、最后运算 */ }
+    case 'call':     { /* 算出 callee 和参数，然后调用 */ }
+    ...
+  }
+}
+```
+
+这就是**树遍历求值器**：语法树长什么样，执行就怎么走。顺便说个花絮：这个方法我最初命名为 `eval`，结果项目的安全扫描器把它连同一堆 `this.eval(...)` 调用拦下来，理由是「动态执行外部输入」。改名 `evaluate` 后天下太平——看来 `eval` 这两个字母的江湖恩怨，连静态扫描器都记得。
+
+## 作用域是一条链表
+
+变量存在哪？答案是一个叫 `Environment` 的类，内部一张 `Map`，外加一个指向父作用域的指针：
+
+```ts
+class Environment {
+  private values = new Map<string, { value: Value; initialized: boolean }>()
+  constructor(public parent?: Environment) {}
+}
+```
+
+进入代码块就挂一个新环境，退出就换回来。变量查找沿着 `parent` 往上走——**作用域就是一条链表**，这句话值得刻在脑子里。
+
+上一章留的伏笔在这里兑现：解释器不是逐层查找，而是直接「跳层」。`get(name, dist)` 里的 `dist` 是解析阶段预计算好的距离（0 = 当前层，1 = 外一层……），因为静态作用域里**变量在哪一层是写代码时就确定的**。至于全局变量，解析器不出距离表，解释器按名字回溯——下一章会讲这个分工的细节。
+
+函数调用也一样：调用时建一个新环境，父指针指向**函数定义时**的环境（而不是调用者的环境）。就这一句话，闭包实现完毕：
+
+```cha
+fn makeCounter() {
+  var count = 0;
+  fn inc() {
+    count += 1;
+    return count;
+  }
+  return inc;
+}
+var a = makeCounter();
+a(); a();
+print(a());   // 3 —— count 活在 makeCounter 的环境里
+```
+
+树遍历架构里闭包是免费的，这是它最被低估的优点。
+
+## 用异常做非局部跳转
+
+`return` 要从多层函数调用里弹出去，`break` 要从循环里跳出去。实现选择有两个：每个执行函数都返回「要不要继续」的标志位（调用方层层检查），或者——直接抛异常：
+
+```ts
+class BreakSignal {}
+class ContinueSignal {}
+class ReturnSignal { constructor(public value: Value) {} }
+
+// 求值 return 语句时：
+case 'return': throw new ReturnSignal(value)
+
+// 函数调用处接住：
+try {
+  this.execStmts(callee.body)
+} catch (e) {
+  if (e instanceof ReturnSignal) return e.value
+  throw e
+}
+```
+
+教程通常不推荐用异常做控制流，但在解释器场景它反而干净：标志位方案会把「检查信号」的样板代码污染到每一个执行函数，异常方案让 99% 的代码完全无感知。性能?`throw` 在冷路径上，热路径的 `try/finally` 开销在现代引擎里可以忽略——这是有实测数据支撑后的心安理得，不是赌气。
+
+`while` 里对 `break`/`continue` 的接法还有个小细节：`catch` 里识别不了的要原样 `throw`，否则函数调用里的 `return` 会被外层循环误吞。
+
+## and/or 的实用主义
+
+```cha
+print(nil or "默认值");   // "默认值"
+print("有" and "后值");   // "后值"
+```
+
+`and`/`or` 不返回布尔值，而是**返回决定结果的那个操作数**——`a or b` 在 `a` 为假时返回 `b`。这让 `or` 天然变成默认值运算符。实现里顺便白拿了短路：
+
+```ts
+if (expr.op === 'or') {
+  const left = this.evaluate(expr.left)
+  return isTruthy(left) ? left : this.evaluate(expr.right)   // 左边为真时右边根本不算
+}
+```
+
+测试里有一条专门盯着这个语义：`false and (x = 5); print(x);`——右边有副作用也不许执行。
+
+## 把 0.1 + 0.2 显示成 0.3
+
+JS 的 `0.1 + 0.2` 显示成 `0.30000000000000004`，IEEE 754 的经典行为。求值器输出的第一个 `print` 就会暴露这个问题，对一个「报错是脸面」的语言来说，第一印象不能砸在格式化上。
+
+我的解法在数字显示层（不是运算层）做清洗：
+
+```ts
+export function formatNumber(n: number): string {
+  if (Number.isInteger(n)) return String(n)          // 2.0 → "2"
+  if (!Number.isFinite(n)) return n > 0 ? 'inf' : Number.isNaN(n) ? 'nan' : '-inf'
+  return String(Number(n.toPrecision(15)))           // 浮点误差清洗
+}
+```
+
+15 位有效数字把 `0.30000000000000004` 拉回 `0.3`，同时保留 `1/3` 显示成 `0.333333333333333`（真实的截断，不假装精确）。整数不带小数点，`2.0` 显示为 `2`——细节，但用户天天看。
+
+同理还有两个格式化函数的分工：`print` 里字符串裸显示（`print("hi")` 出 `hi`），`str()` 里带引号（`str("hi")` 出 `"hi"`）——调试时能一眼看出「这是字符串」和「这是数字 1」。
+
+## 内建函数的安装与报错兜底
+
+`print` `len` `type` `num` `str` `push` `pop` `keys` `values` `has` `range` `floor` `abs` `clock` 共 14 个内建函数，启动时依次装进全局环境。每个都自带参数校验和中文报错，比如 `range()` 支持一到三个参数、步长不能为 0。
+
+这里有个不起眼的小机制值得单独说：内建函数内部抛错时**不知道行列号**（它在全局环境里，不在你的代码里），所以内部错误先以 `[line 0, col 0]` 占位，调用点（`call()`）接住后改挂到用户的调用语句上。`print(1 / 0)` 报出来的错误指着你写 `1/0` 的那一行——报错是脸面，第二次出现了。
+
+## 交付物
+
+- `Interpreter` 类：语句执行 + 表达式求值（一个大 switch 搞定）
+- 环境链 + 距离跳层取值，闭包免费获得
+- 异常版控制流，and/or 短路，深相等，模板插值求值
+- 14 个内建函数，参数校验全覆盖，38 个求值测试
+
+到这里，`fn fib(n) { if (n < 2) return n; return fib(n - 1) + fib(n - 2); }` 已经能跑。但还差最后一块拼图：有些错误应该在程序运行**之前**就报出来——`return` 写在函数外面、`break` 出现在循环外、`var x = x` 自引用。下一章的静态作用域解析器（resolver）就是干这个的，它还顺手让变量查找快了一点点。
+
+> 本系列代码开源在 [cha-lang](https://github.com/huqinyuan923-hue/cha-lang)，求值器实现在 [src/interpreter.ts](https://github.com/huqinyuan923-hue/cha-lang/blob/main/src/interpreter.ts)，commit `9a23d88` 是本章完成时的状态。

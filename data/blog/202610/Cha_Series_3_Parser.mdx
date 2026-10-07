@@ -1,0 +1,130 @@
+---
+title: '手写一门编程语言（三）：解析器——优先级是「降」出来的'
+date: '2026-10-07'
+lastmod: '2026-10-07'
+tags: ['compiler', 'typescript', 'programming-language']
+draft: false
+summary: 'Cha 语言系列第 3 章：递归下降解析器。优先级为什么是一条「往下降」的函数链、赋值左值的经典难题、map 与代码块的 {} 之争，以及两次真实的设计返工。'
+tldr: '递归下降解析器 = 文法规则一一对应的函数调用链，优先级藏在调用方向里。最难的不是表达式，是赋值左值：先当普通表达式解析、再回改写成 Assign 节点，三种目标（变量/下标/点号）统一处理。两次返工实录：print 从关键字降级成内建函数；{} 在语句开头永远是代码块。'
+authors: ['default']
+---
+
+<Twemoji emoji="scroll" />
+
+[上一章](/blog/cha-series-2-lexer)结束时，我们手里有了 token 流。但 `1 + 2 * 3` 这串 token 离「能运行」还差一步：计算机不知道 `*` 要先算。这一章的解析器负责把 token 流组装成语法树（AST），**优先级就藏在这棵树的形状里**。
+
+## 递归下降为什么「降」
+
+回忆第一章的文法表，它是一条从松到紧的链：
+
+```ebnf
+assignment → conditional → or → and → equality → comparison → term → factor → unary → call → primary
+```
+
+递归下降解析器的做法简单粗暴：**文法里每条规则对应一个函数，规则的引用关系就是函数的调用关系**。于是优先级变成了一条「往下降」的调用链：
+
+```ts
+function expression(): Expr {
+  return assignment()   // 最松
+}
+function assignment(): Expr { ... }
+function conditional(): Expr { ... }
+function or(): Expr { ... }
+function and(): Expr { ... }
+function equality(): Expr { return binaryChain(comparison, { EQUAL: '==', BANG_EQUAL: '!=' }) }
+function comparison(): Expr { return binaryChain(term, { LESS: '<', GREATER: '>', ... }) }
+function term(): Expr { return binaryChain(factor, { PLUS: '+', MINUS: '-' }) }
+function factor(): Expr { return binaryChain(unary, { STAR: '*', SLASH: '/', PERCENT: '%' }) }
+function unary(): Expr { ... }
+function call(): Expr { ... }
+function primary(): Expr { ... }   // 最紧：字面量、标识符、括号
+```
+
+`1 + 2 * 3` 的解析过程：`term()` 先吃掉 `1`，看到 `+`，把右边交给 `factor()`——`factor` 层级更低（优先级更高），所以 `2 * 3` 在那里先抱成团。树就长成了 `(+ 1 (* 2 3))`。
+
+同级运算的结合性也很直观：`term()` 里是一个 `for(;;)` 循环不断往左挂，`1 - 2 - 3` 就成了 `(1-2)-3`；而赋值在函数尾部**递归**调用自己，天然右结合，`a = b = 1` 正确地变成 `a = (b = 1)`。
+
+`binaryChain` 是我把五个同构函数抽成的公共件——本来五个函数各写一遍循环，重复到第四遍时我承认了抽象的存在。
+
+## 最难的反而是一加号：赋值左值
+
+表达式解析有个经典难题：`x = 1` 的左边不是一个表达式，是一个「能被赋值的东西」。但解析器读到一个 token 流的开头时，并不知道后面有没有 `=`。
+
+经典解法（Lox 同款）是加一个变态的文法技巧；我用了另一个思路，**先按普通表达式解析，再回头改写**：
+
+```ts
+function assignment(): Expr {
+  const expr = conditional()          // 先老实解析
+  const opToken = match('ASSIGN', 'PLUS_ASSIGN', ...)  // 哦，后面是赋值？
+  if (opToken) {
+    const value = assignment()        // 右结合
+    const target = toAssignTarget(expr, opToken)   // 回头检查左边能不能当左值
+    return { type: 'assign', target, op: ..., value, ... }
+  }
+  return expr
+}
+```
+
+`toAssignTarget` 只放行三种形状——变量、下标、点号成员：
+
+```ts
+x = 1;        // { kind: 'identifier', name: 'x' }
+a[0] = 1;     // { kind: 'index', target: a, index: 0 }
+m.k = 1;      // { kind: 'member', target: m, key: 'k' }
+1 = 2;        // 报错：这里不能被赋值
+```
+
+代价是 `toAssignTarget` 要把已建好的节点「拆开」重组成 `AssignTarget`，多写两个 case；好处是三种赋值目标共用一条解析路径，复合赋值（`+=` 等）也免费获得同样的支持。四种复合赋值运算符在这里只是 `op` 字段的取值不同，求值器那章会看到它们怎么避免二次求值。
+
+## `{}` 之争：map 还是代码块
+
+```cha
+{ print(1); }     // 这是代码块
+var m = {a: 1};   // 这是 map
+```
+
+两种语法共用一对花括号，解析器怎么分？答案令人失望又安心：**看位置**。语句开头的 `{` 永远是代码块；表达式位置的 `{}` 才可能是 map。这和 JS 完全一样——JS 里 `{} + []` 的怪行为也是同一个原因。我照抄了这个方案，并且把理由写进了注释：不是偷懒，是让「有 JS 经验的读者」的直觉直接生效。
+
+顺带的语法便利也一并抄了：数组和 map 字面量允许末尾逗号（`[1, 2,]`），map 的键支持三种写法——字符串、裸标识符（`{a: 1}` 的 `a` 按字符串处理）、以及计算键 `{[k]: 1}`。
+
+## 返工实录：print 的降级
+
+第一次写语句解析时，我把 `print` 做成了关键字语句：`print 1, 2;`——不用括号，很有脚本语言的味道。写到测试就别扭了：
+
+1. `print` 在主流语言里都是函数形态，`print(1, 2)` 的直觉更强；
+2. 关键字形态导致 `print` 不能出现在表达式里（比如 `debug and print(x)`）；
+3. 语句解析器要为它单开一条分支，内建函数体系却还是要再写一遍。
+
+返工：从关键字表里删掉 `print`，改成解释器启动时装进全局作用域的内建函数。一行关键字定义删除，三处代码简化。**教训：一个东西到底是「语句」还是「表达式」，在写解析器之前就要想清楚——它是整棵语法树的形状决定因素。**
+
+同一场返工里还有两个小插曲：`let else = ...`——`else` 是 TypeScript 保留字，变量名被迫改成 `elseBranch`；以及 `match('=') ? 'EQUAL' : 'ASSIGN'` 被我写成连续两次调用 `match('=')`，第一次消费了 `=`，第二次读到了下一个字符——测试 `!== ` 意外拆成 `!=` 和 `=` 时当场抓获。测试先行的价值就在这种时刻。
+
+## 模板字符串的组装
+
+词法器那章留下的三段式标记，在解析器里兑现：
+
+```ts
+case 'TEMPLATE_START': {
+  advance()
+  return finishTemplate(token)
+}
+```
+
+`finishTemplate` 消费 `TEMPLATE_MIDDLE`/`TEMPLATE_END`，把字面量片段收进 `parts`、把每段插值 token 序列递归解析成表达式收进 `exprs`——注意插值的 token 序列是词法器挂在标记上的独立数组，解析时把主 token 流「切换」到这个数组上解析完再切回来，`current` 指针保存恢复，主流程毫无感知。最终 `"合计 ${a + b} 元"` 变成：
+
+```ts
+{ type: 'template', parts: ['合计 ', ' 元'], exprs: [(a + b 的语法树)] }
+```
+
+插值里多写了表达式（`${1 2}`）会被「解析完还有剩余 token」的检查抓住——报错信息是：*插值表达式只能是一个表达式*。
+
+## 交付物
+
+- `parse(source)`：token 流 → AST，覆盖第一章文法表的全部规则
+- 优先级链、右结合赋值、三种左值、五种复合赋值
+- 数组/map 字面量（含末尾逗号与计算键）、匿名 `fn` 表达式、三元运算符
+- 33 个解析测试；全部语法错误都带行列号和中文提示
+
+下一章终于到了最有成就感的部分：**求值器**。语法树怎么变成运行的程序、作用域为什么是一条链表、以及我为了让 `0.1 + 0.2` 显示成 `0.3` 干的一件小事。
+
+> 本系列代码开源在 [cha-lang](https://github.com/huqinyuan923-hue/cha-lang)，解析器实现在 [src/parser.ts](https://github.com/huqinyuan923-hue/cha-lang/blob/main/src/parser.ts)，commit `0a736c0` 是本章完成时的状态。
