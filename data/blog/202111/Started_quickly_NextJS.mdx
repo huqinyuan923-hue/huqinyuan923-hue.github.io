@@ -1,15 +1,17 @@
 ---
-title: "Next.js 上手指南"
+title: 'Next.js 上手指南'
 date: '2021-11-02'
-summary: "Next.js v12 快速上手指南～"
-tags: ["FE","Next.js"]
+summary: 'Next.js v12 快速上手指南～'
+tldr: 'Next.js 是 React 的生产级框架：文件系统路由、SSG/SSR 预渲染、API 路由开箱即用，几乎零配置就能上线一个全栈应用。'
+tags: ['FE', 'Next.js']
 ---
+
 ## [](#nextjs-是什么)Next.js 是什么？
 
 NextJs 是一款 React 开发框架，主要关注两点：
 
--   为生产环境所准备：无需复杂配置即可提供升级环境所需的各种功能
--   提供良好的开发者体验 (DX)
+- 为生产环境所准备：无需复杂配置即可提供升级环境所需的各种功能
+- 提供良好的开发者体验 (DX)
 
 通过 Next.js 框架开发的 React 应用无需配置就可以如服务端渲染 SSR、编译时渲染 SSG，Typescript 语言支持，自动打包，路由愈加载等功能。
 
@@ -43,7 +45,7 @@ pages
 ```
 // pages/posts/[id].js
 import { useRouter } from 'next/router'
- 
+
 export default function Post() {
   const router = useRouter()
   const { id } = router.query
@@ -62,8 +64,8 @@ export default function Post() {
 
 出了客户端渲染外，Next.js 支持两种形式的预渲染：
 
--   基于编译时的静态渲染
--   服务端渲染 SSR 在同一个 Next.Js 应用中可以同时混用两种预渲染方式，即部分页面使用静态渲染，部分页面使用 SSR。
+- 基于编译时的静态渲染
+- 服务端渲染 SSR 在同一个 Next.Js 应用中可以同时混用两种预渲染方式，即部分页面使用静态渲染，部分页面使用 SSR。
 
 #### [](#静态渲染-ssg)静态渲染 SSG
 
@@ -100,7 +102,7 @@ export async function getStaticProps() {
     },
   }
 }
- 
+
 export default function SSG({ now }) {
   return <div>SSG: {now}</div>
 }
@@ -132,14 +134,14 @@ export default function SSG({ now }) {
 
 在使用了动态路由的时候，情况就复杂一点，在预渲染的时候，需要首先确定动态路由的参数。比如上文中的 `posts/[id].js` 组件，这里我们需要通过 `postId` 来获取 `post` 的详情数据，Next.js 提供了 `getStaticProps` 和 `getStaticPaths`。
 
--   `getStaticPaths` ：通过 `getStaticPaths` 返回的 paths 数组，Next.Js 可以在编译时确定动态路由的值，即这里每一个 `post` 的 `id` 就是一个路由参数 id 的值，这样，在编译的时候，Next.js 通过 `getStaticPaths` 就可以判断出 `posts/[id].js` 的所有可能的页面路由。
+- `getStaticPaths` ：通过 `getStaticPaths` 返回的 paths 数组，Next.Js 可以在编译时确定动态路由的值，即这里每一个 `post` 的 `id` 就是一个路由参数 id 的值，这样，在编译的时候，Next.js 通过 `getStaticPaths` 就可以判断出 `posts/[id].js` 的所有可能的页面路由。
 
 ```
 export async function getStaticPaths() {
   const res = await fetch('https://my-json-server.typicode.com/typicode/demo/posts')
   const posts = await res.json()
   const paths = posts.map((post) => ({ params: { id: `${post.id}` } }))
- 
+
   return {
     paths,
     fallback: false,
@@ -153,7 +155,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const res = await fetch(`https://my-json-server.typicode.com/typicode/demo/posts/${params.id}`)
   const post = await res.json()
- 
+
   return {
     props: { post },
   }
@@ -222,15 +224,15 @@ export default function handler(req, res) {
 
 On this page
 
--   [Next.js 是什么？](#nextjs-是什么)
--   [Next.js 功能](#nextjs-功能)
--   [Page 路由](#page-路由)
--   [预渲染](#预渲染)
--   [静态渲染 SSG](#静态渲染-ssg)
--   [服务端渲染 SSR](#服务端渲染-ssr)
--   [Hybird 混合端渲染](#hybird-混合端渲染)
--   [API 路由](#api-路由)
--   [总结](#总结)
+- [Next.js 是什么？](#nextjs-是什么)
+- [Next.js 功能](#nextjs-功能)
+- [Page 路由](#page-路由)
+- [预渲染](#预渲染)
+- [静态渲染 SSG](#静态渲染-ssg)
+- [服务端渲染 SSR](#服务端渲染-ssr)
+- [Hybird 混合端渲染](#hybird-混合端渲染)
+- [API 路由](#api-路由)
+- [总结](#总结)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202111/Started_quickly_NextJS.mdx?plain=1)
 

@@ -1,0 +1,67 @@
+---
+title: '11 个项目都部署在哪：Cloudflare / Vercel / GitHub Pages 实战选型'
+date: '2026-10-07'
+lastmod: '2026-10-07'
+tags: ['deployment', 'vercel', 'cloudflare', 'github-pages']
+draft: false
+summary: '7 个在 Vercel、2 个在 Cloudflare、3 个在 GitHub Pages——11 个项目全部免费在线，这篇把「谁住哪、为什么、踩过什么坑」一次讲清。'
+authors: ['default']
+---
+
+<Twemoji emoji="rocket" />
+
+截至 [Projects 页](/projects) 收录的 11 个项目——街机厅、学习平台、工具箱、图床、RSS 阅读器……全部在线可用，托管费全部为 0 元。但它们并不住在同一个地方：7 个在 Vercel，2 个在 Cloudflare，3 个在 GitHub Pages。为什么不分家？这篇把每个项目住在哪、为什么住在那、路上踩过什么坑，一次讲清。
+
+## 全家福
+
+| 项目                                                                               | 托管平台           | 一句话理由                           |
+| ---------------------------------------------------------------------------------- | ------------------ | ------------------------------------ |
+| Arcade Hub、DeepLearn、GitHub Guide、Toolbox、GitHub Wrapped、RSS 阅读器、Treasury | Vercel             | Next.js 应用，或需要 Serverless 能力 |
+| 博客本体 adcakeyuan.top                                                            | Cloudflare Workers | 静态导出 + wrangler，构建部署全在 CF |
+| PixNest 图床                                                                       | Cloudflare Pages   | 要用 KV 做内容寻址存储，独家能力     |
+| FileKit、SalaryCalc、PomoBox                                                       | GitHub Pages       | 纯前端单页，仓库即作品集             |
+
+## Vercel：Next.js 应用的大本营
+
+7 个项目住在 Vercel。它们要么本身就是 Next.js 应用（Arcade Hub、DeepLearn、RSS 阅读器、Treasury），要么是纯静态但顺手一起部署（Toolbox、GitHub Wrapped、新手村指南）。Vercel 对 Next.js 是零配置：推送即部署，每个 PR 自动生成预览链接，这个「预览链接」在改版 UI 时比什么都好用。
+
+真正的刚需是 RSS 阅读器：它靠 Vercel Cron 定时抓取订阅源、未读计数。这类「要有后端小任务」的项目，纯静态平台给不了，也没得选。
+
+被墙的教训值得单独记一节。最初有 4 个应用用 vercel.app 默认域名，大陆访问直接超时，后来一次性全部迁到 `*.adcakeyuan.top` 子域名——DNS 那边一条 CNAME 指向 `cname.vercel-dns.com` 就完事。现在的规则写进了肌肉记忆：**默认域是给自己看的，给读者用的入口必须绑自定义域**。
+
+## Cloudflare：博客本体和图床
+
+博客是 Next.js 静态导出（`output: 'export'`），仓库里放一份 `wrangler.jsonc`，Cloudflare 的构建命令干三件事：先把 `app/api` 移走（静态导出不支持 API 路由，前端有开关会自动跳过请求）、用 `EXPORT=true UNOPTIMIZED=true` 构建、再把 `public/` 的 RSS 和安全头复制进产物。踩过的坑也记在案：构建变量里留一个空的 `BASE_PATH`，会直接报 `Specified basePath has to start with a /` 构建失败——这种坑不踩一次真的想不到是它。
+
+为什么博客不也放 Vercel？可以，但没必要。博客是纯静态，哪家都能放；而 workers.dev 在大陆同样被墙，自定义域又在 Cloudflare 自己的 DNS 里接管，一家到底最省心。日常更新就是 push 完等 3 分钟，这条链路稳定跑了很久。
+
+PixNest 图床则是「功能决定平台」的典型：SHA-1 内容寻址自动去重、直链边缘缓存，靠的是 Workers KV——这东西只有 Cloudflare 有。选平台前先列需求清单，凡是有一个项目被某家平台的独家能力锁死，那个项目就不用纠结了。
+
+## GitHub Pages：新三样的家
+
+FileKit、SalaryCalc、PomoBox 三个新工具是原生 HTML/CSS/JS 的单页应用，Pages 完全够用，还有三个额外的甜头：
+
+1. **仓库即作品集**：代码、README、Issue、Star 都在同一个地址，开源可见度最高；
+2. **全流程可 API 化**：建仓库、推代码、启用 Pages、绑定自定义域，`gh api` 几条命令全部搞定，这次三个工具从写完代码到全部上线没用到一个手动点击；
+3. **push 即部署**，不需要任何 CI 配置。
+
+代价也要如实记录：证书不是立刻就有——DNS 生效后 GitHub 才向 Let's Encrypt 发起签发，这中间有几分钟到一个多小时的空窗（当天实录：三个站先以 HTTP 状态上线了）；没有 Serverless；大陆访问走 Fastly 节点时好时坏，所以同样绑了自定义域兜底。
+
+## 选型速查
+
+- 纯静态 + 想要开源可见度 → **GitHub Pages**
+- Next.js / 需要 Serverless、Cron、后端 API → **Vercel**
+- 需要 KV、R2、Durable Objects 等独家能力，或 DNS 就在 Cloudflare → **Cloudflare**
+- 无论哪家：**别用默认域**。vercel.app、workers.dev、github.io 都有过或可能有可达性问题，绑自定义域是第一步，不是之后的优化项
+- 免费额度对个人项目都绰绰有余，不要为「以后可能超量」提前付费
+
+## 结语
+
+托管从来不是成本问题（大家都是 0 元），而是匹配问题：RSS 需要 Cron，图床需要 KV，单页工具需要的是「让代码被看见」。把每个项目的真实需求写下来，平台自然就浮出来了——剩下的，就是给每个入口都配上一个像样的自定义域名。
+
+## 参考资料
+
+- [Vercel Cron Jobs 文档](https://vercel.com/docs/cron-jobs)
+- [Cloudflare Pages](https://pages.cloudflare.com/)
+- [GitHub Pages 官方文档](https://docs.github.com/pages)
+- 本文所有项目的在线地址见 [Projects 页](/projects)

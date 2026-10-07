@@ -1,9 +1,11 @@
 ---
-title: "快速上手 Vue3"
+title: '快速上手 Vue3'
 date: '2020-11-03'
-summary: "Vue3 快速上手指南～"
-tags: ["FE","Vue","Vue3"]
+summary: 'Vue3 快速上手指南～'
+tldr: 'Vue3 全面转向函数式写法并完全兼容 Vue2：核心是 setup 函数，配合 ref、reactive、computed、watch，生命周期变成 onXxx 钩子。'
+tags: ['FE', 'Vue', 'Vue3']
 ---
+
 ## [](#1vue3的特点)1、Vue3的特点
 
 1.  vue3中全部采用函数式写法，替换了原来类的写法。
@@ -14,9 +16,9 @@ tags: ["FE","Vue","Vue3"]
 
 ```
 // 在vue3中定义一个响应式数据
- 
+
 const state = reactive({ data: { obj: {} } })
- 
+
 state.data.obj = xxx
 ```
 
@@ -50,31 +52,31 @@ setup() {
     onMounted(() => {
       console.log('组件挂载1');
     });
- 
+
     onMounted(() => {
       console.log('组件挂载2');
     });
- 
+
     onUnmounted(() => {
       console.log('组件卸载');
     });
- 
+
     onUpdated(() => {
       console.log('组件更新');
     });
- 
+
     onBeforeUpdate(() => {
       console.log('组件将要更新');
     });
- 
+
     onActivated(() => {
       console.log('keepAlive 组件 激活');
     });
- 
+
     onDeactivated(() => {
       console.log('keepAlive 组件 非激活');
     });
- 
+
     return {};
   },
 ```
@@ -97,17 +99,17 @@ setup() {
   </div>
   <div></div>
 </template>
- 
- 
+
+
 setup() {
     const inputVal = ref('');
     const todoList = ref<string[]>([]);
- 
+
     function addTodo() {
       todoList.value.push(inputVal.value);
       inputVal.value = '';
     }
- 
+
     return {
       addTodo,
       inputVal,
@@ -139,18 +141,18 @@ vue3 模板：一个 templage 可以有多个平级的标签（vue2中只能在t
   </div>
   <div></div>
 </template>
- 
+
 setup() {
     const data = reactive({
       inputVal: '',
       todoList: [],
     });
- 
+
     function addTodo() {
       data.todoList.push(data.inputVal);
       data.inputVal = '';
     }
- 
+
     return {
       ...toRefs(data),
       addTodo,
@@ -168,9 +170,9 @@ async setup() {
       a: 10,
       b: 20,
     });
- 
+
     let sum = computed(() => data.a + data.b);
- 
+
     return { sum };
   },
 ```
@@ -188,7 +190,7 @@ watch(
     /* ... */
   }
 )
- 
+
 // 直接侦听一个ref
 const count = ref(0)
 watch(count, (count, prevCount) => {
@@ -212,10 +214,10 @@ watchEffect(() => console.log(count.value))
 
 ```
 import { useRoute, useRouter } from 'vue-router'
- 
+
 const route = useRoute() // 相当于 vue2 中的this.$route
 const router = useRouter() // 相当于 vue2 中的this.$router
- 
+
 // route   用于获取当前路由数据
 // router  可以的得到一些关于路由的方法
 ```
@@ -226,12 +228,12 @@ const router = useRouter() // 相当于 vue2 中的this.$router
 
 ```
 import {useStore} from 'vuex'
- 
+
 setup(){
     const store = useStore(); // 相当于 vue2中的 this.$store
     store.dispatch(); // 通过store对象来dispatch 派发异步任务
     store.commit(); // commit 修改store数据
- 
+
     let category = computed(() => store.state.home.currentCagegory
     return { category }
 }
@@ -275,19 +277,19 @@ export const AppMenus = defineComponent({
 
 On this page
 
--   [1、Vue3的特点](#1vue3的特点)
--   [2、setup函数](#2setup函数)
--   [setup函数是vue3中所有api的入口和出口](#setup函数是vue3中所有api的入口和出口)
--   [3、生命周期](#3生命周期)
--   [4、ref - 简单的响应式数据](#4ref---简单的响应式数据)
--   [5、reactive - 数据绑定](#5reactive---数据绑定)
--   [6、computed](#6computed)
--   [7、watch](#7watch)
--   [8、watchEffect](#8watcheffect)
--   [9、vue-router](#9vue-router)
--   [10、vuex](#10vuex)
--   [11、用 jsx 来定义 vue 组件](#11用-jsx-来定义-vue-组件)
--   [12、插槽修改](#12插槽修改)
+- [1、Vue3的特点](#1vue3的特点)
+- [2、setup函数](#2setup函数)
+- [setup函数是vue3中所有api的入口和出口](#setup函数是vue3中所有api的入口和出口)
+- [3、生命周期](#3生命周期)
+- [4、ref - 简单的响应式数据](#4ref---简单的响应式数据)
+- [5、reactive - 数据绑定](#5reactive---数据绑定)
+- [6、computed](#6computed)
+- [7、watch](#7watch)
+- [8、watchEffect](#8watcheffect)
+- [9、vue-router](#9vue-router)
+- [10、vuex](#10vuex)
+- [11、用 jsx 来定义 vue 组件](#11用-jsx-来定义-vue-组件)
+- [12、插槽修改](#12插槽修改)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202011/Started_quickly_Vue3.mdx?plain=1)
 

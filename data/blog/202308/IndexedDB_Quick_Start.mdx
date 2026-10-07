@@ -1,9 +1,11 @@
 ---
-title: "IndexedDB 基础入门"
+title: 'IndexedDB 基础入门'
 date: '2023-08-29'
-summary: "IndexedDB 是一种浏览器数据库，主要用于在客户端存储大量数据。"
-tags: ["FE","IndexedDB"]
+summary: 'IndexedDB 是一种浏览器数据库，主要用于在客户端存储大量数据。'
+tldr: '浏览器存大量数据用 IndexedDB：事务型本地数据库，open 打开、onupgradeneeded 建表建索引、transaction 完成增删改查，全程异步。'
+tags: ['FE', 'IndexedDB']
 ---
+
 ## [](#indexeddb)IndexedDB
 
 Cookie 的大小通常为4KB；LocalStorage 的大小通常在 2.5MB 到 10MB 之间，且它不提供搜索功能，也不能建立自定义的索引。因此，它们都不适合存储大量的数据。为了填补浏览器在这方面的不足，IndexedDB 应运而生。
@@ -51,7 +53,7 @@ request.onupgradeneeded = (event) => {
 ```
 // version 默认为 1
 const request = indexedDB.open('testDB')
- 
+
 request.onupgradeneeded = (event) => {
   const db = event.target.result
   let objectStore
@@ -93,10 +95,10 @@ request.onupgradeneeded = function (event) {
 ```
 const transaction = db.transaction('user', 'readwrite')
 const objectStore = transaction.objectStore('user')
- 
+
 const data = { id: 1, name: 'Mengke', age: 26 }
 const request = objectStore.add(data)
- 
+
 request.onsuccess = () => {
   console.log('数据添加成功')
 }
@@ -113,9 +115,9 @@ request.onsuccess = () => {
 ```
 const transaction = db.transaction('user', 'readwrite')
 const objectStore = transaction.objectStore('user')
- 
+
 const request = objectStore.delete(1)
- 
+
 request.onsuccess = () => {
   console.log('数据删除成功')
 }
@@ -128,13 +130,13 @@ request.onsuccess = () => {
 ```
 const transaction = db.transaction('user', 'readwrite')
 const objectStore = transaction.objectStore('user')
- 
+
 const request = objectStore.get(1)
- 
+
 request.onsuccess = (event) => {
   const data = event.target.result
   data.age = 27
- 
+
   const updateRequest = objectStore.put(data)
   updateRequest.onsuccess = () => {
     console.log('数据更新成功')
@@ -149,9 +151,9 @@ request.onsuccess = (event) => {
 ```
 const transaction = db.transaction('user', 'readonly')
 const objectStore = transaction.objectStore('user')
- 
+
 const request = objectStore.get(1)
- 
+
 request.onsuccess = (event) => {
   const data = event.target.result
   console.log(data)
@@ -165,9 +167,9 @@ IndexedDB 还提供了遍历数据的功能。可以使用游标（Cursor）来�
 ```
 const transaction = db.transaction('user', 'readonly')
 const objectStore = transaction.objectStore('user')
- 
+
 const request = objectStore.openCursor()
- 
+
 request.onsuccess = (event) => {
   const cursor = event.target.result
   if (cursor) {
@@ -192,17 +194,17 @@ objectStore.createIndex('nameIndex', 'name', { unique: false })
 
 On this page
 
--   [IndexedDB](#indexeddb)
--   [打开数据库](#打开数据库)
--   [新建“表”](#新建表)
--   [创建索引](#创建索引)
--   [操作数据](#操作数据)
--   [增](#增)
--   [删](#删)
--   [改](#改)
--   [查](#查)
--   [遍历数据](#遍历数据)
--   [索引](#索引)
+- [IndexedDB](#indexeddb)
+- [打开数据库](#打开数据库)
+- [新建“表”](#新建表)
+- [创建索引](#创建索引)
+- [操作数据](#操作数据)
+- [增](#增)
+- [删](#删)
+- [改](#改)
+- [查](#查)
+- [遍历数据](#遍历数据)
+- [索引](#索引)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202308/IndexedDB_Quick_Start.mdx?plain=1)
 

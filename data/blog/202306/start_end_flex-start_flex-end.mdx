@@ -1,16 +1,18 @@
 ---
-title: "flex 布局中 start/end 和 flex-start/flex-end 的区别"
+title: 'flex 布局中 start/end 和 flex-start/flex-end 的区别'
 date: '2023-06-05'
-summary: "flex 布局中 start/end 和 flex-start/flex-end 的区别"
-tags: ["CSS","flex"]
+summary: 'flex 布局中 start/end 和 flex-start/flex-end 的区别'
+tldr: 'start/end 是逻辑属性，随书写方向变化；flex-start/flex-end 永远相对 flex 容器的主轴与交叉轴。文中对照 MDN 与 W3C 规范解释差异。'
+tags: ['CSS', 'flex']
 ---
+
 在 flex 布局中，最常用的 css 属性非 `justify-*` 和 `align-*` 莫属了。使用这两种属性是，属性值经常会使用到 `start` `end` 和 `flex-start` `flex-end`，那么他们到底有什么区别呢？
 
 ## [](#mdn)MDN
 
 首先祭上MDN的答案，但是好像看不出什么区别：
 
-![Untitled](/_next/image?url=](https://www.mengke.me/static/images/blog/202306/start_end_flex-start_flex-end/Untitled.webp)
+![Untitled](/\_next/image?url=](https://www.mengke.me/static/images/blog/202306/start_end_flex-start_flex-end/Untitled.webp)
 
 但是在使用 `post-css` 插件时会对 `start`和`end` 进行弹出警告：
 
@@ -36,9 +38,9 @@ tags: ["CSS","flex"]
 
 On this page
 
--   [MDN](#mdn)
--   [W3C](#w3c)
--   [参考资源](#参考资源)
+- [MDN](#mdn)
+- [W3C](#w3c)
+- [参考资源](#参考资源)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202306/start_end_flex-start_flex-end.mdx?plain=1)
 

@@ -1,9 +1,11 @@
 ---
-title: "尝鲜 Vue 3.0 Combination API"
+title: '尝鲜 Vue 3.0 Combination API'
 date: '2020-09-06'
-summary: "尝鲜 Vue 3 将要发布的 Combination API，如何在 Vue 2 中抢先试用 Vue 3 新特性"
-tags: ["FE","Vue","Vue3"]
+summary: '尝鲜 Vue 3 将要发布的 Combination API，如何在 Vue 2 中抢先试用 Vue 3 新特性'
+tldr: 'Vue3 组合式 API 受 React Hooks 启发，装上 @vue/composition-api 插件，Vue2 项目里也能提前用上 setup/ref/computed。'
+tags: ['FE', 'Vue', 'Vue3']
 ---
+
 Vue 3.0 即将发布，我们已经可以尝试一些新版本中带来的新功能，比如 [Composition-API 组合式API](https://composition-api.vuejs.org/)。如果你了解过 React 的 Hooks，那么当你看到组合式API时一定不会感到陌生。组合式API受到了 React Hooks 很大的启发。
 
 Vue 非常易于使用，并且有非常出色的 API，对于初学者来说配合官方文档很容易就可以理解 Vue 的语法。但在国内一些大型的项目可能不会首选 Vue 去开发，因为当组件越来越大的时候会变得很难维护，很难找到一个变量在哪被定义又是在哪被使用。Vue2 中也有一些解决方法，比如mixin、HOC、作用域插槽等等，但是都不能非常完美的去解决这个问题。
@@ -29,7 +31,7 @@ Vue.use(compositionApi)
 
 从一个计数器的小案例开始。新建一个 `Count.vue` ：
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202009/Try_the_Vue3_combination_API/img1.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202009/Try_the_Vue3_combination_API/img1.webp)
 
 ```
 <template>
@@ -37,21 +39,21 @@ Vue.use(compositionApi)
     <button @click="increment">Count is: {{ state.count }}, double is: {{ state.double }}</button>
   </div>
 </template>
- 
+
 <script>
 import { reactive, computed } from '@vue/composition-api'
- 
+
 export default {
   name: 'Count',
- 
+
   setup() {
     const state = reactive({
       count: 0,
       double: computed(() => state.count * 2),
     })
- 
+
     const increment = () => state.count++
- 
+
     return {
       state,
       increment,
@@ -73,7 +75,7 @@ export default {
     <Count />
   </div>
 </template>
- 
+
 <script>
 import Count from '@/components/Count'
 export default {
@@ -87,7 +89,7 @@ export default {
 
 ## [](#demo2)Demo2
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202009/Try_the_Vue3_combination_API/img2.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202009/Try_the_Vue3_combination_API/img2.webp)
 
 让我们来继续尝试做一些更好玩的事情。一个可以从随机狗狗网站`https://dog.ceo`中获取狗狗照片的功能。
 
@@ -99,7 +101,7 @@ const useApi = (url, options = {}) => {
     data: null,
     api_status: '',
   })
- 
+
   const initFetch = async () => {
     try {
       // 更改 API 状态
@@ -123,7 +125,7 @@ const useApi = (url, options = {}) => {
   ) {
     initFetch()
   }
- 
+
   return {
     ...toRefs(state),
     initFetch,
@@ -131,7 +133,7 @@ const useApi = (url, options = {}) => {
 }
 ```
 
-这里使用到了 `toRefs()`，稍后会详细讲。 在 useApi 函数中，我们声明了state 包括 data 和 api\_status。此外，initFetch 功能是更新 api\_status 和发送请求。
+这里使用到了 `toRefs()`，稍后会详细讲。 在 useApi 函数中，我们声明了state 包括 data 和 api_status。此外，initFetch 功能是更新 api_status 和发送请求。
 
 接下来，我们检查 options 对象是否具有 fetchImmediately 属性。它指示在创建组件时是否应初始化API调用。最后，我们返回一个响应式 state 和 initFetch 函数的对象 。我们没有直接返回 state，而是使用 toRefs 进行包装。使用 toRefs 包装每个值，可以让他们具有响应性。
 
@@ -141,7 +143,7 @@ export default {
     const { data, api_status, initFetch } = useApi('https://dog.ceo/api/breeds/image/random', {
       fetchImmediately: true,
     })
- 
+
     return {
       dogImage: data,
       api_status,
@@ -170,7 +172,7 @@ export default {
 </template>
 ```
 
-这些模板 divs 取决于 api\_status 来显示或隐藏。由于传递fetchImmediately: true 给 useApi，因此会在初始化时发送一条请求，您可以通过单击 Fetch dog 按钮来再一次发起请求。
+这些模板 divs 取决于 api_status 来显示或隐藏。由于传递fetchImmediately: true 给 useApi，因此会在初始化时发送一条请求，您可以通过单击 Fetch dog 按钮来再一次发起请求。
 
 你可以在 [Github](https://github.com/mk965/vue3-composition-api-demo) 上下载完整 demo 代码。
 
@@ -178,8 +180,8 @@ export default {
 
 On this page
 
--   [Demo1](#demo1)
--   [Demo2](#demo2)
+- [Demo1](#demo1)
+- [Demo2](#demo2)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202009/Try_the_Vue3_combination_API.mdx?plain=1)
 

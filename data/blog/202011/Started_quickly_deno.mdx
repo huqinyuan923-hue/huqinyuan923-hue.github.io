@@ -1,9 +1,11 @@
 ---
-title: "deno 快速上手 - Hello World 案例"
+title: 'deno 快速上手 - Hello World 案例'
 date: '2020-11-09'
-summary: "通过一个 Hello World 案例快速上手 deno 开发"
-tags: ["FE","deno"]
+summary: '通过一个 Hello World 案例快速上手 deno 开发'
+tldr: 'Deno 一条命令安装、原生支持 TypeScript 和 URL 导入：一个 Hello World 就能跑通 HTTP 服务与文件读写。'
+tags: ['FE', 'deno']
 ---
+
 ## [](#1-安装)1\. 安装
 
 &gt; 通过单行命令将 Deno 安装到系统中（国内加速） 安装内容转载自 [Deno 中文社区](https://x.deno.js.cn/)
@@ -71,12 +73,12 @@ yay -S deno-bin
 
 ```
 asdf plugin-add deno https://github.com/asdf-community/asdf-deno.git
- 
+
 asdf install deno 1.0.0
- 
+
 # Activate globally with:
 asdf global deno 1.0.0
- 
+
 # Activate locally in the current folder with:
 asdf local deno 1.0.0
 ```
@@ -86,10 +88,10 @@ asdf local deno 1.0.0
 ```
 # 安装某个特定版本的 Deno：
 scoop install [email protected]
- 
+
 # 切换到 v1.0.0
 scoop reset [email protected]
- 
+
 #切换到最新版
 scoop reset deno
 ```
@@ -98,7 +100,7 @@ scoop reset deno
 
 新建一个 `demo.ts` 并输入 `console.log('Hello Wrold!')`； 打开 git 或 cmd，输入`deno run ./demo.ts`，就可以看到打印的结果了：
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img1.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img1.webp)
 
 ## [](#3-http-请求)3\. HTTP 请求
 
@@ -128,7 +130,7 @@ error: Uncaught (in promise) PermissionDenied: network access to "http://8jsj.cn
 deno run --allow-net=8jsj.cn demo.ts
 ```
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img2.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img2.webp)
 
 ## [](#4-读取文件)4\. 读取文件
 
@@ -146,20 +148,20 @@ console.log(decoder.decode(data))
 deno run --allow-read=hello.txt demo.ts
 ```
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img3.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202011/Started_quickly_deno/img3.webp)
 
 [Back to posts](/blog)
 
 On this page
 
--   [1\. 安装](#1-安装)
--   [安装最新版：](#安装最新版)
--   [安装某个特定版本：](#安装某个特定版本)
--   [使用包管理器：](#使用包管理器)
--   [使用多版本管理工具](#使用多版本管理工具)
--   [2\. Hello World](#2-hello-world)
--   [3\. HTTP 请求](#3-http-请求)
--   [4\. 读取文件](#4-读取文件)
+- [1\. 安装](#1-安装)
+- [安装最新版：](#安装最新版)
+- [安装某个特定版本：](#安装某个特定版本)
+- [使用包管理器：](#使用包管理器)
+- [使用多版本管理工具](#使用多版本管理工具)
+- [2\. Hello World](#2-hello-world)
+- [3\. HTTP 请求](#3-http-请求)
+- [4\. 读取文件](#4-读取文件)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202011/Started_quickly_deno.mdx?plain=1)
 

@@ -1,9 +1,11 @@
 ---
-title: "CentOS7 MySQL 数据库安装与卸载"
+title: 'CentOS7 MySQL 数据库安装与卸载'
 date: '2023-04-08'
-summary: "CentOS7 中对于数据库操作的学习记录"
-tags: ["Database","MySQL"]
+summary: 'CentOS7 中对于数据库操作的学习记录'
+tldr: 'CentOS7 安装 MySQL 的完整命令流：装 mysql 源、yum 安装、启动设置，文末附对应的卸载与清理步骤。'
+tags: ['Database', 'MySQL']
 ---
+
 ## [](#安装)安装
 
 ### [](#第一步如果机器不支持wget则安装一下wget)第一步，如果机器不支持wget，则安装一下wget
@@ -48,12 +50,12 @@ grant all on *.* to user@'%' identified by 'password';
 
 ```
 # 可以修改/etc/my.cnf，配置文件
- 
+
 # 如果要更改数据库目录，使用mv /var/lib/mysql /opt/mysqldata/ 迁移目录
 # 修改my.cnf
 socket	    = /opt/mysqldata/mysql/mysql.sock
 datadir     = /opt/mysqldata/mysql
- 
+
 # centos7 关闭SElinux，否则会启动异常，可以去查看log
 /usr/sbin/setenforce 0
 ```
@@ -130,7 +132,7 @@ find: ‘/proc/23880’: 没有那个文件或目录
 
 ### [](#4-卸载并删除-mysql-安装的组键服务)4\. 卸载并删除 MySQL 安装的组键服务
 
--   如果是使用 yum 安装的 MySQL，用以下命令进行卸载：
+- 如果是使用 yum 安装的 MySQL，用以下命令进行卸载：
 
 ```
 rm -rf /var/lib/mysq
@@ -138,64 +140,62 @@ rm /etc/my.cnf
 # 直至卸载全部
 ```
 
--   如果是使用 rpm 方式安装的 MySQL，使用 rpm -qa|grep mysql 命令来查看 rpm 方式安装的 mysql，如果查询结果不为空，需要将这些rpm卸载掉。
-    
-    -   查看系统中是否以rpm包安装的mysql：
-    
-    ```
-    rpm -qa | grep -i mysql
-    # ----------------------
-    [root@VM-8-17-centos ~]# rpm -qa | grep -i mysql
-    mysql-community-release-el7-5.noarch
-    mysql-community-client-5.6.51-2.el7.x86_64
-    bt-mysql56-5.6.50-1.el7.x86_64
-    mysql-community-common-5.6.51-2.el7.x86_64
-    mysql-community-libs-5.6.51-2.el7.x86_64
-    mysql-community-server-5.6.51-2.el7.x86_64
-    ```
-    
-    -   使用 rpm -e 命令将上个命令中包列表一一进行卸载。
-    
-    ```
-    rpm -e mysql-community-libs-5.6.51-2.el7.x86_64
-    ```
-    
-    -   然后删除mysql相关的服务。
-    
-    ```
-    chkconfig --list | grep -i mysql
-    chkconfig --del mysql
-    ```
-    
-    -   然后找出OS中分散的mysql文件夹，并删除。
-    
-    ```
-    find / -name mysql
-    ```
-    
-    -   清空mysql相关的的所有目录以及文件
-    
-    ```
-    rm -rf # ...
-    find / -name mysql
-    ```
-    
+- 如果是使用 rpm 方式安装的 MySQL，使用 rpm -qa|grep mysql 命令来查看 rpm 方式安装的 mysql，如果查询结果不为空，需要将这些rpm卸载掉。
+  - 查看系统中是否以rpm包安装的mysql：
+
+  ```
+  rpm -qa | grep -i mysql
+  # ----------------------
+  [root@VM-8-17-centos ~]# rpm -qa | grep -i mysql
+  mysql-community-release-el7-5.noarch
+  mysql-community-client-5.6.51-2.el7.x86_64
+  bt-mysql56-5.6.50-1.el7.x86_64
+  mysql-community-common-5.6.51-2.el7.x86_64
+  mysql-community-libs-5.6.51-2.el7.x86_64
+  mysql-community-server-5.6.51-2.el7.x86_64
+  ```
+
+  - 使用 rpm -e 命令将上个命令中包列表一一进行卸载。
+
+  ```
+  rpm -e mysql-community-libs-5.6.51-2.el7.x86_64
+  ```
+
+  - 然后删除mysql相关的服务。
+
+  ```
+  chkconfig --list | grep -i mysql
+  chkconfig --del mysql
+  ```
+
+  - 然后找出OS中分散的mysql文件夹，并删除。
+
+  ```
+  find / -name mysql
+  ```
+
+  - 清空mysql相关的的所有目录以及文件
+
+  ```
+  rm -rf # ...
+  find / -name mysql
+  ```
 
 [Back to posts](/blog)
 
 On this page
 
--   [安装](#安装)
--   [第一步，如果机器不支持wget，则安装一下wget](#第一步如果机器不支持wget则安装一下wget)
--   [第二步，如果没有MySQL源，则需要下载MySQL源并安装](#第二步如果没有mysql源则需要下载mysql源并安装)
--   [第三步，正式安装MySQL，如果本身有源，可以跳过前两步。](#第三步正式安装mysql如果本身有源可以跳过前两步)
--   [第四步，配置账户和权限](#第四步配置账户和权限)
--   [其他配置](#其他配置)
--   [卸载](#卸载)
--   [1\. 查询是否安装 MySQL](#1-查询是否安装-mysql)
--   [2\. 关闭 MySQL](#2-关闭-mysql)
--   [3\. 查看 MySQL 对应的文件](#3-查看-mysql-对应的文件)
--   [4\. 卸载并删除 MySQL 安装的组键服务](#4-卸载并删除-mysql-安装的组键服务)
+- [安装](#安装)
+- [第一步，如果机器不支持wget，则安装一下wget](#第一步如果机器不支持wget则安装一下wget)
+- [第二步，如果没有MySQL源，则需要下载MySQL源并安装](#第二步如果没有mysql源则需要下载mysql源并安装)
+- [第三步，正式安装MySQL，如果本身有源，可以跳过前两步。](#第三步正式安装mysql如果本身有源可以跳过前两步)
+- [第四步，配置账户和权限](#第四步配置账户和权限)
+- [其他配置](#其他配置)
+- [卸载](#卸载)
+- [1\. 查询是否安装 MySQL](#1-查询是否安装-mysql)
+- [2\. 关闭 MySQL](#2-关闭-mysql)
+- [3\. 查看 MySQL 对应的文件](#3-查看-mysql-对应的文件)
+- [4\. 卸载并删除 MySQL 安装的组键服务](#4-卸载并删除-mysql-安装的组键服务)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202304/CentOS7_MySQL_install.mdx?plain=1)
 

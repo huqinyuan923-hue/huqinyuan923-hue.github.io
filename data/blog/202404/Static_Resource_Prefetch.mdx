@@ -1,9 +1,11 @@
 ---
-title: "网站性能优化：如何高效预加载大型静态资源"
+title: '网站性能优化：如何高效预加载大型静态资源'
 date: '2024-04-07'
-summary: "对于网页中体积较大的静态资源如何进行预加载？在 Chrome 中可以使用 prefetch， 而在 Safari 中可以使用 Worker 新起一个线程进行加载 …"
-tags: ["FE","Optimization","WebWorker"]
+summary: '对于网页中体积较大的静态资源如何进行预加载？在 Chrome 中可以使用 prefetch， 而在 Safari 中可以使用 Worker 新起一个线程进行加载 …'
+tldr: '大体积静态资源预加载组合拳：preconnect 提前握手、dns-prefetch 预解析、prefetch/preload 拉文件；Safari 不支持 prefetch 时用 Worker 线程 fetch 兜底。'
+tags: ['FE', 'Optimization', 'WebWorker']
 ---
+
 最近正在开发一款类似于养宠物的养成类网页游戏。虽然这个游戏并不是传统意义上的游戏，主要是为了增加用户粘性，让用户在APP中能找到一些新的乐趣。
 
 我曾经也做过类似的游戏，这类网页的一个特点就是有很多非常炫酷的动效，这类动效体积很大。
@@ -16,9 +18,9 @@ tags: ["FE","Optimization","WebWorker"]
 
 推测加载有多种机制：
 
--   **预取** 涉及在需要渲染文档（或文档的一部分）之前获取渲染文档（或文档的一部分）所需的部分或全部资源，以便在渲染时可以更快地实现渲染。
--   **预渲染** 更进一步，实际上渲染了准备在需要时显示的内容。根据具体操作方式，这可能会导致从旧页面即时导航到新页面。
--   **预连接** 涉及通过抢先执行部分或全部连接握手（即 DNS + TCP + TLS）来加速来自给定源的未来加载。
+- **预取** 涉及在需要渲染文档（或文档的一部分）之前获取渲染文档（或文档的一部分）所需的部分或全部资源，以便在渲染时可以更快地实现渲染。
+- **预渲染** 更进一步，实际上渲染了准备在需要时显示的内容。根据具体操作方式，这可能会导致从旧页面即时导航到新页面。
+- **预连接** 涉及通过抢先执行部分或全部连接握手（即 DNS + TCP + TLS）来加速来自给定源的未来加载。
 
 ### [](#1-link-relpreconnect预先建立连接以减少延迟)**1\. `<link rel=”preconnect”>`：预先建立连接以减少延迟**
 
@@ -44,7 +46,7 @@ preload 通常用于指示浏览器在渲染页面之前提前加载某些重要
 
 ### [](#4-link-relmodulepreload-预加载-javascript-模块)**4\. `<link rel="modulepreload">` 预加载 JavaScript 模块**
 
-向浏览器提供有关_当前页面_上哪些 JavaScript 模块具有高优先级的提示，以便浏览器可以尽早开始下载它们。它是专门用于预加载 js 模块的 “preload”。与 rel=preload 的工作方式基本相同，区别是浏览器不仅会预加载缓存，还会将它直接编译倒内存中的模块映射中。
+向浏览器提供有关*当前页面*上哪些 JavaScript 模块具有高优先级的提示，以便浏览器可以尽早开始下载它们。它是专门用于预加载 js 模块的 “preload”。与 rel=preload 的工作方式基本相同，区别是浏览器不仅会预加载缓存，还会将它直接编译倒内存中的模块映射中。
 
 ### [](#5-link-relprefetch-预取未来可能用到的资源)**5\. `<link rel="prefetch" />`：预取未来可能用到的资源**
 
@@ -117,7 +119,7 @@ const loadStatic = async (urls) => {
   }
   return Promise.allSettled(promiseList)
 }
- 
+
 self.onmessage = (e) => {
   const urls = e.data
   loadStatic(urls)
@@ -147,7 +149,7 @@ worker.onerror = function (e) {
     worker.terminate.();
     console.log("[usePrefetch] error: " + e.message);
 };
- 
+
 const urls = [xxx, xxx, xxx];
 worker.postMessage(urls);
 ```
@@ -166,14 +168,14 @@ const supportsPrefetch = document.createElement('link').relList.supports('prefet
 
 On this page
 
--   [浏览器推测加载机制](#浏览器推测加载机制)
--   [1\. ：预先建立连接以减少延迟](#1-预先建立连接以减少延迟)
--   [2\. ：预先处理 DNS](#2--预先处理-dns)
--   [3\. ：预加载马上需要用的资源](#3-预加载马上需要用的资源)
--   [4\. 预加载 JavaScript 模块](#4--预加载-javascript-模块)
--   [5\. ：预取未来可能用到的资源](#5-预取未来可能用到的资源)
--   [6\. ：提前渲染整个页面](#6-提前渲染整个页面)
--   [怎么做](#怎么做)
+- [浏览器推测加载机制](#浏览器推测加载机制)
+- [1\. ：预先建立连接以减少延迟](#1-预先建立连接以减少延迟)
+- [2\. ：预先处理 DNS](#2--预先处理-dns)
+- [3\. ：预加载马上需要用的资源](#3-预加载马上需要用的资源)
+- [4\. 预加载 JavaScript 模块](#4--预加载-javascript-模块)
+- [5\. ：预取未来可能用到的资源](#5-预取未来可能用到的资源)
+- [6\. ：提前渲染整个页面](#6-提前渲染整个页面)
+- [怎么做](#怎么做)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202404/Static_Resource_Prefetch.mdx?plain=1)
 

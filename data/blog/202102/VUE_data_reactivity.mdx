@@ -1,9 +1,11 @@
 ---
-title: "Vue 数据响应式原理"
+title: 'Vue 数据响应式原理'
 date: '2021-02-22'
-summary: "Vue3 快速上手指南～"
-tags: ["FE","Vue"]
+summary: 'Vue3 快速上手指南～'
+tldr: 'Vue2 用 Object.defineProperty 劫持 getter/setter 实现响应式，代价是新增属性监听不到；Vue3 改用 Proxy，增删属性和索引访问都能侦测。'
+tags: ['FE', 'Vue']
 ---
+
 ## [](#一vue2中的实现方法)一、VUE2中的实现方法
 
 ### [](#1-前言)1\. 前言
@@ -30,15 +32,15 @@ Object.defineProperty(obj, prop, descriptor)
 
 ```
 const object1 = {}
- 
+
 Object.defineProperty(object1, 'property1', {
   value: 42,
   writable: false,
 })
- 
+
 object1.property1 = 77
 // throws an error in strict mode
- 
+
 console.log(object1.property1)
 // expected output: 42
 ```
@@ -49,21 +51,21 @@ console.log(object1.property1)
 
 这两种描述符都是对象。它们共享以下可选键值（默认值是指在使用 Object.defineProperty() 定义属性时的默认值）：
 
--   `configurable`当且仅当该属性的 `configurable` 键值为 `true` 时，该属性的描述符才能够被改变，同时该属性也能从对应的对象上被删除。  
-    **默认为** **`false`** 。
--   `enumerable`当且仅当该属性的 `enumerable` 键值为 `true` 时，该属性才会出现在对象的枚举属性中。  
-    **默认为 `false`** 。数据描述符还具有以下可选键值：
--   `value`该属性对应的值。可以是任何有效的 JavaScript 值（数值，对象，函数等）。  
-    **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
--   `writable`当且仅当该属性的 `writable` 键值为 `true` 时，属性的值，也就是上面的 `value`，才能被[`赋值运算符`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators#assignment_operators "Currently only available in English (US)")改变。  
-    **默认为 `false`。**
+- `configurable`当且仅当该属性的 `configurable` 键值为 `true` 时，该属性的描述符才能够被改变，同时该属性也能从对应的对象上被删除。  
+  **默认为** **`false`** 。
+- `enumerable`当且仅当该属性的 `enumerable` 键值为 `true` 时，该属性才会出现在对象的枚举属性中。  
+  **默认为 `false`** 。数据描述符还具有以下可选键值：
+- `value`该属性对应的值。可以是任何有效的 JavaScript 值（数值，对象，函数等）。  
+  **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
+- `writable`当且仅当该属性的 `writable` 键值为 `true` 时，属性的值，也就是上面的 `value`，才能被[`赋值运算符`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators#assignment_operators 'Currently only available in English (US)')改变。  
+  **默认为 `false`。**
 
 存取描述符还具有以下可选键值：
 
--   `get`属性的 getter 函数，如果没有 getter，则为 `undefined`。当访问该属性时，会调用此函数。执行时不传入任何参数，但是会传入 `this` 对象（由于继承关系，这里的`this`并不一定是定义该属性的对象）。该函数的返回值会被用作属性的值。  
-    **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
--   `set`属性的 setter 函数，如果没有 setter，则为 `undefined`。当属性值被修改时，会调用此函数。该方法接受一个参数（也就是被赋予的新值），会传入赋值时的 `this` 对象。  
-    **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
+- `get`属性的 getter 函数，如果没有 getter，则为 `undefined`。当访问该属性时，会调用此函数。执行时不传入任何参数，但是会传入 `this` 对象（由于继承关系，这里的`this`并不一定是定义该属性的对象）。该函数的返回值会被用作属性的值。  
+  **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
+- `set`属性的 setter 函数，如果没有 setter，则为 `undefined`。当属性值被修改时，会调用此函数。该方法接受一个参数（也就是被赋予的新值），会传入赋值时的 `this` 对象。  
+  **默认为 [`undefined`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/undefined)** 。
 
 ### [](#3-使-object-变得可侦测)3\. 使 Object 变得可侦测
 
@@ -103,7 +105,7 @@ Object.defineProperty(car, 'price', {
 
 通过`Object.defineProperty()`方法给`car`定义了一个`price`属性，并把这个属性的读和写分别使用`get()`和`set()`进行拦截，每当该属性进行读或写操作的时候就会触发`get()`和`set()`。如下图：
 
-![](/_next/image?url=](https://www.mengke.me/static/images/blog/202102/VUE_data_reactivity/img1.webp)
+![](/\_next/image?url=](https://www.mengke.me/static/images/blog/202102/VUE_data_reactivity/img1.webp)
 
 可以看到，`car`已经可以主动告诉我们它的属性的读写情况了，这也意味着，这个`car`的数据对象已经是“可观测”的了。
 
@@ -111,7 +113,7 @@ Object.defineProperty(car, 'price', {
 
 ```
 // 源码位置：src/core/observer/index.js
- 
+
 /**
  * Observer类会通过递归的方式把一个对象的所有属性都转化成可观测对象
  */
@@ -128,7 +130,7 @@ export class Observer {
       this.walk(value)
     }
   }
- 
+
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
@@ -220,7 +222,7 @@ proxy.age = 25 // 实际执行 handler.set
 // getting name
 // setting age
 // 25
- 
+
 // target 可以为空对象
 let targetEpt = {}
 let proxyEpt = new Proxy(targetEpt, handler)
@@ -234,12 +236,12 @@ proxyEpt.name = 'Tom'
 proxyEpt.name
 // getting name
 // "Tom"
- 
+
 // 通过构造函数新建实例时其实是对目标对象进行了浅拷贝，因此目标对象与代理对象会互相
 // 影响
 targetEpt
 // {name: "Tom"}
- 
+
 // handler 对象也可以为空，相当于不设置拦截操作，直接访问目标对象
 let targetEmpty = {}
 let proxyEmpty = new Proxy(targetEmpty, {})
@@ -262,7 +264,7 @@ targetEmpty // {name: "Tom"}
     <script type="text/javascript">
         const iptDom = document.getElementById("ipt");
         const countDom = document.getElementById("count");
- 
+
         const tom = {
             name: "tom",
             age: 18
@@ -279,15 +281,15 @@ targetEmpty // {name: "Tom"}
                 countDom.innerText = val;
             }
         });
- 
+
         function add () {
             proxy.age++;
         }
- 
+
         function reduce () {
             proxy.age--;
         }
- 
+
         function inputHandle (e) {
             proxy.age = iptDom.value;
         }
@@ -467,15 +469,15 @@ function createReactiveObject(
 
 On this page
 
--   [一、VUE2中的实现方法](#一vue2中的实现方法)
--   [1\. 前言](#1-前言)
--   [2\. Object.definePropety](#2-objectdefinepropety)
--   [3\. 使 Object 变得可侦测](#3-使-object-变得可侦测)
--   [二、VUE3中的实现方法 - Proxy](#二vue3中的实现方法---proxy)
--   [1\. 概述](#1-概述)
--   [2\. 基本用法](#2-基本用法)
--   [Proxy实现简版Vue](#proxy实现简版vue)
--   [相关文档](#相关文档)
+- [一、VUE2中的实现方法](#一vue2中的实现方法)
+- [1\. 前言](#1-前言)
+- [2\. Object.definePropety](#2-objectdefinepropety)
+- [3\. 使 Object 变得可侦测](#3-使-object-变得可侦测)
+- [二、VUE3中的实现方法 - Proxy](#二vue3中的实现方法---proxy)
+- [1\. 概述](#1-概述)
+- [2\. 基本用法](#2-基本用法)
+- [Proxy实现简版Vue](#proxy实现简版vue)
+- [相关文档](#相关文档)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202102/VUE_data_reactivity.mdx?plain=1)
 

@@ -1,16 +1,18 @@
 ---
-title: "以「asset-price-mcp」为例，从 0 开发 MCP Server"
+title: '以「asset-price-mcp」为例，从 0 开发 MCP Server'
 date: '2025-04-04'
-summary: "从 0 构建第一个MCP服务器，包括核心功能实现、API集成和数据处理流程 ..."
-tags: ["AI","MCP","LLM"]
+summary: '从 0 构建第一个MCP服务器，包括核心功能实现、API集成和数据处理流程 ...'
+tldr: '从 0 开发一个资产价格查询 MCP Server：搭建服务器、定义工具 schema、接入行情 API 与缓存机制，完整走一遍流程。'
+tags: ['AI', 'MCP', 'LLM']
 ---
+
 ## [](#简介)简介
 
 关于 MCP 的介绍之前已经写过，可以参考 《[Model Context Protocol (MCP) 快速开始](https://www.mengke.me/blog/202503/MCP_Quick_Start)》。
 
 今天从 0 开始开发一个 MCP Server，实现一个资产价格查询的 MCP Server。
 
-* * *
+---
 
 ## [](#实现步骤)实现步骤
 
@@ -20,7 +22,7 @@ tags: ["AI","MCP","LLM"]
 
 ```
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
- 
+
 const server = new McpServer({
   name: 'asset-price',
   version: '1.0.0',
@@ -35,12 +37,12 @@ const server = new McpServer({
 
 ```
 import { z } from 'zod'
- 
+
 const AssetSymbolSchema = z.object({
   name: z.string(),
   symbol: z.string(),
 })
- 
+
 const AssetPriceSchema = z.object({
   name: z.string(),
   price: z.number(),
@@ -59,31 +61,31 @@ const AssetPriceSchema = z.object({
 ```
 class SimpleCache {
   private cache: Map<string, CacheEntry<any>> = new Map();
- 
+
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
- 
+
     if (Date.now() - entry.timestamp > CACHE_TTL) {
       this.cache.delete(key);
       return null;
     }
- 
+
     return entry.data as T;
   }
- 
+
   set<T>(key: string, data: T): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now()
     });
   }
- 
+
   clear(): void {
     this.cache.clear();
   }
 }
- 
+
 const apiCache = new SimpleCache();
 ```
 
@@ -101,26 +103,26 @@ async function fetchApiData<T>(url: string, schema: z.ZodSchema<T>, useCache = t
       return cachedData;
     }
   }
- 
+
   const headers = {
     "User-Agent": USER_AGENT,
     "Accept": "application/json",
   };
- 
+
   try {
     const response = await fetchWithTimeout(url, { headers });
- 
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}, url: ${url}`);
     }
- 
+
     const data = await response.json();
     const parsedData = schema.parse(data);
- 
+
     if (useCache && parsedData) {
       apiCache.set(url, parsedData);
     }
- 
+
     return parsedData;
   } catch (error: any) {
     if (error instanceof z.ZodError) {
@@ -154,7 +156,7 @@ server.tool(
         `${GOLD_API_BASE}/symbols`,
         z.array(AssetSymbolSchema)
       );
- 
+
       if (!symbols?.length) {
         return {
           content: [{
@@ -163,7 +165,7 @@ server.tool(
           }]
         };
       }
- 
+
       const prices: AssetPrice[] = [];
       for (const { symbol } of symbols) {
         const priceData = await fetchApiData(`${GOLD_API_BASE}/price/${symbol}`, AssetPriceSchema);
@@ -171,7 +173,7 @@ server.tool(
           prices.push(priceData);
         }
       }
- 
+
       return {
         content: [{
           type: "text",
@@ -195,21 +197,21 @@ server.tool(
 
 ## [](#link)Link
 
--   源码：[https://github.com/mk965/asset-price-mcp](https://github.com/mk965/asset-price-mcp)
--   npm：[https://www.npmjs.com/package/asset-price-mcp](https://www.npmjs.com/package/asset-price-mcp)
+- 源码：[https://github.com/mk965/asset-price-mcp](https://github.com/mk965/asset-price-mcp)
+- npm：[https://www.npmjs.com/package/asset-price-mcp](https://www.npmjs.com/package/asset-price-mcp)
 
 [Back to posts](/blog)
 
 On this page
 
--   [简介](#简介)
--   [实现步骤](#实现步骤)
--   [1\. 设置 MCP 服务器](#1-设置-mcp-服务器)
--   [2\. 定义数据结构](#2-定义数据结构)
--   [3\. 实现缓存机制](#3-实现缓存机制)
--   [4\. 获取资产符号和价格数据](#4-获取资产符号和价格数据)
--   [5\. 定义 MCP 工具](#5-定义-mcp-工具)
--   [Link](#link)
+- [简介](#简介)
+- [实现步骤](#实现步骤)
+- [1\. 设置 MCP 服务器](#1-设置-mcp-服务器)
+- [2\. 定义数据结构](#2-定义数据结构)
+- [3\. 实现缓存机制](#3-实现缓存机制)
+- [4\. 获取资产符号和价格数据](#4-获取资产符号和价格数据)
+- [5\. 定义 MCP 工具](#5-定义-mcp-工具)
+- [Link](#link)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202504/The_First_MCP_Server.mdx?plain=1)
 

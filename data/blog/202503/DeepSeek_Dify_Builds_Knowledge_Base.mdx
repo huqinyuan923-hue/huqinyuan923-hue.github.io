@@ -1,16 +1,18 @@
 ---
-title: "DeepSeek + Dify 搭建本地知识库"
+title: 'DeepSeek + Dify 搭建本地知识库'
 date: '2025-03-12'
-summary: "详细介绍如何在本地部署 DeepSeek 模型，包括 Ollama 安装、模型部署、UI 界面配置以及使用 Dify 搭建知识库的完整教程..."
-tags: ["AI","DeepSeek","LLM","Ollama"]
+summary: '详细介绍如何在本地部署 DeepSeek 模型，包括 Ollama 安装、模型部署、UI 界面配置以及使用 Dify 搭建知识库的完整教程...'
+tldr: 'M1 Pro 16G 就能跑本地知识库：Ollama 部署 DeepSeek、Chatbox 当客户端、Dify 编排 RAG 流程，全程离线零成本。'
+tags: ['AI', 'DeepSeek', 'LLM', 'Ollama']
 ---
+
 本文将介绍如何在本地部署 DeepSeek 模型，并通过 Chatbox AI 和 Dify 搭建完整的知识库应用。
 
 ## [](#设备)设备
 
 我用的电脑是 `MacBook Pro 2021` 版，芯片：`M1 Pro`，内存 `16GB` 。
 
-![device info](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/device_info.webp)
+![device info](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/device_info.webp)
 
 ## [](#1-ollama-安装)1\. Ollama 安装
 
@@ -24,7 +26,7 @@ ollama version is 0.5.7
 ➜  ~
 ```
 
-![device info](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/ollama_version.webp)
+![device info](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/ollama_version.webp)
 
 也可打开 [http://localhost:11434](http://localhost:11434) 查看是否启动成功。
 
@@ -32,9 +34,9 @@ ollama version is 0.5.7
 
 DeepSeek 提供了多个版本的模型：
 
--   7B：适合入门级硬件（16GB+）
--   14B：性能和资源消耗均衡（32GB+）
--   33B：更强大的性能（64GB+）
+- 7B：适合入门级硬件（16GB+）
+- 14B：性能和资源消耗均衡（32GB+）
+- 33B：更强大的性能（64GB+）
 
 ### [](#下载与安装)下载与安装
 
@@ -60,11 +62,11 @@ success
 >>> Send a message (/? for help)
 ```
 
-![device info](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/ollama_install_success.webp)
+![device info](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/ollama_install_success.webp)
 
 ## [](#3-测试)3\. 测试
 
-![device info](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/deepseek_test.webp)
+![device info](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/deepseek_test.webp)
 
 ## [](#4-使用-dify-搭建知识库)4\. 使用 Dify 搭建知识库
 
@@ -87,19 +89,19 @@ docker compose up -d
 
 1.  点击 Dify 平台右上角头像 ➜ 设置 ➜ 模型供应商 ➜ Ollama ➜ 添加模型。
 2.  配置信息：
-    -   模型类型：`LLM`
-    -   模型名称：`deepseek-r1`
-    -   基础URL：`http://host.docker.internal:11434`
+    - 模型类型：`LLM`
+    - 模型名称：`deepseek-r1`
+    - 基础URL：`http://host.docker.internal:11434`
 
 &gt; 注：使用 `host.docker.internal` 是为了从容器内访问宿主机的 Ollama 服务。
 
-![dify test](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dift_deepseek.webp)
+![dify test](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dift_deepseek.webp)
 
 ### [](#4-创建知识库)4\. 创建知识库
 
 知识库 ➜ 创建知识库 ➜ 上传知识 ➜ 等待处理完成
 
-![dify test](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dify_import.webp)
+![dify test](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dify_import.webp)
 
 ### [](#5-将机器人和-ai-关联)5\. 将机器人和 AI 关联
 
@@ -107,20 +109,20 @@ docker compose up -d
 2.  知识库中选择我们创建的知识库。
 3.  发布。
 
-![dify test](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dify_test.webp)
+![dify test](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/dify_test.webp)
 
 3.  优化提示词：
 
 ```
-你是一位严谨且专业的 AI 助手，你的所有答案必须严格基于我的知识库内容。  
- 
-- 如果问题的答案在知识库中，请基于知识库内容准确回答，不做任何超出知识库的信息补充或推测。  
-- 如果知识库中找不到相关内容，请直接回答："抱歉，我的知识库中没有相关信息。" 不要编造、不推测、不参考外部信息。  
-- 你的回答必须清晰、简洁、专业，确保内容准确无误。  
-- 如果问题涉及多个知识点，请尽可能整合完整的知识库内容进行支持。  
-- 如果用户的问题模糊或可能涉及知识库外的内容，可以建议用户提供更具体的查询，以提高回答的准确性。  
- 
-请始终严格遵守以上规则，现在开始回答问题。 
+你是一位严谨且专业的 AI 助手，你的所有答案必须严格基于我的知识库内容。
+
+- 如果问题的答案在知识库中，请基于知识库内容准确回答，不做任何超出知识库的信息补充或推测。
+- 如果知识库中找不到相关内容，请直接回答："抱歉，我的知识库中没有相关信息。" 不要编造、不推测、不参考外部信息。
+- 你的回答必须清晰、简洁、专业，确保内容准确无误。
+- 如果问题涉及多个知识点，请尽可能整合完整的知识库内容进行支持。
+- 如果用户的问题模糊或可能涉及知识库外的内容，可以建议用户提供更具体的查询，以提高回答的准确性。
+
+请始终严格遵守以上规则，现在开始回答问题。
 ```
 
 &gt; 建议：为不同主题创建独立的知识库，可以提高回答的精确度。
@@ -135,28 +137,28 @@ docker compose up -d
 2.  API 域名：`http://127.0.0.1:11434`
 3.  模型：`deepseek-r1:latest`
 
-![chatbox setting](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/chatbox_setting.webp)
+![chatbox setting](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/chatbox_setting.webp)
 
 Chatbox AI 支持联网搜索，也可以正确显示思考过程。
 
-![chatbox test](/_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/chatbox_test.webp)
+![chatbox test](/\_next/image?url=](https://www.mengke.me/static/images/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base/chatbox_test.webp)
 
 [Back to posts](/blog)
 
 On this page
 
--   [设备](#设备)
--   [1\. Ollama 安装](#1-ollama-安装)
--   [2\. DeepSeek 模型部署](#2-deepseek-模型部署)
--   [下载与安装](#下载与安装)
--   [3\. 测试](#3-测试)
--   [4\. 使用 Dify 搭建知识库](#4-使用-dify-搭建知识库)
--   [1\. 部署 Dify](#1-部署-dify)
--   [2\. 配置 DeepSeek 模型](#2-配置-deepseek-模型)
--   [3\. 添加模型](#3-添加模型)
--   [4\. 创建知识库](#4-创建知识库)
--   [5\. 将机器人和 AI 关联](#5-将机器人和-ai-关联)
--   [5\. 安装交互 UI —— Chatbox AI](#5-安装交互-ui--chatbox-ai)
+- [设备](#设备)
+- [1\. Ollama 安装](#1-ollama-安装)
+- [2\. DeepSeek 模型部署](#2-deepseek-模型部署)
+- [下载与安装](#下载与安装)
+- [3\. 测试](#3-测试)
+- [4\. 使用 Dify 搭建知识库](#4-使用-dify-搭建知识库)
+- [1\. 部署 Dify](#1-部署-dify)
+- [2\. 配置 DeepSeek 模型](#2-配置-deepseek-模型)
+- [3\. 添加模型](#3-添加模型)
+- [4\. 创建知识库](#4-创建知识库)
+- [5\. 将机器人和 AI 关联](#5-将机器人和-ai-关联)
+- [5\. 安装交互 UI —— Chatbox AI](#5-安装交互-ui--chatbox-ai)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202503/DeepSeek_Dify_Builds_Knowledge_Base.mdx?plain=1)
 

@@ -1,9 +1,11 @@
 ---
-title: "以数字开头的 ID 在 querySelector 中的处理"
+title: '以数字开头的 ID 在 querySelector 中的处理'
 date: '2024-10-23'
-summary: "虽然HTML5允许使用数字作为ID，但在使用 querySelector 时，由于CSS规范的限制，需要采取额外步骤来正确选择这些元素 ..."
-tags: ["FE","JavaScript","CSS"]
+summary: '虽然HTML5允许使用数字作为ID，但在使用 querySelector 时，由于CSS规范的限制，需要采取额外步骤来正确选择这些元素 ...'
+tldr: '数字开头的 ID 会让 querySelector 抛 SyntaxError（CSS 标识符不能数字开头）：换 getElementById，或用属性选择器、CSS.escape 转义。'
+tags: ['FE', 'JavaScript', 'CSS']
 ---
+
 在HTML5中，使用数字作为ID是合法的，但这种做法在实践中可能会带来一些意想不到的问题。例如：
 
 ```
@@ -88,10 +90,10 @@ const cleanSelector = function (selector) {
   })
   return selector
 }
- 
+
 const myselector =
   '.dog #980sada_as div span#aside:hover div.apple#05crab:nth-of-type(2), .ginger #2_green_div, div.cupcake #darwin p#23434-346365-53453'
- 
+
 const clean_myselector = cleanSelector(myselector)
 const elems = document.querySelectorAll(clean_myselector)
 ```
@@ -102,14 +104,14 @@ const elems = document.querySelectorAll(clean_myselector)
 
 On this page
 
--   [问题描述](#问题描述)
--   [解决方案](#解决方案)
--   [1\. 使用有意义的ID](#1-使用有意义的id)
--   [2\. 使用 getElementById](#2-使用-getelementbyid)
--   [3\. 使用CSS转义](#3-使用css转义)
--   [4\. 使用属性选择器](#4-使用属性选择器)
--   [5\. 使用 CSS.escape](#5-使用-cssescape)
--   [6\. 自定义函数](#6-自定义函数)
+- [问题描述](#问题描述)
+- [解决方案](#解决方案)
+- [1\. 使用有意义的ID](#1-使用有意义的id)
+- [2\. 使用 getElementById](#2-使用-getelementbyid)
+- [3\. 使用CSS转义](#3-使用css转义)
+- [4\. 使用属性选择器](#4-使用属性选择器)
+- [5\. 使用 CSS.escape](#5-使用-cssescape)
+- [6\. 自定义函数](#6-自定义函数)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202410/Handle_Numeric_IDs_in_querySelector.mdx?plain=1)
 

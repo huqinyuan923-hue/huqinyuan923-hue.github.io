@@ -1,9 +1,11 @@
 ---
-title: "什么！一个项目给了8个字体包？？？"
+title: '什么！一个项目给了8个字体包？？？'
 date: '2023-07-04'
-summary: "了解如何使用 font-family 样式的各种属性来组合需要的字体包。可以按照字体粗细、unicode 等信息来自动选择相应的字体包。"
-tags: ["FE","CSS","font-family"]
+summary: '了解如何使用 font-family 样式的各种属性来组合需要的字体包。可以按照字体粗细、unicode 等信息来自动选择相应的字体包。'
+tldr: '8 个字体包不用 JS 挑选：font-family 命名区分语言、font-weight 区分粗细，多组 @font-face 声明好，浏览器自动选择对应字体包。'
+tags: ['FE', 'CSS', 'font-family']
 ---
+
 ## [](#遇到的问题)🙋 遇到的问题
 
 在一个新项目中，设计统一了项目中所有的字体，并提供了字体包。在项目中需要按需引入这些字体包。
@@ -15,14 +17,14 @@ tags: ["FE","CSS","font-family"]
 
 所以，我现在桌面上摆着 8 个字体包：
 
--   `A-Bold.tff`
--   `A-Medium.tff`
--   `A-Regular.tff`
--   `A-Thin.tff`
--   `B-Bold.tff`
--   `B-Medium.tff`
--   `B-Regular.tff`
--   `B-Thin.tff`
+- `A-Bold.tff`
+- `A-Medium.tff`
+- `A-Regular.tff`
+- `A-Thin.tff`
+- `B-Bold.tff`
+- `B-Medium.tff`
+- `B-Regular.tff`
+- `B-Thin.tff`
 
 不同语言要使用不同的字体包，不同粗细也要使用不同的字体包！
 
@@ -41,16 +43,16 @@ tags: ["FE","CSS","font-family"]
   font-family: A-Bold;
   src: url('./fonts/A-Bold.ttf');
 }
- 
+
 /* ... */
- 
+
 @font-face {
   font-family: B-Thin;
   src: url('./fonts/B-Thin.ttf');
 }
 ```
 
-![Untitled](/_next/image?url=](https://www.mengke.me/static/images/blog/202307/1-project-8-font/Untitled.webp)
+![Untitled](/\_next/image?url=](https://www.mengke.me/static/images/blog/202307/1-project-8-font/Untitled.webp)
 
 ## [](#如何根据粗细程度自动选择对应字体包)🤲🏼 如何根据粗细程度自动选择对应字体包
 
@@ -142,10 +144,10 @@ Figma 中的代码可以直接复制粘贴，无需任何修改即可根据语�
 
 On this page
 
--   [🙋 遇到的问题](#遇到的问题)
--   [🤲🏼 如何根据粗细程度自动选择对应字体包](#如何根据粗细程度自动选择对应字体包)
--   [🔤 如何根据不同语言自动选择字体包？](#如何根据不同语言自动选择字体包)
--   [总结](#总结)
+- [🙋 遇到的问题](#遇到的问题)
+- [🤲🏼 如何根据粗细程度自动选择对应字体包](#如何根据粗细程度自动选择对应字体包)
+- [🔤 如何根据不同语言自动选择字体包？](#如何根据不同语言自动选择字体包)
+- [总结](#总结)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202307/1-project-8-font.mdx?plain=1)
 

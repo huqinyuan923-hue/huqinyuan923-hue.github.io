@@ -1,16 +1,18 @@
 ---
-title: "Pinia 快速上手指南"
+title: 'Pinia 快速上手指南'
 date: '2023-04-12'
-summary: "Pinia.js 是新一代的状态管理器，由 Vue.js团队中成员所开发的，因此也被认为是下一代的 Vuex，即 Vuex5.x，在 Vue3.0 的项目中使用也是备受推崇。"
-tags: ["FE","Pinia","Vue"]
+summary: 'Pinia.js 是新一代的状态管理器，由 Vue.js团队中成员所开发的，因此也被认为是下一代的 Vuex，即 Vuex5.x，在 Vue3.0 的项目中使用也是备受推崇。'
+tldr: 'Pinia 抛弃 mutation 只留 state/getter/action，天然支持 TS 和 Vue2/3：defineStore 定义、storeToRefs 解构、直接改 state。'
+tags: ['FE', 'Pinia', 'Vue']
 ---
+
 ## [](#优势)优势
 
--   vue 2、3 都支持。
--   抛弃传统的 `Mutation` ，只有 `state` 、 `getter` 和 `action` ，简化了代码结构。
--   不需要嵌套模块，符合 Composition API 代码风格。
--   支持 TS。
--   代码简洁。
+- vue 2、3 都支持。
+- 抛弃传统的 `Mutation` ，只有 `state` 、 `getter` 和 `action` ，简化了代码结构。
+- 不需要嵌套模块，符合 Composition API 代码风格。
+- 支持 TS。
+- 代码简洁。
 
 ## [](#安装)安装
 
@@ -22,9 +24,9 @@ tags: ["FE","Pinia","Vue"]
 
 ```
 // src/store/index.ts
- 
+
 import { createPinia } from 'pinia'
- 
+
 const store = createPinia()
 export default store
 ```
@@ -33,11 +35,11 @@ export default store
 
 ```
 // src/main.ts
- 
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import store from './store'
- 
+
 const app = createApp(App)
 app.use(store)
 ```
@@ -48,7 +50,7 @@ app.use(store)
 
 ```
 import { defineStore } from 'pinia'
- 
+
 export const useMainStore = defineStore('mainStore', {
   state: () => ({
     msg: 'Hello World!',
@@ -95,7 +97,7 @@ const msg = computed(() => store.msg)
 </script
 ```
 
-![Untitled](/_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/Untitled.webp)
+![Untitled](/\_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/Untitled.webp)
 
 `storeToRefs` 结构方法：
 
@@ -116,51 +118,50 @@ store.count = 100
 
 ### [](#多条数据修改)多条数据修改：
 
--   「不建议」多条数据的修改也可以直接通过 `store.属性名` 来修改：
-    
-    ```
-    const change = () => {
-      store.obj = { a: 8, b: 7, c: 9 }
-    }
-    ```
-    
--   使用 `$patch`来修改数据：
-    
-    ```
-    // $patch 对象
-    store.$patch({
-      count: store.count + 2,
-      msg: 'This is Pinia World',
-    })
-     
-    // or
-     
-    // $patch 函数
-    store.$patch((state) => {
-      state.arrs.push({ name: 'haha', age: 12 })
-      state.hasChange = true
-    })
-    ```
-    
--   通过 `action` 修改：
-    
-    ```
-    export const useMainStore = defineStore('mainStore', {
-      state: () => ({
-        msg: 'Hello World!',
-      }),
-      getters: {},
-      actions: {
-        changeMsg(newMsg) {
-          this.msg = newMsg
-        },
+- 「不建议」多条数据的修改也可以直接通过 `store.属性名` 来修改：
+
+  ```
+  const change = () => {
+    store.obj = { a: 8, b: 7, c: 9 }
+  }
+  ```
+
+- 使用 `$patch`来修改数据：
+
+  ```
+  // $patch 对象
+  store.$patch({
+    count: store.count + 2,
+    msg: 'This is Pinia World',
+  })
+
+  // or
+
+  // $patch 函数
+  store.$patch((state) => {
+    state.arrs.push({ name: 'haha', age: 12 })
+    state.hasChange = true
+  })
+  ```
+
+- 通过 `action` 修改：
+
+  ```
+  export const useMainStore = defineStore('mainStore', {
+    state: () => ({
+      msg: 'Hello World!',
+    }),
+    getters: {},
+    actions: {
+      changeMsg(newMsg) {
+        this.msg = newMsg
       },
-    })
-     
-    const store = useMainStore()
-    store.changeMsg('哈哈哈')
-    ```
-    
+    },
+  })
+
+  const store = useMainStore()
+  store.changeMsg('哈哈哈')
+  ```
 
 ## [](#getters)Getters
 
@@ -190,7 +191,7 @@ export const useMainStore = defineStore("mainStore", {
 		    },
     }
 });
- 
+
 const store = useMainStore();
 console.log(store.myMsg1);    // Hello World! === 111
 console.log(store.myMsg2);    // Hello World! === 111 === 222
@@ -227,7 +228,7 @@ export const useStore2 = defineStore('store2', {
     },
   },
 })
- 
+
 const store2 = useStore2()
 console.log(store.countTotal) // 102
 ```
@@ -286,13 +287,13 @@ npm i pinia-plugin-persist --save
 
 ```
 // src/store/index.ts
- 
+
 import { createPinia } from 'pinia'
 import piniaPluginPersist from 'pinia-plugin-persist'
- 
+
 const store = createPinia()
 store.use(piniaPluginPersist)
- 
+
 export default store
 ```
 
@@ -310,7 +311,7 @@ export const useUserStore = defineStore('user', {
 })
 ```
 
-![persist\_1](/_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/persist_1.webp)
+![persist_1](/\_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/persist_1.webp)
 
 数据默认存在 `sessionStorage` 里，并且会以 store 的 id 作为 key。
 
@@ -330,7 +331,7 @@ persist: {
 }
 ```
 
-![persist\_2](/_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/persist_2.webp)
+![persist_2](/\_next/image?url=](https://www.mengke.me/static/images/blog/202304/Pinia_Started_Guide/persist_2.webp)
 
 ### [](#持久化部分-state)持久化部分 state
 
@@ -355,7 +356,7 @@ persist: {
 
 上面我们只持久化 `name` 和 `age`，并将其改为 `localStorage`, 而 `gender` 不会被持久化，如果其状态发生更改，页面刷新时将会丢失，重新回到初始状态，而 `name` 和 `age` 则不会。
 
-* * *
+---
 
 # [](#附pinia-速查表)附：Pinia 速查表
 
@@ -387,33 +388,33 @@ persist: {
 
 On this page
 
--   [优势](#优势)
--   [安装](#安装)
--   [创建 Store](#创建-store)
--   [State](#state)
--   [定义 state：](#定义-state)
--   [获取 state：](#获取-state)
--   [解构 state](#解构-state)
--   [修改 state](#修改-state)
--   [多条数据修改：](#多条数据修改)
--   [Getters](#getters)
--   [访问其他 store](#访问其他-store)
--   [Actions](#actions)
--   [异步 action](#异步-action)
--   [action 相互调用](#action-相互调用)
--   [action 调用其他 store 的 action](#action-调用其他-store-的-action)
--   [数据持久化](#数据持久化)
--   [安装](#安装)
--   [使用](#使用)
--   [自定义 key](#自定义-key)
--   [持久化部分 state](#持久化部分-state)
--   [附：Pinia 速查表](#附pinia-速查表)
--   [1\. 安装 Pinia](#1-安装-pinia)
--   [2\. 定义 store](#2-定义-store)
--   [3\. 使用 store （组合式 API）](#3-使用-store-组合式-api)
--   [4\. 使用 store （选项式 API）](#4-使用-store-选项式-api)
--   [5\. 修改 state](#5-修改-state)
--   [6\. 订阅修改](#6-订阅修改)
+- [优势](#优势)
+- [安装](#安装)
+- [创建 Store](#创建-store)
+- [State](#state)
+- [定义 state：](#定义-state)
+- [获取 state：](#获取-state)
+- [解构 state](#解构-state)
+- [修改 state](#修改-state)
+- [多条数据修改：](#多条数据修改)
+- [Getters](#getters)
+- [访问其他 store](#访问其他-store)
+- [Actions](#actions)
+- [异步 action](#异步-action)
+- [action 相互调用](#action-相互调用)
+- [action 调用其他 store 的 action](#action-调用其他-store-的-action)
+- [数据持久化](#数据持久化)
+- [安装](#安装)
+- [使用](#使用)
+- [自定义 key](#自定义-key)
+- [持久化部分 state](#持久化部分-state)
+- [附：Pinia 速查表](#附pinia-速查表)
+- [1\. 安装 Pinia](#1-安装-pinia)
+- [2\. 定义 store](#2-定义-store)
+- [3\. 使用 store （组合式 API）](#3-使用-store-组合式-api)
+- [4\. 使用 store （选项式 API）](#4-使用-store-选项式-api)
+- [5\. 修改 state](#5-修改-state)
+- [6\. 订阅修改](#6-订阅修改)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202304/Pinia_Started_Guide.mdx?plain=1)
 

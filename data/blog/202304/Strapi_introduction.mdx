@@ -1,9 +1,11 @@
 ---
-title: "Strapi 快速入门"
+title: 'Strapi 快速入门'
 date: '2023-04-11'
-summary: "Strapi 的基础入门操作，学习记录"
-tags: ["Starapi","API"]
+summary: 'Strapi 的基础入门操作，学习记录'
+tldr: 'Strapi 是开源自托管的内容管理系统：安装即得后台与 REST 接口，建表、建关系、放权限三步就能对外提供内容 API。'
+tags: ['Starapi', 'API']
 ---
+
 ## [](#1-安装)1\. 安装
 
 ```
@@ -20,11 +22,11 @@ yarn create strapi-app my-project --quickstart
 const config = {
     locales: ['zh'],
 };
- 
+
 const bootstrap = (app) => {
     console.log(app);
 };
- 
+
 export default {
     config,
     bootstrap,
@@ -33,7 +35,7 @@ export default {
 
 重启后进入网站首页，点击左下角头像→个人资料→体验→界面语言，调整为中文即可。
 
-![Untitled](/_next/image?url=](https://www.mengke.me/static/images/blog/202304/Strapi_introduction/Untitled.webp)
+![Untitled](/\_next/image?url=](https://www.mengke.me/static/images/blog/202304/Strapi_introduction/Untitled.webp)
 
 ## [](#3-新建表)3\. 新建表
 
@@ -165,12 +167,12 @@ http://localhost:1337/api/articles?populate=*
 
 On this page
 
--   [1\. 安装](#1-安装)
--   [2\. 设置为中文](#2-设置为中文)
--   [3\. 新建表](#3-新建表)
--   [4\. 创建关系](#4-创建关系)
--   [5\. 放开 权限](#5-放开-权限)
--   [6\. 接口测试](#6-接口测试)
+- [1\. 安装](#1-安装)
+- [2\. 设置为中文](#2-设置为中文)
+- [3\. 新建表](#3-新建表)
+- [4\. 创建关系](#4-创建关系)
+- [5\. 放开 权限](#5-放开-权限)
+- [6\. 接口测试](#6-接口测试)
 
 [Edit on GitHub](https://github.com/mk965/mengke.me/blob/main/data/blog/202304/Strapi_introduction.mdx?plain=1)
 
