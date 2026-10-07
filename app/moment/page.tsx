@@ -30,7 +30,7 @@ export default function MomentPage() {
     <Container className="py-6">
       <PageHeader
         title="Moment"
-        description="Record every bit of life and share your daily thoughts and insights"
+        description="记录生活的碎片，分享日常的想法与见闻"
         className="border-b border-gray-200 pb-6 dark:border-gray-700"
       />
       <div className="mx-auto mt-8 max-w-2xl space-y-8">
@@ -106,8 +106,8 @@ export default function MomentPage() {
           <div className="mx-auto max-w-2xl">
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50">
               <div className="text-gray-500 dark:text-gray-400">
-                <div className="mb-2 text-lg font-medium">Empty</div>
-                <div className="text-sm">No moments shared yet</div>
+                <div className="mb-2 text-lg font-medium">还没有内容</div>
+                <div className="text-sm">暂时没有分享过动态</div>
               </div>
             </div>
           </div>
