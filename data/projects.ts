@@ -3,6 +3,16 @@ import type { Project } from '~/types/data'
 export const PROJECTS: Project[] = [
   {
     type: 'self',
+    title: 'CET4Lab · 四级真题刷题',
+    description:
+      '大学英语四级历年真题在线刷题站：46 套 2530 题，整卷限时 / 分题型练习 / 背题三种模式，听力支持分段精听与倍速，逐题解析、错题本、SM-2 生词复习与打卡统计。免登录、零数据库，做题记录只存浏览器。',
+    imgSrc: '/static/images/projects/cet4lab.jpg',
+    url: 'https://cet4.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/cet4lab',
+    builtWith: ['NextJS', 'React', 'TailwindCSS', 'TypeScript', 'Vercel'],
+  },
+  {
+    type: 'self',
     title: 'Arcade Hub · 霓虹街机游戏厅',
     description:
       '在线街机游戏门户：站内自带 40 款自研经典小游戏（2048、贪吃蛇、俄罗斯方块、五子棋等），支持注册登录、收藏评分，并配有全站排行榜与完整的游戏 / 用户 / 数据管理后台。',
