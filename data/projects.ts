@@ -121,4 +121,14 @@ export const PROJECTS: Project[] = [
     repo: 'huqinyuan923-hue/pomobox',
     builtWith: ['JavaScript', 'Html', 'CSS', 'GitHub'],
   },
+  {
+    type: 'self',
+    title: 'Cha · 手写玩具编程语言',
+    description:
+      '用 TypeScript 从零手写的一门微型编程语言：手写词法分析器（模板字符串插值、嵌套块注释、中文标识符）、递归下降解析器、静态作用域 + 树遍历解释器，再到字节码编译器与栈式虚拟机双后端，附浏览器 Playground 可实时运行与查看字节码。',
+    imgSrc: '/static/images/projects/cha-lang.jpg',
+    url: 'https://cha.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/cha-lang',
+    builtWith: ['TypeScript', 'esbuild', 'Vitest', 'Vercel'],
+  },
 ]
