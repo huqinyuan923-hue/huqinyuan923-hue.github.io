@@ -196,11 +196,13 @@ pre.streaming::after {
   background: var(--panel-2);
 }
 @media (max-width: 860px) {
+  html, body { height: auto; }
   body { overflow: auto; }
-  main { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+  main { flex: none; grid-template-columns: 1fr; grid-template-rows: none; }
+  .pane { min-height: auto; }
   .pane.left { border-right: none; border-bottom: 1px solid var(--line); }
-  textarea { min-height: 150px; }
-  pre { min-height: 300px; }
+  textarea { flex: none; min-height: 150px; }
+  pre { flex: none; min-height: 300px; max-height: 60vh; }
   .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   header { padding: 12px 14px; gap: 10px; }
   .controls { margin-left: 0; width: 100%; }
