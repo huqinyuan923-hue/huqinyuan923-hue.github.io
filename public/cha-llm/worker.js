@@ -6,8 +6,9 @@ let cancel = false;
 let banIds = [];
 let letterIds = [];
 
-// 干净模式：小模型很容易吐出 Markdown/URL 碎片和伪拉丁串，采样层直接压掉
-const BAN_CHARS = "#*_`{}[]<>|\\=;~^$@\"'/";
+// 干净模式：小模型很容易吐出 Markdown/URL 碎片和伪拉丁串，采样层直接压掉。
+// 中文散文用的是全角标点，所以 ASCII 标点（. , : ; ! ? ( ) / \ - + = % & # * _ 等）一律禁止。
+const BAN_CHARS = "#*_`{}[]<>|\\=;~^$@\"'/.:,!?()+-&%";
 const isLetter = (ch) => /[A-Za-z]/.test(ch);
 
 function prepareConstraints() {
