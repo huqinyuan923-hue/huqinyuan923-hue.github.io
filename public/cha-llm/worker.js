@@ -1,0 +1,127 @@
+import { GPTModel } from "./engine.js";
+
+let model = null;
+let busy = false;
+let cancel = false;
+
+const post = (msg) => self.postMessage(msg);
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+async function fetchBuffer(url, onProgress) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`无法读取 ${url}（HTTP ${res.status}）`);
+  const total = Number(res.headers.get("content-length")) || 0;
+  if (!res.body) {
+    const buf = await res.arrayBuffer();
+    onProgress(buf.byteLength, buf.byteLength);
+    return buf;
+  }
+  const reader = res.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+  let last = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    const now = performance.now();
+    if (now - last > 90) {
+      onProgress(loaded, total);
+      last = now;
+    }
+  }
+  onProgress(loaded, total || loaded);
+  const out = new Uint8Array(loaded);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out.buffer;
+}
+
+async function load() {
+  const t0 = performance.now();
+  post({ type: "progress", phase: "meta", loaded: 0, total: 0 });
+  const metaRes = await fetch("/cha-llm/model.json");
+  if (!metaRes.ok) throw new Error(`无法读取 model.json（HTTP ${metaRes.status}）`);
+  const meta = await metaRes.json();
+  const bin = await fetchBuffer("/cha-llm/model.bin", (loaded, total) => {
+    post({ type: "progress", phase: "weights", loaded, total });
+  });
+  model = new GPTModel(meta, bin);
+  post({
+    type: "ready",
+    stats: meta.stats,
+    config: meta.config,
+    bytes: meta.totalBytes,
+    loadMs: performance.now() - t0,
+  });
+}
+
+async function generate({ prompt, maxTokens, temperature, topK }) {
+  if (!model) throw new Error("模型尚未加载");
+  busy = true;
+  cancel = false;
+  const t0 = performance.now();
+  try {
+    let ids = model.encode(String(prompt ?? ""));
+    if (ids.length === 0) ids = [model.stoi.get("我") ?? 0];
+    if (ids.length >= model.block - 2) {
+      throw new Error(`提示词太长：${ids.length} 字，模型上下文只有 ${model.block}`);
+    }
+    const limit = Math.max(0, Math.min(maxTokens | 0, model.block - ids.length - 2));
+    post({ type: "start", promptTokens: ids.length, limit, requested: maxTokens | 0 });
+
+    model.reset();
+    let logits = null;
+    for (let i = 0; i < ids.length; i++) {
+      logits = model.forward(ids[i]);
+      if ((i & 7) === 0) await tick();
+      if (cancel) break;
+    }
+
+    let count = 0;
+    let lastPost = t0;
+    for (let n = 0; n < limit && !cancel; n++) {
+      const next = model.sample(logits, temperature, topK);
+      post({ type: "token", id: next, text: model.decode(next) });
+      count++;
+      const now = performance.now();
+      if (now - lastPost > 160) {
+        post({ type: "stats", count, elapsed: now - t0 });
+        lastPost = now;
+      }
+      if (n < limit - 1) logits = model.forward(next);
+      await tick();
+    }
+    post({
+      type: "done",
+      count,
+      limit,
+      requested: maxTokens | 0,
+      elapsed: performance.now() - t0,
+      cancelled: cancel,
+    });
+  } finally {
+    busy = false;
+    cancel = false;
+  }
+}
+
+self.onmessage = (ev) => {
+  const msg = ev.data;
+  if (msg.type === "load") {
+    load().catch((err) => {
+      post({ type: "error", message: err?.message || String(err) });
+    });
+  } else if (msg.type === "generate") {
+    if (busy || !model) return;
+    generate(msg).catch((err) => {
+      post({ type: "error", message: err?.message || String(err) });
+    });
+  } else if (msg.type === "cancel") {
+    cancel = true;
+  }
+};

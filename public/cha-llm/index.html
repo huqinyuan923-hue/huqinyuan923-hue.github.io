@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>茶语 MiniGPT · 2.2M 参数模型浏览器推理</title>
+<meta name="description" content="用 31.7 万字符博客与项目语料训练的小型字符级 GPT。int8 权重 2.2MB，矩阵乘、注意力与采样全部在你的浏览器里完成。" />
+<meta name="theme-color" content="#14120f" />
+<link rel="stylesheet" href="/cha-llm/style.css" />
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>茶语 MiniGPT <span class="ver">int8 · 2.2 MB</span></h1>
+    <p>31.7 万字符博客语料 · 2,081 词表 · 2.23M 参数 · 纯浏览器推理 · <a href="/blog/mini-llm-trained-on-my-blog">训练复盘</a></p>
+  </div>
+  <div class="controls">
+    <select id="examples" aria-label="示例提示词">
+      <option value="">示例提示词…</option>
+      <option>我用 AI</option>
+      <option>这个项目的核心是</option>
+      <option>字节码</option>
+      <option>写周报这件事</option>
+      <option>如果让我重新读一次大学</option>
+      <option>凌晨两点的调试</option>
+    </select>
+    <button id="run" class="primary" disabled>▶ 生成</button>
+    <button id="stop" disabled>■ 停止</button>
+  </div>
+</header>
+
+<div class="loadbar" id="loadbar"><i></i></div>
+
+<main>
+  <section class="pane left">
+    <div class="pane-title"><span>提示词</span><span id="loadStatus" class="meta">正在加载权重…</span></div>
+    <textarea id="prompt" spellcheck="false" maxlength="200">我用 AI</textarea>
+    <div class="settings">
+      <label class="field">
+        <span>温度 <b id="tempVal">0.85</b></span>
+        <input id="temp" type="range" min="0.1" max="1.5" step="0.05" value="0.85" />
+      </label>
+      <label class="field">
+        <span>Top-k <b id="topkVal">40</b></span>
+        <input id="topk" type="range" min="1" max="100" step="1" value="40" />
+      </label>
+      <label class="field">
+        <span>长度 <b id="lenVal">160</b></span>
+        <input id="len" type="range" min="20" max="220" step="10" value="160" />
+      </label>
+    </div>
+    <div class="facts" id="facts">
+      <div class="fact"><span>参数量</span><b>2.23M</b></div>
+      <div class="fact"><span>语料</span><b>316,810 字符</b></div>
+      <div class="fact"><span>词表</span><b>2,081</b></div>
+      <div class="fact"><span>训练步数</span><b>2,500</b></div>
+      <div class="fact"><span>验证 loss</span><b id="factLoss">—</b></div>
+      <div class="fact"><span>权重</span><b id="factBytes">—</b></div>
+    </div>
+  </section>
+
+  <section class="pane right">
+    <div class="pane-title"><span>续写</span><span id="stats" class="meta">模型加载后即可生成</span></div>
+    <pre id="output" tabindex="0" aria-live="polite" data-placeholder="点击「生成」，模型会接着你的提示词往下写。&#10;&#10;提示：Ctrl / ⌘ + Enter 也能触发。"></pre>
+    <div class="hint">char-level 模型只学到文风碎片 · 不保证事实正确 · 2.2M 参数不要期待奇迹</div>
+  </section>
+</main>
+
+<script type="module" src="/cha-llm/app.js"></script>
+</body>
+</html>
