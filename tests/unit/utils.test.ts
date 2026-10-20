@@ -46,9 +46,9 @@ describe('getTimeAgo', () => {
   })
 
   it('returns minutes/hours/days ago', () => {
-    expect(getTimeAgo(now - 5 * 60 * 1000, now)).toBe('5 minutes ago')
-    expect(getTimeAgo(now - 3 * 60 * 60 * 1000, now)).toBe('3 hours ago')
-    expect(getTimeAgo(now - 2 * 24 * 60 * 60 * 1000, now)).toBe('2 days ago')
+    expect(getTimeAgo(now - 5 * 60 * 1000, now)).toBe('5 分钟前')
+    expect(getTimeAgo(now - 3 * 60 * 60 * 1000, now)).toBe('3 小时前')
+    expect(getTimeAgo(now - 2 * 24 * 60 * 60 * 1000, now)).toBe('2 天前')
   })
 })
 

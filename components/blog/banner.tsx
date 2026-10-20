@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { GritBackground } from '~/components/effects/grit-background'
-import { Image, Zoom } from '~/components/ui/image'
+import { Image } from '~/components/ui/image'
+import { Zoom } from '~/components/ui/zoom'
 import { Link } from '~/components/ui/link'
 import { capitalize, kebabCaseToPlainText } from '~/utils/misc'
 

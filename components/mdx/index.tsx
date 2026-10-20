@@ -1,6 +1,9 @@
+import 'remark-github-blockquote-alert/alert.css'
+
 import type { MDXComponents } from 'mdx/types'
 import { ChaPlayground } from '~/components/cha/playground'
-import { Image, Zoom, type ImageProps } from '~/components/ui/image'
+import { Image, type ImageProps } from '~/components/ui/image'
+import { Zoom } from '~/components/ui/zoom'
 import { Link } from '~/components/ui/link'
 import { Twemoji } from '~/components/ui/twemoji'
 import { Player } from '~/components/blog/player'

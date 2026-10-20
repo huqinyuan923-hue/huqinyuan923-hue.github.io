@@ -64,3 +64,6 @@ out/
 
 # semantic search index (generated at build time by scripts/build-semantic-index.mjs)
 /public/search-vectors.json
+
+# lighthouse ci output
+.lighthouseci/

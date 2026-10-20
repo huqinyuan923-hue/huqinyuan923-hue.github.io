@@ -46,6 +46,44 @@ test.describe('navigation', () => {
   })
 })
 
+test.describe('site search', () => {
+  test('kbar is lazy-loaded and lists posts on demand', async ({ page: p }) => {
+    await p.goto('/')
+    const input = p.locator('input[placeholder^="搜索文章"]')
+    await expect(input).toHaveCount(0)
+
+    await p.getByRole('button', { name: 'Search' }).click()
+    await expect(input).toBeVisible()
+
+    await input.fill('Blog')
+    await expect(p.getByText('How I Created This Blog').first()).toBeVisible()
+
+    await p.keyboard.press('Escape')
+    await expect(input).toHaveCount(0)
+  })
+})
+
+test.describe('footer signature font', () => {
+  test('playpen woff2 is fetched only after the signature scrolls into view', async ({
+    page: p,
+  }) => {
+    const fontRequests: string[] = []
+    p.on('request', (req) => {
+      if (req.url().includes('playpen')) fontRequests.push(req.url())
+    })
+
+    await p.goto('/')
+    const signature = p.locator('footer svg[viewBox="0 0 360 120"]')
+    const text = signature.locator('text')
+    await expect(text).toHaveAttribute('font-family', /Segoe Script/)
+    expect(fontRequests).toEqual([])
+
+    await signature.scrollIntoViewIfNeeded()
+    await expect(text).toHaveAttribute('font-family', /SignaturePlaypen/, { timeout: 10_000 })
+    expect(fontRequests.length).toBe(1)
+  })
+})
+
 test.describe('health checks', () => {
   test('no failed page-resource requests on home and blog post', async ({ page: p }) => {
     const failed: string[] = []

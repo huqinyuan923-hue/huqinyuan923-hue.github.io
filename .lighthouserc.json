@@ -1,0 +1,36 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./out",
+      "url": ["/index.html", "/blog.html", "/about.html", "/friends.html"],
+      "numberOfRuns": 1,
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "devicePixelRatio": 1.75,
+          "disabled": false
+        },
+        "throttlingMethod": "simulate"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.7 }],
+        "largest-contentful-paint": ["error", { "maxNumericValue": 6000 }],
+        "first-contentful-paint": ["warn", { "maxNumericValue": 3000 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 600 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
+        "unused-javascript": ["warn", { "maxNumericValue": 120000 }],
+        "render-blocking-resources": ["warn", { "maxNumericValue": 800 }],
+        "total-byte-weight": ["warn", { "maxNumericValue": 1500000 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

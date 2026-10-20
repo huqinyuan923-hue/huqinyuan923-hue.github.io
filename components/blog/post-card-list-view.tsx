@@ -30,12 +30,14 @@ export function PostCardListView({
           ])}
         >
           <Image
-            src={images && images.length > 0 ? images[0] : SITE_METADATA.socialBanner}
+            src={images && images.length > 0 ? images[0] : SITE_METADATA.postFallback}
             alt={title}
             width={500}
             height={500}
             className="aspect-video h-full w-full rounded-xl shadow-2xl"
             loading={loading}
+            fetchPriority={loading === 'eager' ? 'high' : undefined}
+            sizes="(min-width: 768px) 288px, 100vw"
           />
           <GritBackground
             className={clsx([

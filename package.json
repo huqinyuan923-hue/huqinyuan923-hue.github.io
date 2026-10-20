@@ -6,7 +6,8 @@
     "start": "next dev",
     "dev": "PORT=3434 cross-env INIT_CWD=$PWD next dev",
     "index": "node scripts/build-semantic-index.mjs",
-    "build": "cross-env INIT_CWD=$PWD prisma generate && node scripts/build-semantic-index.mjs && next build && npm run postbuild",
+    "images": "node scripts/optimize-images.mjs",
+    "build": "cross-env INIT_CWD=$PWD prisma generate && node scripts/optimize-images.mjs && node scripts/build-semantic-index.mjs && next build && npm run postbuild",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' tsx ./scripts/post-build.ts",
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true next build",
@@ -14,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "perf": "lhci autorun",
     "prepare": "husky"
   },
   "dependencies": {
@@ -77,6 +79,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@svgr/webpack": "^8.1.0",
     "@types/js-yaml": "^4.0.9",
@@ -96,6 +99,7 @@
     "prettier-plugin-tailwindcss": "^0.6.9",
     "prisma": "^6.7.0",
     "rss-parser": "^3.13.0",
+    "sharp": "^0.35.5",
     "tsx": "^4.19.1",
     "typescript": "^5.7.2",
     "vfile": "^6.0.3",

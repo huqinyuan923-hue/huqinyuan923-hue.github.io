@@ -1,66 +1,27 @@
-import { Link } from '~/components/ui/link'
 import Bash from '~/icons/bash.svg'
 import CSS from '~/icons/css.svg'
-import Exercism from '~/icons/exercism.svg'
+import Commitlint from '~/icons/commitlint.svg'
+import Env from '~/icons/env.svg'
 import Git from '~/icons/git.svg'
 import GitHub from '~/icons/github.svg'
-import Goodreads from '~/icons/goodreads.svg'
-import HeadlessUI from '~/icons/headlessui.svg'
-import Hydrogen from '~/icons/hydrogen.svg'
-import IMBb from '~/icons/imdb.svg'
+import Html from '~/icons/html5.svg'
 import Java from '~/icons/java.svg'
 import JavaScript from '~/icons/javascript.svg'
-import JWT from '~/icons/jsonwebtokens.svg'
-import Koa from '~/icons/koa.svg'
 import Liquid from '~/icons/liquid.svg'
 import Markdown from '~/icons/markdown.svg'
-import MongoDB from '~/icons/mongodb.svg'
-import MySQL from '~/icons/mysql.svg'
 import NextJS from '~/icons/nextjs.svg'
 import Node from '~/icons/nodejs.svg'
 import Npm from '~/icons/npm.svg'
-import OpenAI from '~/icons/openai.svg'
-import Picsum from '~/icons/picsum.svg'
+import Postcss from '~/icons/postcss.svg'
 import Prisma from '~/icons/prisma.svg'
-import Pygame from '~/icons/pygame.svg'
-import Python from '~/icons/python.svg'
-import Railway from '~/icons/railway.svg'
 import React from '~/icons/react.svg'
-import Remix from '~/icons/remix.svg'
-import RottenTomatoes from '~/icons/rottentomatoes.svg'
-import SemanticUI from '~/icons/semanticui.svg'
-import Shopify from '~/icons/shopify.svg'
 import Spotify from '~/icons/spotify.svg'
 import TailwindCSS from '~/icons/tailwind.svg'
-import Turborepo from '~/icons/turborepo.svg'
 import TypeScript from '~/icons/typescript.svg'
 import Umami from '~/icons/umami.svg'
 import Vercel from '~/icons/vercel.svg'
-import Webpack from '~/icons/webpack.svg'
-import VSCode from '~/icons/vscode.svg'
-import Pnpm from '~/icons/pnpm.svg'
-import WebGL from '~/icons/webgl.svg'
-import Vue from '~/icons/vue.svg'
-import VueX from '~/icons/vuex.svg'
-import NuxtJS from '~/icons/nuxtjs.svg'
-import ECharts from '~/icons/echarts.svg'
-import AntDesign from '~/icons/ant-design.svg'
-import Gulp from '~/icons/gulp.svg'
-import AMap from '~/icons/amap.svg'
-import BaiduMap from '~/icons/baidu-map.svg'
-import WechatMiniProgram from '~/icons/wechat-mini-program.svg'
-import Angular from '~/icons/angular.svg'
-import AntV from '~/icons/antv.svg'
-import Qiankun from '~/icons/qiankun.svg'
-import Weibo from '~/icons/weibo.svg'
-import I18n from '~/icons/i18n.svg'
-import Apple from '~/icons/apple.svg'
-import Commitlint from '~/icons/commitlint.svg'
-import Html from '~/icons/html5.svg'
-import Postcss from '~/icons/postcss.svg'
-import Env from '~/icons/env.svg'
-import Solana from '~/icons/solana.svg'
 import clsx from 'clsx'
+import { Link } from '~/components/ui/link'
 
 export const BrandsMap: Record<
   string,
@@ -69,255 +30,35 @@ export const BrandsMap: Record<
     url?: string
   }
 > = {
-  Commitlint: {
-    Icon: Commitlint,
-  },
-  Html: {
-    Icon: Html,
-  },
-  Postcss: {
-    Icon: Postcss,
-    url: 'https://postcss.org/',
-  },
-  Env: {
-    Icon: Env,
-  },
-  React: {
-    Icon: React,
-    url: 'https://reactjs.org',
-  },
-  Goodreads: {
-    Icon: Goodreads,
-    url: 'https://www.goodreads.com/',
-  },
-  Remix: {
-    Icon: Remix,
-    url: 'https://remix.run',
-  },
-  Git: {
-    Icon: Git,
-    url: 'https://git-scm.com',
-  },
-  GitHub: {
-    Icon: GitHub,
-    url: 'https://github.com',
-  },
-  JavaScript: {
-    Icon: JavaScript,
-    url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-  },
-  TypeScript: {
-    Icon: TypeScript,
-    url: 'https://www.typescriptlang.org',
-  },
-  Node: {
-    Icon: Node,
-    url: 'https://nodejs.org',
-  },
-  Npm: {
-    Icon: Npm,
-    url: 'https://www.npmjs.com',
-  },
-  Bash: {
-    Icon: Bash,
-    url: 'https://www.gnu.org/software/bash',
-  },
-  Liquid: {
-    Icon: Liquid,
-    url: 'https://shopify.dev/docs/api/liquid',
-  },
-  Markdown: {
-    Icon: Markdown,
-    url: 'https://www.markdownguide.org',
-  },
-  NextJS: {
-    Icon: NextJS,
-    url: 'https://nextjs.org',
-  },
-  TailwindCSS: {
-    Icon: TailwindCSS,
-    url: 'https://tailwindcss.com',
-  },
-  Prisma: {
-    Icon: Prisma,
-    url: 'https://www.prisma.io',
-  },
-  Umami: {
-    Icon: Umami,
-    url: 'https://umami.is',
-  },
-  Vercel: {
-    Icon: Vercel,
-    url: 'https://vercel.com',
-  },
-  Railway: {
-    Icon: Railway,
-    url: 'https://railway.app',
-  },
-  Spotify: {
-    Icon: Spotify,
-    url: 'https://spotify.com',
-  },
-  OpenAI: {
-    Icon: OpenAI,
-    url: 'https://openai.com',
-  },
-  Turborepo: {
-    Icon: Turborepo,
-    url: 'https://turborepo.org',
-  },
-  Hydrogen: {
-    Icon: Hydrogen,
-    url: 'https://hydrogen.shopify.dev/',
-  },
-  Shopify: {
-    Icon: Shopify,
-    url: 'https://shopify.dev',
-  },
-  Polaris: {
-    Icon: Shopify,
-    url: 'https://polaris.shopify.com/',
-  },
-  ThemeKit: {
-    Icon: Shopify,
-    url: 'https://shopify.dev/docs/storefronts/themes/tools/theme-kit',
-  },
-  HeadlessUI: {
-    Icon: HeadlessUI,
-    url: 'https://headlessui.dev',
-  },
-  Webpack: {
-    Icon: Webpack,
-    url: 'https://webpack.js.org',
-  },
-  KoaJS: {
-    Icon: Koa,
-    url: 'https://koajs.com',
-  },
-  JWT: {
-    Icon: JWT,
-    url: 'https://jwt.io',
-  },
-  MongoDB: {
-    Icon: MongoDB,
-    url: 'https://www.mongodb.com',
-  },
-  CSS: {
-    Icon: CSS,
-    url: 'https://www.w3.org/Style/CSS/',
-  },
-  Python: {
-    Icon: Python,
-    url: 'https://www.python.org',
-  },
-  Pygame: {
-    Icon: Pygame,
-    url: 'https://www.pygame.org',
-  },
-  Exercism: {
-    Icon: Exercism,
-    url: 'https://exercism.org',
-  },
-  SemanticUI: {
-    Icon: SemanticUI,
-    url: 'https://semantic-ui.com',
-  },
-  Picsum: {
-    Icon: Picsum,
-    url: 'https://picsum.photos',
-  },
-  Java: {
-    Icon: Java,
-    url: 'https://java.com',
-  },
-  MySQL: {
-    Icon: MySQL,
-    url: 'https://mysql.com',
-  },
-  RottenTomatoes: {
-    Icon: RottenTomatoes,
-    url: 'https://www.rottentomatoes.com/',
-  },
-  IMBb: {
-    Icon: IMBb,
-    url: 'https://www.imdb.com/',
-  },
-  VSCode: {
-    Icon: VSCode,
-    url: 'https://code.visualstudio.com/',
-  },
-  Pnpm: {
-    Icon: Pnpm,
-    url: 'https://pnpm.io/',
-  },
-  WebGL: {
-    Icon: WebGL,
-    url: 'https://www.khronos.org/webgl/',
-  },
-  Vue: {
-    Icon: Vue,
-    url: 'https://vuejs.org/',
-  },
-  VueX: {
-    Icon: VueX,
-    url: 'https://vuex.vuejs.org/',
-  },
-  NuxtJS: {
-    Icon: NuxtJS,
-    url: 'https://nuxt.com/',
-  },
-  ECharts: {
-    Icon: ECharts,
-    url: 'https://echarts.apache.org/',
-  },
-  AntDesign: {
-    Icon: AntDesign,
-    url: 'https://ant.design/',
-  },
-  Gulp: {
-    Icon: Gulp,
-    url: 'https://gulpjs.com/',
-  },
-  AMap: {
-    Icon: AMap,
-    url: 'https://amap.com/',
-  },
-  BaiduMap: {
-    Icon: BaiduMap,
-    url: 'https://map.baidu.com/',
-  },
-  WechatMiniProgram: {
-    Icon: WechatMiniProgram,
-    url: 'https://mp.weixin.qq.com/cgi-bin/wx',
-  },
-  Angular: {
-    Icon: Angular,
-    url: 'https://angular.dev/',
-  },
-  AntV: {
-    Icon: AntV,
-    url: 'https://antv.antgroup.com/',
-  },
-  Qiankun: {
-    Icon: Qiankun,
-    url: 'https://qiankun.umijs.org/',
-  },
-  Weibo: {
-    Icon: Weibo,
-    url: 'https://weibo.com/',
-  },
-  I18n: {
-    Icon: I18n,
-  },
-  Apple: {
-    Icon: Apple,
-    url: 'https://www.apple.com/ios',
-  },
-  Solana: {
-    Icon: Solana,
-    url: 'https://sloana.com/',
-  },
+  Bash: { Icon: Bash, url: 'https://www.gnu.org/software/bash' },
+  CSS: { Icon: CSS, url: 'https://www.w3.org/Style/CSS/' },
+  Commitlint: { Icon: Commitlint },
+  Env: { Icon: Env },
+  Git: { Icon: Git, url: 'https://git-scm.com' },
+  GitHub: { Icon: GitHub, url: 'https://github.com' },
+  Html: { Icon: Html },
+  Java: { Icon: Java, url: 'https://java.com' },
+  JavaScript: { Icon: JavaScript, url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript' },
+  Liquid: { Icon: Liquid, url: 'https://shopify.dev/docs/api/liquid' },
+  Markdown: { Icon: Markdown, url: 'https://www.markdownguide.org' },
+  NextJS: { Icon: NextJS, url: 'https://nextjs.org' },
+  Node: { Icon: Node, url: 'https://nodejs.org' },
+  Npm: { Icon: Npm, url: 'https://www.npmjs.com' },
+  Postcss: { Icon: Postcss, url: 'https://postcss.org/' },
+  Prisma: { Icon: Prisma, url: 'https://www.prisma.io' },
+  React: { Icon: React, url: 'https://reactjs.org' },
+  Spotify: { Icon: Spotify, url: 'https://spotify.com' },
+  TailwindCSS: { Icon: TailwindCSS, url: 'https://tailwindcss.com' },
+  TypeScript: { Icon: TypeScript, url: 'https://www.typescriptlang.org' },
+  Umami: { Icon: Umami, url: 'https://umami.is' },
+  Vercel: { Icon: Vercel, url: 'https://vercel.com' },
 }
+
+// 内容里的大小写并不统一（`Typescript` / `Javascript` 出现在 code-title 与 footer），
+// 用忽略大小写的索引避免图标静默丢失。
+const CASE_INSENSITIVE_LOOKUP = new Map(
+  Object.entries(BrandsMap).map(([name, value]) => [name.toLowerCase(), value])
+)
 
 export function Brand(props: {
   name: keyof typeof BrandsMap
@@ -326,9 +67,12 @@ export function Brand(props: {
   iconClassName?: string
 }) {
   const { name, as = 'link', className, iconClassName } = props
-  const { Icon, url } = BrandsMap[name] || {}
+  const entry =
+    CASE_INSENSITIVE_LOOKUP.get(String(name || '').toLowerCase()) ?? BrandsMap[name as string]
 
-  if (!Icon) return <span className="hidden">Missing brand icon for {name}</span>
+  if (!entry) return <span className="hidden">Missing brand icon for {name}</span>
+
+  const { Icon, url } = entry
 
   if (as === 'icon' || !url) {
     return <Icon className={clsx([className, iconClassName])} fill="currentColor" />

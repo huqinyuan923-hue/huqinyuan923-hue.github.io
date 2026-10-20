@@ -1,11 +1,49 @@
 // Minimal static file server for the Next.js `output: 'export'` build (out/).
-// Used by Playwright e2e tests and local smoke checks. No dependencies.
+// Used by Playwright e2e tests, local smoke checks and Lighthouse CI. No deps.
+// `COMPRESS=1` additionally brotli/gzips text assets so Lighthouse sees the
+// byte weights it would see from Cloudflare Pages (which always compresses).
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib'
 
 const root = process.argv[2] || 'out'
 const port = Number(process.argv[3]) || 3000
+const compress = process.env.COMPRESS === '1'
+
+const COMPRESSIBLE = new Set([
+  '.html',
+  '.js',
+  '.css',
+  '.json',
+  '.xml',
+  '.txt',
+  '.svg',
+  '.webmanifest',
+  '.map',
+])
+const compressCache = new Map()
+
+function encode(body, file, ext, accept) {
+  if (!compress || !COMPRESSIBLE.has(ext) || !accept) return { body, encoding: null }
+  // keyed by path + byte length, so a rebuild that changes the file is never
+  // served from a stale compressed cache
+  const cacheKey = `${file}:${body.byteLength}:${accept}`
+  const cached = compressCache.get(cacheKey)
+  if (cached) return cached
+  const result = accept.includes('br')
+    ? {
+        body: brotliCompressSync(body, {
+          params: { [constants.BROTLI_PARAM_QUALITY]: 5 },
+        }),
+        encoding: 'br',
+      }
+    : accept.includes('gzip')
+      ? { body: gzipSync(body, { level: 6 }), encoding: 'gzip' }
+      : { body, encoding: null }
+  compressCache.set(cacheKey, result)
+  return result
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -52,8 +90,12 @@ createServer(async (req, res) => {
       }
     }
     const type = MIME[extname(file).toLowerCase()] || 'application/octet-stream'
-    res.writeHead(200, { 'Content-Type': type })
-    res.end(body)
+    const ext = extname(file).toLowerCase()
+    const encoded = encode(body, file, ext, req.headers['accept-encoding'] || '')
+    const headers = { 'Content-Type': type, Vary: 'Accept-Encoding' }
+    if (encoded.encoding) headers['Content-Encoding'] = encoded.encoding
+    res.writeHead(200, headers)
+    res.end(encoded.body)
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' })
     res.end('Not Found')

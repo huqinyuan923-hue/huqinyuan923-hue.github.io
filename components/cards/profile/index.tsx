@@ -64,10 +64,10 @@ export function ProfileCard() {
         )}
       >
         <Image
-          src={SITE_METADATA.siteLogo}
+          src={SITE_METADATA.profileBanner}
           alt={SITE_METADATA.title}
-          width={550}
-          height={350}
+          width={960}
+          height={432}
           style={{
             objectPosition: '50% 15%',
             aspectRatio: '2.4/1',

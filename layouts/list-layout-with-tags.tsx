@@ -64,9 +64,9 @@ export function ListLayoutWithTags({ title, description, posts, snippets }: List
           </div>
           {view === 'blogs' ? (
             <ul className="grid grid-cols-1 gap-x-8 gap-y-12 lg:grid-cols-2">
-              {posts.map((post) => (
+              {posts.map((post, idx) => (
                 <li key={post.path}>
-                  <PostCardGridView post={post} />
+                  <PostCardGridView post={post} loading={idx === 0 ? 'eager' : 'lazy'} />
                 </li>
               ))}
             </ul>

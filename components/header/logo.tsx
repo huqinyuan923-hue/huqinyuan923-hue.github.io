@@ -16,10 +16,10 @@ export function Logo({ className }: { className?: string }) {
       ])}
     >
       <Image
-        src="/static/images/avatar.jpg"
+        src="/static/images/avatar-128.webp"
         alt={SITE_METADATA.headerTitle}
-        width={100}
-        height={100}
+        width={128}
+        height={128}
         className="h-10 w-10 rounded-2xl"
         loading="eager"
       />

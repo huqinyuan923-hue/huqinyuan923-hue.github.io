@@ -3,7 +3,8 @@ import { allMoments } from 'contentlayer/generated'
 import { clsx } from 'clsx'
 import { Container } from '~/components/ui/container'
 import { PageHeader } from '~/components/ui/page-header'
-import { Image, Zoom } from '~/components/ui/image'
+import { Image } from '~/components/ui/image'
+import { Zoom } from '~/components/ui/zoom'
 import { GritBackground } from '~/components/effects/grit-background'
 import { MDXLayoutRenderer } from '~/components/mdx/layout-renderer'
 import { MDX_COMPONENTS } from '~/components/mdx'
@@ -53,10 +54,10 @@ export default function MomentPage() {
                   <div className="mb-4 flex items-center gap-3">
                     <div className="relative">
                       <Image
-                        src="/static/images/avatar.jpg"
+                        src="/static/images/avatar-128.webp"
                         alt={AUTHOR_INFO.name}
-                        width={40}
-                        height={40}
+                        width={128}
+                        height={128}
                         className="h-10 w-10 rounded-full ring-2 ring-white dark:ring-gray-800"
                       />
                       <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900"></div>

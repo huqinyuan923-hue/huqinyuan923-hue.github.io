@@ -8,7 +8,13 @@ import { SITE_METADATA } from '~/data/site-metadata'
 import type { CoreContent } from '~/types/data'
 import { formatDate } from '~/utils/misc'
 
-export function PostCardGridView({ post }: { post: CoreContent<Blog> }) {
+export function PostCardGridView({
+  post,
+  loading = 'lazy',
+}: {
+  post: CoreContent<Blog>
+  loading?: 'lazy' | 'eager'
+}) {
   const { path, date, title, summary, images, readingTime } = post
   return (
     <article>
@@ -23,11 +29,14 @@ export function PostCardGridView({ post }: { post: CoreContent<Blog> }) {
           ])}
         >
           <Image
-            src={images && images.length > 0 ? images[0] : SITE_METADATA.socialBanner}
+            src={images && images.length > 0 ? images[0] : SITE_METADATA.postFallback}
             alt={title}
             width={600}
             height={400}
             className="aspect-video h-full w-full rounded-xl shadow-2xl"
+            sizes="(min-width: 768px) 416px, 100vw"
+            loading={loading}
+            fetchPriority={loading === 'eager' ? 'high' : undefined}
           />
           <GritBackground
             className={clsx([

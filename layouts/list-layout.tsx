@@ -103,8 +103,8 @@ export function ListLayout({
         <div className="py-10">No posts found.</div>
       ) : (
         <div className="grid grid-cols-1 gap-x-8 gap-y-16 py-10 md:gap-y-16 lg:grid-cols-2 xl:grid-cols-3">
-          {displayPosts.map((post) => (
-            <PostCardGridView key={post.path} post={post} />
+          {displayPosts.map((post, idx) => (
+            <PostCardGridView key={post.path} post={post} loading={idx === 0 ? 'eager' : 'lazy'} />
           ))}
         </div>
       )}

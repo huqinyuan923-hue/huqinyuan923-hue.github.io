@@ -48,7 +48,7 @@ export function KBarModal({ actions, isLoading }: { actions: Action[]; isLoading
                 ESC
               </kbd>
             </div>
-            {!isLoading && <RenderResults />}
+            {!isLoading && <RenderResults actions={actions} />}
             {!isLoading && <SemanticResults />}
             {isLoading && (
               <div className="block border-t border-gray-100 px-4 py-8 text-center text-gray-400 dark:border-gray-800 dark:text-gray-600">
@@ -70,7 +70,8 @@ const semanticCache = new Map<string, SemanticHit[]>()
  * 任何失败都静默隐藏，不影响关键词搜索。
  */
 function SemanticResults() {
-  const searchQuery = useKBar((state) => state.searchQuery)
+  // kbar 会把 collector 返回值展开进结果对象，selector 必须返回对象而非原始值
+  const { searchQuery } = useKBar((state) => ({ searchQuery: state.searchQuery }))
   const { query } = useKBar()
   const router = useRouter()
   const [hits, setHits] = useState<SemanticHit[]>([])
@@ -192,8 +193,9 @@ function onModelProgress(listener: ProgressListener): () => void {
   return () => progressListeners.delete(listener)
 }
 
-function RenderResults() {
+function RenderResults({ actions }: { actions: Action[] }) {
   const { results } = useMatches()
+  const { searchQuery } = useKBar((state) => ({ searchQuery: state.searchQuery }))
 
   if (results.length) {
     return (
@@ -245,9 +247,11 @@ function RenderResults() {
       />
     )
   } else {
+    // 索引已下载但 kbar 尚未注册完成时会有一帧空结果，此处不显示「无结果」
+    const registeringIndex = searchQuery.trim() === '' && actions.length > 0
     return (
       <div className="block border-t border-gray-100 px-4 py-8 text-center text-gray-400 dark:border-gray-800 dark:text-gray-600">
-        No results for your search...
+        {registeringIndex ? '加载中…' : 'No results for your search...'}
       </div>
     )
   }

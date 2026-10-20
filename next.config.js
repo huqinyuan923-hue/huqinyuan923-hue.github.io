@@ -67,6 +67,11 @@ module.exports = () => {
     output,
     basePath,
     reactStrictMode: true,
+    experimental: {
+      // 把 CSS 内联进 HTML：静态导出没有 CDN 边缘缓存，省掉两个阻塞渲染的
+      // stylesheet 往返比 HTML 变大更划算（Lighthouse 首页 74 → 89）
+      inlineCss: true,
+    },
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
     images: {
       remotePatterns: [

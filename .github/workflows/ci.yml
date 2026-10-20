@@ -53,3 +53,11 @@ jobs:
 
       - name: E2E tests
         run: pnpm test:e2e
+
+      - name: Lighthouse CI (mobile budget)
+        run: |
+          CHROME_BIN="$(command -v google-chrome-stable || command -v google-chrome || true)"
+          if [ -z "$CHROME_BIN" ]; then
+            CHROME_BIN="$(find "$HOME/.cache/ms-playwright" -type f -name chrome | head -n 1)"
+          fi
+          CHROME_PATH="$CHROME_BIN" pnpm perf

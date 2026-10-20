@@ -26,13 +26,13 @@
       "type": "image/png"
     },
     {
-      "src": "/static/favicons/favicon-150x150.png",
-      "sizes": "150x150",
+      "src": "/static/favicons/favicon-180x180.png",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/static/favicons/favicon-800x800.png",
-      "sizes": "800x800",
+      "src": "/static/favicons/favicon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
