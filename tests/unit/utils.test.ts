@@ -41,8 +41,8 @@ describe('escape', () => {
 describe('getTimeAgo', () => {
   const now = new Date('2026-10-05T12:00:00Z').getTime()
 
-  it('returns "just now" for the current time', () => {
-    expect(getTimeAgo(new Date(now), now)).toBe('just now')
+  it('returns 刚刚 for the current time', () => {
+    expect(getTimeAgo(new Date(now), now)).toBe('刚刚')
   })
 
   it('returns minutes/hours/days ago', () => {

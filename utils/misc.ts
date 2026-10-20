@@ -41,7 +41,7 @@ export function getTimeAgo(time: string | number | Date, now = Date.now()) {
   let cycle = 'year'
 
   if (secs <= 1) {
-    return 'just now'
+    return '刚刚'
   }
   if (years > 0) {
     amount = years
