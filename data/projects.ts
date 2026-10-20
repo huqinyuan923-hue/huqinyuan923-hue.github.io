@@ -5,7 +5,7 @@ export const PROJECTS: Project[] = [
     type: 'self',
     title: 'CET4Lab · 四级真题刷题',
     description:
-      '大学英语四级历年真题在线刷题站：46 套 2530 题，整卷限时 / 分题型练习 / 背题三种模式，听力支持分段精听与倍速，逐题解析、错题本、SM-2 生词复习与打卡统计。免登录、零数据库，做题记录只存浏览器。',
+      '大学英语四级历年真题在线刷题站：2015–2026 年 76 套 3980 题，整卷限时 / 分题型练习 / 背题三种模式，听力支持分段精听与倍速，逐题解析、错题本、SM-2 生词复习与打卡统计。免登录、零数据库，做题记录只存浏览器。',
     imgSrc: '/static/images/projects/cet4lab.jpg',
     url: 'https://cet4.adcakeyuan.top',
     repo: 'huqinyuan923-hue/cet4lab',
