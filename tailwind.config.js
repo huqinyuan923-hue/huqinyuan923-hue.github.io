@@ -93,7 +93,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['var(--font-nunito)', ...fontFamily.sans],
-        greeting: ['var(--font-playpen-sans)'],
+        greeting: ['SignaturePlaypen', "'Segoe Script'", "'Brush Script MT'", 'cursive'],
         mono: ['var(--font-jetbrains-mono)', ...fontFamily.mono],
       },
       colors: {

@@ -63,8 +63,14 @@ test.describe('site search', () => {
   })
 })
 
-test.describe('footer signature font', () => {
-  test('playpen woff2 is fetched only after the signature scrolls into view', async ({
+test.describe('deferred playpen font', () => {
+  // 80KB 的装饰字体不进首屏字体表：问候语与页脚签名各自滚动进视口后才注册
+  const playpenLoaded = () =>
+    Array.from(document.fonts as unknown as Iterable<{ family: string; status: string }>).some(
+      (face) => face.family === 'SignaturePlaypen' && face.status === 'loaded'
+    )
+
+  test('the signature font is fetched only after the footer scrolls into view', async ({
     page: p,
   }) => {
     const fontRequests: string[] = []
@@ -72,14 +78,26 @@ test.describe('footer signature font', () => {
       if (req.url().includes('playpen')) fontRequests.push(req.url())
     })
 
-    await p.goto('/')
+    // /blog 没有首页问候语，页脚签名是这一页唯一的 Playpen 使用者
+    await p.goto('/blog')
     const signature = p.locator('footer svg[viewBox="0 0 360 120"]')
-    const text = signature.locator('text')
-    await expect(text).toHaveAttribute('font-family', /Segoe Script/)
+    await expect(signature).toHaveCount(1)
     expect(fontRequests).toEqual([])
 
     await signature.scrollIntoViewIfNeeded()
-    await expect(text).toHaveAttribute('font-family', /SignaturePlaypen/, { timeout: 10_000 })
+    await p.waitForFunction(playpenLoaded, undefined, { timeout: 10_000 })
+    expect(fontRequests.length).toBe(1)
+  })
+
+  test('the homepage greeting gets the same font after first paint', async ({ page: p }) => {
+    const fontRequests: string[] = []
+    p.on('request', (req) => {
+      if (req.url().includes('playpen')) fontRequests.push(req.url())
+    })
+
+    await p.goto('/')
+    await expect(p.locator('.font-greeting')).toHaveCount(1)
+    await p.waitForFunction(playpenLoaded, undefined, { timeout: 10_000 })
     expect(fontRequests.length).toBe(1)
   })
 })
