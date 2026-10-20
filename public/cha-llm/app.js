@@ -97,9 +97,18 @@ worker.onmessage = (ev) => {
       bar.style.width = "4%";
     } else {
       const pct = msg.total ? Math.min(100, Math.round((msg.loaded / msg.total) * 100)) : 0;
-      setStatus(pct ? `加载权重 ${pct}%` : `加载权重 ${formatBytes(msg.loaded)}`);
+      setStatus(
+        pct
+          ? `加载权重 ${pct}%`
+          : msg.loaded
+            ? `加载权重 ${formatBytes(msg.loaded)}`
+            : "准备下载权重…"
+      );
       bar.style.width = pct ? Math.max(4, pct) + "%" : "30%";
     }
+  } else if (msg.type === "retry") {
+    setStatus(`下载中断（${msg.reason}），重试 ${msg.attempt}/${msg.attempts}…`);
+    bar.style.width = "4%";
   } else if (msg.type === "ready") {
     ready = true;
     loadbar.classList.add("done");

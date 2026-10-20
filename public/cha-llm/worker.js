@@ -7,38 +7,72 @@ let cancel = false;
 const post = (msg) => self.postMessage(msg);
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-async function fetchBuffer(url, onProgress) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`无法读取 ${url}（HTTP ${res.status}）`);
-  const total = Number(res.headers.get("content-length")) || 0;
-  if (!res.body) {
-    const buf = await res.arrayBuffer();
-    onProgress(buf.byteLength, buf.byteLength);
-    return buf;
-  }
-  const reader = res.body.getReader();
-  const chunks = [];
-  let loaded = 0;
-  let last = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    loaded += value.length;
-    const now = performance.now();
-    if (now - last > 90) {
-      onProgress(loaded, total);
-      last = now;
+const STALL_MS = 12000;
+
+async function fetchBuffer(url, onProgress, attempts = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const controller = new AbortController();
+    let stall = 0;
+    const arm = () => {
+      clearTimeout(stall);
+      stall = setTimeout(() => controller.abort(), STALL_MS);
+    };
+    try {
+      const target = attempt === 1 ? url : `${url}?retry=${attempt}-${Date.now()}`;
+      arm();
+      const res = await fetch(target, {
+        signal: controller.signal,
+        cache: attempt === 1 ? "default" : "no-store",
+      });
+      if (!res.ok) throw new Error(`无法读取 ${url}（HTTP ${res.status}）`);
+      const total = Number(res.headers.get("content-length")) || 0;
+      if (!res.body) {
+        const buf = await res.arrayBuffer();
+        onProgress(buf.byteLength, buf.byteLength);
+        return buf;
+      }
+      const reader = res.body.getReader();
+      const chunks = [];
+      let loaded = 0;
+      let last = 0;
+      arm();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        loaded += value.length;
+        arm();
+        const now = performance.now();
+        if (now - last > 90) {
+          onProgress(loaded, total);
+          last = now;
+        }
+      }
+      clearTimeout(stall);
+      onProgress(loaded, total || loaded);
+      const out = new Uint8Array(loaded);
+      let off = 0;
+      for (const c of chunks) {
+        out.set(c, off);
+        off += c.length;
+      }
+      return out.buffer;
+    } catch (err) {
+      lastError = err;
+      if (attempt === attempts) break;
+      post({
+        type: "retry",
+        attempt: attempt + 1,
+        attempts,
+        reason: controller.signal.aborted ? "下载停滞" : err?.message || "网络错误",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    } finally {
+      clearTimeout(stall);
     }
   }
-  onProgress(loaded, total || loaded);
-  const out = new Uint8Array(loaded);
-  let off = 0;
-  for (const c of chunks) {
-    out.set(c, off);
-    off += c.length;
-  }
-  return out.buffer;
+  throw new Error(`权重下载失败：${lastError?.message || lastError}（已尝试 ${attempts} 次）`);
 }
 
 async function load() {
@@ -47,6 +81,7 @@ async function load() {
   const metaRes = await fetch("/cha-llm/model.json");
   if (!metaRes.ok) throw new Error(`无法读取 model.json（HTTP ${metaRes.status}）`);
   const meta = await metaRes.json();
+  post({ type: "progress", phase: "weights", loaded: 0, total: 0 });
   const bin = await fetchBuffer("/cha-llm/model.bin", (loaded, total) => {
     post({ type: "progress", phase: "weights", loaded, total });
   });
