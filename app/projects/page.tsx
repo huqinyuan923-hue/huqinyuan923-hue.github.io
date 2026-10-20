@@ -15,7 +15,7 @@ export default async function Projects() {
     <Container className="pt-4 lg:pt-12">
       <PageHeader
         title="Projects"
-        description="我做过的项目：有为了好玩的在线游戏厅，有为了高效学习的工具，也有给新手写的教程网站。全部开源，欢迎 Star 与交流。"
+        description="我做过的项目：有为了好玩的在线游戏厅，有为了高效学习的工具，也有给新手写的教程网站。大多开源，欢迎 Star 与交流。"
         className="border-b border-gray-200 dark:border-gray-700"
       />
 

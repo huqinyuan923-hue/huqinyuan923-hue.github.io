@@ -119,7 +119,20 @@ main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; }
   color: var(--dim);
   letter-spacing: 0.04em;
 }
-.pane-title .meta { text-align: right; }
+.pane-title .meta { text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pane-label { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+button.mini { padding: 2px 8px; font-size: 10px; line-height: 1.5; border-radius: 5px; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 .meta.ok { color: var(--ok); }
 .meta.err { color: var(--err); }
 textarea {

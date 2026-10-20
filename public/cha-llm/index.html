@@ -6,6 +6,13 @@
 <title>茶语 MiniGPT · 2.2M 参数模型浏览器推理</title>
 <meta name="description" content="用 31.7 万字符博客与项目语料训练的小型字符级 GPT。int8 权重 2.2MB，矩阵乘、注意力与采样全部在你的浏览器里完成。" />
 <meta name="theme-color" content="#14120f" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="茶语 MiniGPT · 2.2M 参数的浏览器推理实验" />
+<meta property="og:description" content="31.7 万字符博客语料训练，int8 权重 2.2MB，矩阵乘、注意力与采样全部在浏览器里完成。" />
+<meta property="og:url" content="https://adcakeyuan.top/cha-llm/" />
+<meta property="og:image" content="https://adcakeyuan.top/static/images/blog/202610/Mini_LLM/cover.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="canonical" href="https://adcakeyuan.top/cha-llm/" />
 <link rel="stylesheet" href="/cha-llm/style.css" />
 </head>
 <body>
@@ -60,11 +67,16 @@
   </section>
 
   <section class="pane right">
-    <div class="pane-title"><span>续写</span><span id="stats" class="meta">模型加载后即可生成</span></div>
-    <pre id="output" tabindex="0" aria-live="polite" data-placeholder="点击「生成」，模型会接着你的提示词往下写。&#10;&#10;提示：Ctrl / ⌘ + Enter 也能触发。"></pre>
+    <div class="pane-title">
+      <span class="pane-label">续写<button id="copy" class="mini" disabled>复制</button></span>
+      <span id="stats" class="meta">模型加载后即可生成</span>
+    </div>
+    <pre id="output" tabindex="0" aria-busy="false" data-placeholder="点击「生成」，模型会接着你的提示词往下写。&#10;&#10;提示：Ctrl / ⌘ + Enter 也能触发。"></pre>
     <div class="hint">char-level 模型只学到文风碎片 · 不保证事实正确 · 2.2M 参数不要期待奇迹</div>
   </section>
 </main>
+
+<div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
 
 <script type="module" src="/cha-llm/app.js"></script>
 </body>

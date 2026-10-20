@@ -3,6 +3,15 @@ import type { Project } from '~/types/data'
 export const PROJECTS: Project[] = [
   {
     type: 'self',
+    title: '茶语 MiniGPT · 浏览器推理小模型',
+    description:
+      '用自己博客的 31.7 万字符语料从零训练的字符级 GPT：2.23M 参数、CPU 训练 2500 步，验证 loss 3.235；逐行 int8 量化到 2.2MB，手写 JS 推理引擎带 KV Cache 与 top-k 采样，在浏览器 Web Worker 里流式续写，支持下载停滞自动重试与移动端使用。',
+    imgSrc: '/static/images/projects/mini-llm.jpg',
+    url: 'https://adcakeyuan.top/cha-llm/',
+    builtWith: ['Python', 'JavaScript', 'Html', 'CSS'],
+  },
+  {
+    type: 'self',
     title: 'CET4Lab · 四级真题刷题',
     description:
       '大学英语四级历年真题在线刷题站：2015–2026 年 76 套 3980 题，整卷限时 / 分题型练习 / 背题三种模式，听力支持分段精听与倍速，逐题解析、错题本、SM-2 生词复习与打卡统计。免登录、零数据库，做题记录只存浏览器。',
