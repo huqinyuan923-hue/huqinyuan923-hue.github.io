@@ -1,1 +1,5 @@
 public/cha/cha-worker.js
+# cha-llm 的 demo 文件由 C:/works/llm 同步而来，保持逐字节一致，别被 prettier 改写
+public/cha-llm/*.js
+public/cha-llm/*.css
+public/cha-llm/model.json
