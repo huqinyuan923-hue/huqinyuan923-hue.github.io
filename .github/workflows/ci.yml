@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # next-contentlayer2 只在 next build 里生成 .contentlayer，而 typecheck/单测排在
+      # 构建之前，拿不到 contentlayer/generated 就整片 TS2307——CI 一直红在这一 step，
+      # 后面的构建、E2E、Lighthouse 全部 skipped。
+      - name: Generate Contentlayer types
+        run: npx contentlayer2 build
+
       - name: Lint
         run: npx next lint --dir pages --dir app --dir components --dir lib --dir layouts --dir scripts
 
@@ -39,6 +45,11 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      # 与 deploy.yml 同步：output: 'export' 不允许 route handler，/api/npm 会在
+      # "Collecting page data" 阶段直接报错，必须先把 app/api 挪走。
+      - name: Disable API routes (not supported in static export)
+        run: mv app/api api.disabled
+
       - name: Build static site
         env:
           EXPORT: 'true'
@@ -47,6 +58,10 @@ jobs:
           INIT_CWD: ${{ github.workspace }}
           NEXT_PUBLIC_STATIC_EXPORT: 'true'
         run: pnpm build
+
+      # postbuild 生成 RSS / 标签订阅写进 public/，发生在 next build 拷贝静态资源之后
+      - name: Copy post-build assets into out
+        run: cp -r public/. out/
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
