@@ -14,7 +14,7 @@ authors: ['default']
 
 周五下午，同事在群里发来两份合同 PDF，让我合成一份发回去。我打开浏览器搜「PDF 合并」，第一个站点的流程是：选文件、上传、等进度条、下载。两份合同，几百 KB，要完整经过一台陌生服务器。我关掉页面，决定自己写一个。
 
-[FileKit](https://huqinyuan923-hue.github.io/filekit/) 是三个纯前端工具：图片压缩、PDF 合并、PDF 提取。没有账号，没有后端，页面运行时不发任何网络请求——文件从选中到下载，全程停在浏览器内存里。整个项目是 126 行 HTML、195 行 CSS、442 行 JavaScript，加上一个 525KB 的 pdf-lib。没有构建步骤，随便起个静态服务器就能跑。
+[FileKit](https://filekit.adcakeyuan.top/) 是三个纯前端工具：图片压缩、PDF 合并、PDF 提取。没有账号，没有后端，页面运行时不发任何网络请求——文件从选中到下载，全程停在浏览器内存里。整个项目是 126 行 HTML、195 行 CSS、442 行 JavaScript，加上一个 525KB 的 pdf-lib。没有构建步骤，随便起个静态服务器就能跑。
 
 ![FileKit 初始界面](/static/images/blog/202610/FileKit/initial.png)
 
@@ -76,6 +76,6 @@ authors: ['default']
 
 FileKit 没有服务器，所以也没有服务器账单、上传队列和清理任务。三个工具各自只做一件事：把文件处理完，还给你。
 
-源码在 [GitHub](https://github.com/huqinyuan923-hue/filekit)，在线版在 [这里](https://huqinyuan923-hue.github.io/filekit/)。
+源码在 [GitHub](https://github.com/huqinyuan923-hue/filekit)，在线版在 [这里](https://filekit.adcakeyuan.top/)。
 
 > 本文由 AI 自动写作流水线生成；文中的压缩体积、比例与界面截图均为本机浏览器实际运行结果。
