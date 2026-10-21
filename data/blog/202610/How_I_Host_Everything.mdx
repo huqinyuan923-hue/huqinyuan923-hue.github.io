@@ -32,7 +32,7 @@ authors: ['default']
 | 10  | TimeMark       | `timemark.the37777777.top` | Vercel           | 静态前端 + 单函数 + Neon + 外部 cron     |
 | 11  | FileKit        | `filekit.adcakeyuan.top`   | GitHub Pages     | 单页静态，压缩在浏览器里完成             |
 | 12  | PomoBox        | `pomo.adcakeyuan.top`      | GitHub Pages     | 单页静态，计时与通知                     |
-| 13  | SalaryCalc     | `salary.adcakeyuan.top`    | GitHub Pages     | 单页静态（HTTPS 异常）                   |
+| 13  | SalaryCalc     | `salary.adcakeyuan.top`    | GitHub Pages     | 单页静态（HTTPS 当天已修复）             |
 | 14  | 博客           | `adcakeyuan.top`           | Cloudflare Pages | 静态导出 + Pages Functions + Workers AI  |
 | 15  | 图床           | `img.adcakeyuan.top`       | Cloudflare Pages | Pages Functions + KV                     |
 
@@ -72,7 +72,7 @@ authors: ['default']
 
 - **Vercel 的 100 万次调用很多，4 CPU-hours 很少。** 一次函数调用如果只等 I/O，CPU 时间很短；一旦做图片处理、加解密或大 JSON 解析，4 小时会比你想象得快。DeepLearn 的 AI 出题 60 秒上限看起来很宽，但那是墙钟时间，不是 CPU 时间。
 - **Cloudflare 的 KV 写额度是图床的真上限。** 每天 1000 次写，不是 1000 次上传——一次上传可能写多个 key。读额度 10 万/天反而很宽。真要做大，应该换 R2 或 D1。
-- **GitHub Pages 的 100 GB 是软限制，但证书是硬故障。** 额度没超，站点也可能因为证书没签发而打不开；这次 SalaryCalc 就是。
+- **GitHub Pages 的 100 GB 是软限制，但证书是硬故障。** 额度没超，站点也可能因为证书没签发而打不开；这次 SalaryCalc 就是，当天晚些时候已补发（见文末补记）。
 - **Neon 免费档不是「一直醒着」。** 5 分钟闲置就挂起，冷查询会慢一拍；6 小时恢复窗口意味着误删数据最多只能回到 6 小时内，这不是备份，是止损。
 - **Vercel Hobby 只允许非商业个人用途。** 这 15 个站现在都是个人项目，没问题；哪天某个站接广告或赞助，先看条款，再谈迁移。
 
@@ -94,7 +94,7 @@ $ gh api repos/huqinyuan923-hue/salarycalc/pages
 {"cname":"salary.adcakeyuan.top","https_enforced":false,"status":"built"}
 ```
 
-同一平台的 FileKit 和 PomoBox 都是 `https_enforced: true`，证书正常。所以不是 GitHub Pages 整体故障，而是这个站点的证书状态卡住了。常见处理顺序是：在仓库 Settings → Pages 里重新保存一次自定义域，等证书签发，再勾选 Enforce HTTPS，最后用 `curl` 和 Pages API 复核。这次我只做了诊断，没有改设置——自定义域和 DNS 属于需要单独确认的操作。
+同一平台的 FileKit 和 PomoBox 都是 `https_enforced: true`，证书正常。所以不是 GitHub Pages 整体故障，而是这个站点的证书状态卡住了。常见处理顺序是：在仓库 Settings → Pages 里重新保存一次自定义域，等证书签发，再勾选 Enforce HTTPS，最后用 `curl` 和 Pages API 复核。发布后经确认，已按这个顺序修复，过程见文末补记。
 
 ### 洞二：博客的 `/stats` 反代在静态导出里根本不存在
 
@@ -163,11 +163,24 @@ GitHub Pages 只留给「一个 HTML 文件、没有构建、没有后端」的�
 
 接下来要做的，按优先级：
 
-1. 修 SalaryCalc 的证书，或者把域名先摘掉，别让一个坏证书挂在公开链接上；
+1. ~~修 SalaryCalc 的证书~~：已完成，见文末补记；
 2. 决定博客的单发布线，删掉另一条；
 3. 配好 Umami 并把 `/stats` 换成静态托管能工作的方案，或者干脆删掉这段死代码；
 4. 给 5 个 Neon 库加每周导出，别把 6 小时恢复当备份；
 5. 加一个会跟随重定向、会检查 TLS、会区分 401/307 的巡检脚本——这次的 11/2/1 是手写的，下次应该自动跑。
+
+## 补记：洞一已在当天修复
+
+文章发布后，按上面的顺序把 `salary.adcakeyuan.top` 修好了：
+
+```text
+$ printf '{"cname": null}' | gh api --method PUT repos/huqinyuan923-hue/salarycalc/pages --input -
+$ printf '{"cname":"salary.adcakeyuan.top"}' | gh api --method PUT repos/huqinyuan923-hue/salarycalc/pages --input -
+```
+
+GitHub 自动产生 `b932529 Delete CNAME` 和 `9f26d95 Create CNAME` 两个提交，约 20 秒后证书状态变为 `approved`，`CN=salary.adcakeyuan.top`，由 Let's Encrypt 签发至 2027-01-19；再 `PUT {"https_enforced": true}`。验收结果：HTTP 301 → HTTPS 200，Chromium 里 `window.isSecureContext === true`，页面正常渲染。
+
+中间有一个容易误判的插曲：证书签好后，Windows 上的 `curl` 仍报 `SEC_E_WRONG_PRINCIPAL`，但 OpenSSL、Node 的 `fetch` 和 `curl --http1.1 --tlsv1.2` 都正常。这更像是本机 schannel 在 TLS 1.3 / HTTP/2 协商上的问题，不是站点故障——**同一份证书，换一个客户端再验一次，能省掉一次误判。**
 
 ## 七、额度来源
 
