@@ -1,0 +1,250 @@
+---
+images: ['/static/images/blog/how-i-built-deeplearn-backend.svg']
+title: '一个函数撑起整个后端：DeepLearn 的 Hono + Neon 细节'
+date: '2026-10-21'
+lastmod: '2026-10-21'
+tags: ['nextjs', 'hono', 'postgres', 'serverless', 'ai']
+draft: false
+summary: '595 行 api/index.js 里的决定：连接池参数、自动建表、设备 ID、双重限频、AI 题库缓存，以及服务端判分的一处信任裂缝。'
+tldr: 'DeepLearn 后端复盘：为什么单函数、为什么 prepare:false、内存限频和数据库限频差在哪、AI 出题如何省 token，以及哪些地方我明知不完美却先留着。'
+authors: ['default']
+---
+
+[上一篇文章](/blog/how-i-built-deeplearn)写的是 DeepLearn 的内容系统：为什么把测验写进 frontmatter、为什么坚持静态导出。这一篇往下走一层，聊聊真正跑在服务器上的那 595 行——`api/index.js`，一个挂在单个 Vercel Serverless 函数上的 Hono 应用。
+
+它要做的事并不少：同步学习进度、判分、保存抽认卡复习记录、留言板、AI 出题、错题本。全部收在一个文件里，连着 Neon 的免费档 Postgres。线上还在跑，`/api/health` 现在返回：
+
+```json
+{ "ok": true, "db": true, "now": "2026-10-21T04:54:27.608Z", "region": "hkg1" }
+```
+
+先说明一个小陷阱：这里的 `region: "hkg1"` 是代码里写死的常量，不是运行时探测出来的。真正的区域声明在 `vercel.json` 的 `"regions": ["hkg1"]`。健康检查能证明数据库通着，不能证明函数真的落在香港。
+
+## 一、单函数不是「没有架构」，是主动收窄
+
+整个后端的入口只有两行：
+
+```js
+const app = new Hono()
+exports.fetch = (request) => app.fetch(request)
+exports.config = { runtime: 'nodejs', maxDuration: 60 }
+```
+
+Vercel 把 `/api/*` 全部重写到这个函数；静态页面走 CDN，API 走函数。`maxDuration: 60` 是为 AI 出题留的——一次上游调用加上数据库写入，正常几秒，但慢的时候不能 10 秒就被掐断。
+
+单函数的好处是显性：路由、中间件、错误处理、数据库连接都在一个进程里，读代码不用跳文件；坏处也显性：**所有接口共享同一份并发和同一个冷启动**。留言板的一次慢查询，和 AI 出题的一次 30 秒上游等待，抢的是同一个函数的并发额度。对一个个人学习站，这笔交易划算；如果留言板突然有流量，第一个该拆出去的就是 AI 路由。
+
+## 二、连 Neon：三个参数各有原因
+
+数据库连接是这样建的：
+
+```js
+const sql = /^postgres(ql)?:\/\//.test(DATABASE_URL)
+  ? postgres(DATABASE_URL, { ssl: 'require', prepare: false, max: 1, idle_timeout: 20 })
+  : null
+```
+
+- `ssl: 'require'`：Neon 强制 TLS，没得选。
+- `prepare: false`：Neon 的连接串通常走 PgBouncer 事务池。事务池会在事务结束后把连接还给别的客户端，而 prepared statement 是连接级的——不复用还好，一复用就可能撞上「prepared statement already exists」。关掉预处理，换的是兼容性。
+- `max: 1`：Serverless 实例本身会被平台横向扩，每个实例再开一个连接池没有意义，反而更快打满 Neon 免费档的连接数。一个实例一条连接，够用。
+- `idle_timeout: 20`：闲置 20 秒就放掉，避免函数实例还活着、数据库连接先被平台回收。
+
+还有一个细节：`DATABASE_URL` 不合法时 `sql` 是 `null`，所有接口返回 503，而不是在模块加载阶段抛异常。这样本地没配数据库也能 `pnpm dev` 看页面，只是写入功能不可用。这个「软失败」对开发体验很重要——否则 `next dev` 会因为一个环境变量直接起不来。
+
+## 三、自动建表：方便，但有账单
+
+第一次请求任意接口时，`ensureSchema()` 会按顺序跑 8 张表的 `CREATE TABLE IF NOT EXISTS`，外加一条 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`：
+
+```text
+learners / progress / quiz_results / flashcard_reviews / guestbook
+ai_quizzes / ai_wrong_book / ai_gen_log
+```
+
+`ensureSchema` 用一个模块级 Promise 做了记忆化：同一实例内并发请求只会跑一次；失败时把 Promise 置空，下次请求可以重试。
+
+这套做法让部署变成「配好 DATABASE_URL，打开网站，表就有了」，不需要在 CI 里跑迁移，也不需要记得执行脚本。对一个免费档项目，这是很实际的取舍。
+
+代价也得说清楚：
+
+1. **每个冷启动的第一次请求都要跑 9 条 DDL**。表已存在时它们很快，但仍然是 9 次数据库往返，首屏 API 会慢一截。
+2. **函数需要 DDL 权限**。想要更小的权限面（只允许增删改查），就必须把建表挪出去。
+3. **schema 变更和代码变更绑死**。加字段要发一次代码，靠 `ALTER TABLE` 在运行时补；一旦某次变更失败，整个函数的所有接口都不可用。
+4. **文档已经漂了**。`scripts/db-init.mjs` 和 README 都还写着 5 张表——AI 出题是后加的，三张新表只在 `ensureSchema` 里出现。自动化的方便，顺手把「哪里是真相」也变得模糊了。
+
+## 四、设备 ID 不是身份认证
+
+这个站没有注册登录。浏览器第一次访问时生成一个 UUID，存在 `localStorage`，之后所有进度、成绩、错题都挂在这个 ID 下：
+
+```js
+id = crypto.randomUUID ? crypto.randomUUID() : `dev-${Math.random()...}`
+```
+
+服务端只做格式校验：`/^[0-9a-zA-Z-]{8,64}$/`。它不验证这个 ID 是不是你生成的，也不验证你是不是它的主人。
+
+这意味着：**知道别人的设备 ID，就能读写别人的进度和错题本**。这不是一个待修的漏洞，而是「免登录」这个产品决定的直接后果。缓解手段只有两个——ID 是随机 UUID，不好猜；以及数据里没有邮箱、手机号之类的身份信息。对一个学习工具，这个风险可以接受，但它必须被写出来，而不是假装「设备 ID 等于账号」。
+
+也正因为身份这么轻，所有写入都得在边界上做长度和类型限制。代码里有一个 `clean()`：
+
+```js
+const clean = (v, max) =>
+  typeof v === 'string'
+    ? v
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+        .trim()
+        .slice(0, max)
+    : ''
+```
+
+它剥掉控制字符再截断，配合 `DEV_RE`、整数校验、`q_hash` 的十六进制正则，挡住的是「脏输入把表撑大」和「奇怪字符进日志」，不是身份伪造。
+
+## 五、两种限频，两个档次
+
+留言板的限频在内存里：
+
+```js
+const rateMap = new Map() // 每实例每 IP 每小时 5 条
+```
+
+够用，但只够挡「同一个人手抖连点」。函数冷启动、平台扩容、请求落到另一个实例，计数就重置；并发打几个实例，每个都能各放 5 条。它是摩擦，不是防线。
+
+AI 出题的限频放在数据库里，按 24 小时窗口查 `ai_gen_log`：
+
+- 每设备每天 15 次；
+- 每 IP 每天 40 次。
+
+IP 这一层是为了防止有人伪造 `device_id` 刷爆 API key。这个思路是对的：设备 ID 可伪造，IP 至少要多花点成本。但它有一个典型的竞态——「先 count，再生成，最后 insert」不是原子操作。两个并发请求可以同时读到 14 次，然后都去调模型，最后记成 16 次。对一个免费 key 的额度损耗来说，这个误差可以接受；真要收紧，应该用一张按天的计数表，`INSERT ... ON CONFLICT DO UPDATE ... WHERE count < limit RETURNING`，把判断和自增压进一条语句。
+
+## 六、AI 出题：先白名单，再截断
+
+AI 出题只允许 15 个章节，章节 id 到 Markdown 路径的映射写死在 `AI_CHAPTERS` 里：
+
+```js
+const AI_CHAPTERS = {
+  'ai/llm-basics': 'ai/01-llm-basics.md',
+  'frontend/react': 'frontend/03-react.md',
+  // ...
+}
+```
+
+这个映射同时干了三件事：校验章节存在、决定读哪个文件、避免把用户输入直接拼进路径。`readChapterContent` 还会在 `path.resolve` 之后检查目标是否仍在 content 根目录内，挡住 `../` 之类的路径穿越。
+
+函数运行时要读 Markdown，所以 `vercel.json` 里给函数单独加了打包声明：
+
+```json
+"functions": {
+  "api/index.js": {
+    "maxDuration": 60,
+    "includeFiles": "../content/**"
+  }
+}
+```
+
+Vercel 的打包位置在不同版本里变过，代码里因此尝试了三个候选根目录：函数目录下的 `content`、上一级的 `content`、以及 `process.cwd()/content`。这是典型的「部署环境不肯告诉你文件在哪」的防御性写法，不好看，但比线上 404 好。
+
+读出来的正文会被截到 6000 字符：
+
+```js
+return { title: parsed.data.title || chapterId, body: String(parsed.content || '').slice(0, 6000) }
+```
+
+这是 token 成本和题目质量之间的硬取舍。6000 字符大约够一章的核心内容，但可能从代码块中间切断。更精细的做法是按标题抽小节，或者只把 `summary` 和关键段落送进去；目前这一刀切得粗暴但可预测。
+
+## 七、调用上游：白名单、JSON 模式、手写扫描器
+
+上游是 OpenAI 兼容接口，默认智谱的 `glm-4-flash`，可换成 DeepSeek、OpenAI、Moonshot 等。`AI_BASE_URL` 不是随便填的：
+
+```js
+const AI_HOST_ALLOWLIST = new Set([
+  'open.bigmodel.cn',
+  'api.deepseek.com',
+  'api.openai.com',
+  'api.moonshot.cn',
+  'dashscope.aliyuncs.com',
+  'api.siliconflow.cn',
+])
+```
+
+只有 `https` 协议且主机在白名单内才允许出站。这是标准的 SSRF 防护：环境变量也可能被错误配置或被攻破，不能让函数变成一个「访问任意内网地址」的跳板。
+
+调用时先请求 `response_format: { type: 'json_object' }`，如果上游返回 4xx（有些模型不支持），再降级重试一次不带 JSON 模式的请求。拿到文本后，不假设它是干净 JSON，而是逐字符扫描第一个完整的顶层对象：
+
+```js
+// 逐字符跟踪括号深度、字符串状态和转义，跳过前后的说明文字
+function extractFirstJsonObject(text) { ... }
+```
+
+这个扫描器处理三种常见脏输出：JSON 外面包了 ```json 代码块、前后夹了「好的，这是题目：」、以及字符串里出现花括号。解析成功后还要逐题校验：题干至少 5 个字、恰好 4 个选项、选项非空、答案必须是 0–3 的整数。不过关的题直接丢弃，而不是硬塞进数据库。
+
+## 八、缓存与配额：只在真生成时记账
+
+每道题有一个内容哈希：
+
+```js
+crypto.createHash('sha256').update(`${chapterId}|${question}`).digest('hex').slice(0, 16)
+```
+
+同一章、同一道题，无论生成多少次，哈希都一样。生成前先随机捞缓存：
+
+```sql
+SELECT q_hash, payload FROM ai_quizzes
+WHERE chapter_id = $1 ORDER BY random() LIMIT $2
+```
+
+缓存够数就直接返回 `cached: true`，不调模型、不记配额。不够数就整批重新生成——注意，不是只补差额，而是按请求数量重新生成一批，返回的也是这批新题。这个策略简单，代价是缓存里已有的少量题可能被浪费；如果改成「补差额 + 合并返回」，逻辑会复杂不少，暂时不值得。
+
+只有真正生成成功后才写 `ai_gen_log`。所以缓存命中不消耗每日次数，这个记账口径是合理的：限的是「模型调用」，不是「拿题」。
+
+## 九、判分的信任边界，有一道裂缝
+
+答题接口的设计意图很清楚：答案以服务端缓存为准，客户端传来的答案不可信。
+
+```js
+const [stored] = await sql`SELECT payload FROM ai_quizzes WHERE q_hash = ${qHash}`
+const payload = storedPayload
+  ? storedPayload
+  : {
+      /* 客户端传来的题 */
+    }
+```
+
+如果 `q_hash` 在 `ai_quizzes` 里，服务端拿自己存的答案判分，客户端改不了。问题出在 `else` 分支：当 `q_hash` 查不到时，服务端会接受客户端传来的 `question / options / answer`，并用这个 `answer` 判分。
+
+也就是说，构造一个不存在的 `q_hash`，再把 `answer` 和 `picked` 填成同一个值，接口就会返回 `correct: true`，并把这题从错题本里删掉。影响范围仅限调用者自己的错题本——没有越权、没有数据泄露——但它意味着：**对于未缓存的题，服务端并不具备权威判分能力**。
+
+更干净的做法是：查不到 `q_hash` 直接 404，让客户端重新生成；或者生成时把题目签名成一个短期 token，答题时带着 token 回来，服务端验签后从 token 里取答案。前者最简单，也最符合「题库只来自服务端」的模型。我暂时留着这个分支，是因为它让「生成接口成功、写库失败」的边缘情况还能继续答题；但这是一个明确的债，不该被忘记。
+
+顺带一提，所有 500 响应都会把 `err.message` 原样回给客户端。数据库报错里可能带表名、约束名甚至连接串片段。个人项目风险不大，但正确做法是日志里留全文，响应里只给一个通用错误码。
+
+## 十、线上证据与还没做的事
+
+现在能验证的：
+
+- 静态页由 Vercel CDN 提供，HTML 的 `Last-Modified` 是 2026-10-21；
+- `/api/health` 返回 `db: true`，`/api/stats` 能读到 learners / completions / quizzes / messages 四个计数；
+- 函数区域在 `vercel.json` 里声明为 `hkg1`，数据库在 Neon 新加坡；
+- 客户端是本地优先：进度先写 `localStorage`，再异步同步，网络失败不会卡住打卡。
+
+还没做、或者明知不完美的：
+
+- 没有真正的迁移系统，自动建表把 DDL 权限和代码绑在一起；
+- 留言板限频是单实例内存，扩缩容就失真；
+- AI 配额是「先查后写」，并发下会超卖；
+- 未缓存题目的判分信任客户端；
+- 错误信息直接外泄；
+- README 和 `db-init.mjs` 仍停留在 5 张表的时代；
+- 单函数让 AI 和基础 CRUD 共享并发，慢上游会拖累快接口。
+
+## 十一、如果重做
+
+我会保留「单函数 + 单数据库 + 免登录」这三个约束，因为它们让系统足够小，小到一个人能完整读懂。但要补四件事：
+
+1. **把建表挪到部署步骤**。本地保留自动建表方便开发，生产用一次性的迁移脚本，函数只拿 CRUD 权限。
+2. **限频统一进数据库**。留言板和 AI 用同一张按窗口计数的表，判断和自增原子化。
+3. **判分只认服务端题库**。未知 `q_hash` 直接拒绝；生成和答题之间用签名 token 传递答案，客户端不再有机会自证正确。
+4. **拆出 AI 函数**。把 60 秒的模型调用和毫秒级的进度读写分开，各自设置并发和超时，爆炸半径小一半。
+
+单函数最容易让人产生一种错觉：既然只有一个文件，那它一定简单。实际上复杂度没有消失，只是被压缩进了几个参数和几个 `if` 里——`prepare: false`、`max: 1`、`ensureSchema` 的记忆化 Promise、限频的两种实现、判分的 fallback。写清楚这些选择为什么存在、代价是什么，比把文件拆成十个模块更有用。
+
+---
+
+_本文由 AI 自动写作流水线生成。_

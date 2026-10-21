@@ -1,0 +1,189 @@
+---
+images: ['/static/images/blog/how-i-host-everything.svg']
+title: '15 个站点，每月 0 美元：我的托管地图与成本账单'
+date: '2026-10-21'
+lastmod: '2026-10-21'
+tags: ['hosting', 'vercel', 'cloudflare', 'github-pages', 'postgres']
+draft: false
+summary: '10 个 Vercel、3 个 GitHub Pages、2 个 Cloudflare Pages，5 个 Neon 库：一张按线上实际响应核对过的托管地图，附 2026 年 10 月的免费额度与三处待修的缺口。'
+tldr: '15 个站点怎么分在三套平台上、免费额度真正会卡在哪里、0 美元账单背后的隐性成本，以及这次巡检发现的证书、反代和双线部署问题。'
+authors: ['default']
+---
+
+我有 15 个在线的站点。它们分布在 10 个 Vercel 项目、3 个 GitHub Pages 仓库和 2 个 Cloudflare Pages 项目里，共用 5 个 Neon Postgres 库。平台账单是 **$0/月**。
+
+这个数字听起来像炫耀，其实更像一张历史遗留问题的清单。0 美元只说明没有产生平台费用，不说明没有维护成本——证书会过期，反代会失效，同一条代码可能被两条流水线同时发布。这篇把地图、额度和这次巡检发现的三个缺口一次写清楚。
+
+## 一、地图
+
+先按平台列，域名都是线上实际在用的：
+
+| #   | 站点           | 域名                       | 平台             | 运行形态                                 |
+| --- | -------------- | -------------------------- | ---------------- | ---------------------------------------- |
+| 1   | Arcade Hub     | `arcade.adcakeyuan.top`    | Vercel           | Next.js + Neon：账号、分数、排行榜       |
+| 2   | CET4Lab        | `cet4.adcakeyuan.top`      | Vercel           | Next.js + `/api/listen` 音频代理（hkg1） |
+| 3   | Cha            | `cha.adcakeyuan.top`       | Vercel           | 静态文档 + 浏览器 playground             |
+| 4   | DeepLearn      | `deeplearn.adcakeyuan.top` | Vercel           | Next 静态导出 + Hono + Neon + AI 出题    |
+| 5   | GitHub Guide   | `guide.adcakeyuan.top`     | Vercel           | 静态 HTML 教程                           |
+| 6   | GitHub Wrapped | `wrapped.adcakeyuan.top`   | Vercel           | 静态 HTML 年报                           |
+| 7   | RSS Reader     | `rss.adcakeyuan.top`       | Vercel           | Next + Neon + 每日 Cron，需登录          |
+| 8   | Toolbox        | `toolbox.adcakeyuan.top`   | Vercel           | 静态 HTML 工具集                         |
+| 9   | Treasury       | `treasury.adcakeyuan.top`  | Vercel           | Next + Neon，需登录                      |
+| 10  | TimeMark       | `timemark.the37777777.top` | Vercel           | 静态前端 + 单函数 + Neon + 外部 cron     |
+| 11  | FileKit        | `filekit.adcakeyuan.top`   | GitHub Pages     | 单页静态，压缩在浏览器里完成             |
+| 12  | PomoBox        | `pomo.adcakeyuan.top`      | GitHub Pages     | 单页静态，计时与通知                     |
+| 13  | SalaryCalc     | `salary.adcakeyuan.top`    | GitHub Pages     | 单页静态（HTTPS 异常）                   |
+| 14  | 博客           | `adcakeyuan.top`           | Cloudflare Pages | 静态导出 + Pages Functions + Workers AI  |
+| 15  | 图床           | `img.adcakeyuan.top`       | Cloudflare Pages | Pages Functions + KV                     |
+
+按形态分：**7 个纯静态，8 个带服务端**。按平台分，Vercel 有 10 个，但其中 4 个只是静态文件；GitHub Pages 的 3 个全是单页应用；Cloudflare 的 2 个都用了边缘函数。
+
+这张图不是一开始设计出来的。FileKit、PomoBox、SalaryCalc 是「一个 HTML 文件丢上去」的项目，GitHub Pages 最省事；博客和图床需要 KV、函数或 AI，落到了 Cloudflare；剩下的 Next.js 项目一律上 Vercel。历史选择多于架构设计。
+
+## 二、先分类，再选平台
+
+如果重新选一次，我只问四个问题：
+
+1. **只有静态文件吗？** 是 → GitHub Pages 或 Cloudflare Pages。两者都能托管，差别在带宽、构建和自定义域。
+2. **需要函数吗？** 是 → Vercel（Node 生态、Next.js 一体）或 Cloudflare Pages Functions（更轻、更便宜，但 CPU 限制紧）。
+3. **需要数据库吗？** 需要 → Neon 之类的外部 Postgres，别把状态塞进平台存储。
+4. **需要定时任务，而且一天不止一次吗？** 是 → 别指望 Vercel Hobby 的 Cron；用外部调度器或 Cloudflare 的定时触发器。
+
+这四个问题里，最容易误判的是第一题。CET4Lab 看起来是静态题库站，其实有一个 `/api/listen` 路由：源 CDN 只服务国内线路、不带 CORS 头，浏览器直接拉会失败，所以必须经同源代理，而且函数要固定在 `hkg1`，让出口能连上源站。这种「一个静态站里藏着一个必须存在的函数」的情况，会让「静态站不需要服务端」的判断失效。
+
+反过来，Vercel 上的 Cha、GitHub Guide、GitHub Wrapped、Toolbox 都是纯静态。它们留在 Vercel 不是技术需要，只是部署顺手。**平台数量多，不等于每个平台都在发挥不可替代的作用。**
+
+## 三、免费额度的真实边界
+
+下面这些数字是 2026-10-21 从各家官方文档核对的。免费档会变，用之前请以链接里的最新页面为准。
+
+| 平台                                 | 免费档关键额度                                                                                          | 谁在用                       | 最可能先撞的墙                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------- |
+| Vercel Hobby                         | 100 GB 传输、100 万 CDN 请求、100 万函数调用、4 CPU-hours、360 GB-hours 内存、100 次部署/天、200 个项目 | 10 个站                      | 4 CPU-hours，以及「仅限非商业个人用途」 |
+| Cloudflare Pages                     | 500 次构建/月、2 万文件、单文件 25 MiB、100 个自定义域                                                  | 博客、图床                   | 构建次数与文件数                        |
+| Cloudflare Workers / Pages Functions | 10 万请求/天、每次 10 ms CPU、128 MB 内存                                                               | 博客问答、图床 API           | 10 ms CPU——只够轻代理，不够重计算       |
+| Cloudflare KV                        | 10 万读/天、1000 写/天、1 GB 存储                                                                       | 图床                         | **每天 1000 次写**                      |
+| Cloudflare Workers AI                | 1 万 Neurons/天                                                                                         | 博客站内问答                 | 一天用完就停，免费档不自动超额计费      |
+| GitHub Pages                         | 站点 1 GB、带宽 100 GB/月（软限制）、10 次构建/小时；仅静态                                             | FileKit、PomoBox、SalaryCalc | 自定义域证书与 HTTPS                    |
+| Neon Free                            | 每项目 1 GB 存储、100 CU-hours/月、100 个项目、10 分支、闲置 5 分钟自动挂起、6 小时恢复窗口             | 5 个库                       | 冷启动，以及「6 小时恢复」不是备份      |
+| Vercel Cron                          | Hobby 每天最多一次，触发时间 ±59 分钟                                                                   | RSS 每日抓取                 | 做不到分钟级定时                        |
+
+几条不那么直观的结论：
+
+- **Vercel 的 100 万次调用很多，4 CPU-hours 很少。** 一次函数调用如果只等 I/O，CPU 时间很短；一旦做图片处理、加解密或大 JSON 解析，4 小时会比你想象得快。DeepLearn 的 AI 出题 60 秒上限看起来很宽，但那是墙钟时间，不是 CPU 时间。
+- **Cloudflare 的 KV 写额度是图床的真上限。** 每天 1000 次写，不是 1000 次上传——一次上传可能写多个 key。读额度 10 万/天反而很宽。真要做大，应该换 R2 或 D1。
+- **GitHub Pages 的 100 GB 是软限制，但证书是硬故障。** 额度没超，站点也可能因为证书没签发而打不开；这次 SalaryCalc 就是。
+- **Neon 免费档不是「一直醒着」。** 5 分钟闲置就挂起，冷查询会慢一拍；6 小时恢复窗口意味着误删数据最多只能回到 6 小时内，这不是备份，是止损。
+- **Vercel Hobby 只允许非商业个人用途。** 这 15 个站现在都是个人项目，没问题；哪天某个站接广告或赞助，先看条款，再谈迁移。
+
+## 四、这次巡检发现的三个洞
+
+我在 2026-10-21 逐个请求了 15 个域名。结果是 11 个 `200`、2 个 `307`、1 个 TLS 失败。两个 `307` 是 RSS Reader 和 Treasury 的登录跳转，不是故障——**用「只看 200」的探针会把它们误报成宕机**。
+
+### 洞一：SalaryCalc 的证书没有签发
+
+```text
+$ curl -I https://salary.adcakeyuan.top
+curl: (60) schannel: SNI or certificate check failed: SEC_E_WRONG_PRINCIPAL
+```
+
+HTTP 是通的，DNS 也正确解析到 GitHub Pages 的四个 IP。问题在 Pages 侧：
+
+```text
+$ gh api repos/huqinyuan923-hue/salarycalc/pages
+{"cname":"salary.adcakeyuan.top","https_enforced":false,"status":"built"}
+```
+
+同一平台的 FileKit 和 PomoBox 都是 `https_enforced: true`，证书正常。所以不是 GitHub Pages 整体故障，而是这个站点的证书状态卡住了。常见处理顺序是：在仓库 Settings → Pages 里重新保存一次自定义域，等证书签发，再勾选 Enforce HTTPS，最后用 `curl` 和 Pages API 复核。这次我只做了诊断，没有改设置——自定义域和 DNS 属于需要单独确认的操作。
+
+### 洞二：博客的 `/stats` 反代在静态导出里根本不存在
+
+博客的 `next.config.js` 里有一段反代：
+
+```js
+async rewrites() {
+  return [{ source: '/stats/:path*', destination: 'https://analytics.umami.is/:path*' }]
+}
+```
+
+它把 `/stats/script.js` 转到 Umami。但博客是 `output: 'export'` 的静态站，`rewrites()` 是服务端能力，导出后不会生成任何路由。线上实际请求：
+
+```text
+GET https://adcakeyuan.top/stats/script.js  →  404（返回的是 404 页面，约 403 KB HTML）
+```
+
+目前它没造成可观测的损失，因为 `NEXT_UMAMI_ID` 没有配置，页面根本没加载统计脚本。但这是一颗埋着的雷：哪天打开 Umami，脚本会 404，统计静默为空。静态导出还会同样丢掉 `headers()`——博客现在靠 Cloudflare 的 `public/_headers` 文件补安全响应头，而不是靠 Next 配置。**从 Vercel 迁到静态托管时，`rewrites` 和 `headers` 必须逐条翻译成平台配置，不能假设它们跟着代码走。**
+
+### 洞三：博客在两条流水线上同时发布
+
+博客的 GitHub Actions 里还有一个 `deploy.yml`，每次推 `main` 都会构建并部署到 GitHub Pages。这次巡检时它最近一次运行是成功的（2026-10-21 02:44，耗时 1 分 39 秒）。仓库的 Pages 设置也还挂着 `cname: adcakeyuan.top`。
+
+但 `adcakeyuan.top` 的 DNS 指向 Cloudflare，线上响应头是 Cloudflare 的。也就是说：
+
+- 真正对外服务的是 Cloudflare Pages；
+- GitHub Pages 每次 push 也构建一份，只是域名没指过去；
+- `huqinyuan923-hue.github.io` 会 301 到 `http://adcakeyuan.top/`，再由 Cloudflare 升级到 HTTPS，多一跳。
+
+它现在不是故障，而是一份「隐形冷备」：如果 Cloudflare 挂了，把 DNS 切回 GitHub Pages 理论上能顶一会儿，但没人验证过、也没写切换步骤。更现实的问题是**每次 push 构建两遍、维护两套静态导出配置（都要执行 `mv app/api api.disabled`）**，以及「哪条是主发布线」在仓库里没有答案。要么删掉 `deploy.yml` 和 CNAME，把 Cloudflare 定为唯一发布线；要么保留它，但写成明确的灾备流程并定期演练。这次没有动。
+
+## 五、0 美元的账单，付的是什么
+
+平台费用确实是 0：
+
+| 项目                                 | 月费 | 备注                                           |
+| ------------------------------------ | ---- | ---------------------------------------------- |
+| Vercel Hobby                         | $0   | 10 个项目，非商业个人用途                      |
+| Cloudflare Pages / Workers / KV / AI | $0   | 博客 + 图床                                    |
+| GitHub Pages                         | $0   | 公开仓库，3 个静态站                           |
+| Neon Free                            | $0   | 5 个项目                                       |
+| 域名                                 | 另计 | `adcakeyuan.top` 与 `the37777777.top` 按年续费 |
+| 外部 cron                            | $0   | TimeMark 的分钟级检查                          |
+
+真正的成本在别处：
+
+1. **证书与域名状态**：一个站点证书卡住，就是一次线上不可用；免费平台不会主动打电话提醒你。
+2. **冷启动**：Neon 5 分钟挂起、Vercel 函数冷启动，第一次请求的体验由平台决定。
+3. **双线部署与配置漂移**：博客的 `_headers`、GH Actions、Cloudflare 构建三处各有一份规则，改一处不等于改三处。
+4. **备份**：Neon 的 6 小时恢复窗口不是备份；数据库该定期导出，静态内容该在 git 里。
+5. **注意力**：15 个站意味着 15 份依赖、15 个证书、15 条部署链。这次巡检就花了半天，而且只查了「能不能打开」，没查链接、没查 API。
+
+所以「每月 0 美元」是一个准确的数字，但不是一个完整的成本。**免费额度买到的是资源，不是运维。**
+
+## 六、如果重来，我会怎么分
+
+不会为了「统一」而迁移。现在 4 个纯静态站放在 Vercel 上，月费一样是 0，迁移只会带来证书、缓存和链接的风险。真要动，只有三种理由：撞到额度、需要某个平台独有的能力、或者平台数量已经让维护成本明显上升。
+
+如果从零开始，我会收成两层：
+
+- **Vercel**：所有 Next.js / 需要 Node 函数的项目，5 个左右；
+- **Cloudflare Pages**：所有纯静态和需要 KV / 边缘 AI 的项目，剩下的全部；
+- **Neon**：所有需要 Postgres 的项目，按项目分库，统一连接参数（`ssl: require`、`prepare: false`、`max: 1`）。
+
+GitHub Pages 只留给「一个 HTML 文件、没有构建、没有后端」的极小项目——它零配置，但自定义域证书是这套方案里最不可控的一环。
+
+接下来要做的，按优先级：
+
+1. 修 SalaryCalc 的证书，或者把域名先摘掉，别让一个坏证书挂在公开链接上；
+2. 决定博客的单发布线，删掉另一条；
+3. 配好 Umami 并把 `/stats` 换成静态托管能工作的方案，或者干脆删掉这段死代码；
+4. 给 5 个 Neon 库加每周导出，别把 6 小时恢复当备份；
+5. 加一个会跟随重定向、会检查 TLS、会区分 401/307 的巡检脚本——这次的 11/2/1 是手写的，下次应该自动跑。
+
+## 七、额度来源
+
+以下页面在 2026-10-21 核对，免费档随时可能调整：
+
+- [Vercel Hobby Plan](https://vercel.com/docs/plans/hobby)
+- [Vercel Cron Jobs 用量与限制](https://vercel.com/docs/cron-jobs/usage-and-pricing)
+- [Cloudflare Pages Limits](https://developers.cloudflare.com/pages/platform/limits/)
+- [Cloudflare Workers Limits](https://developers.cloudflare.com/workers/platform/limits/)
+- [Cloudflare KV Limits](https://developers.cloudflare.com/kv/platform/limits/)
+- [Cloudflare Workers AI Pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
+- [GitHub Pages Limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
+- [Neon Pricing](https://neon.com/pricing)
+
+托管不是信仰问题。一个站点需要的无非是四样东西：静态字节、一个函数、一个数据库、一个定时器。前三个在免费档里很容易满足，第四个和「出事时有人知道」才是账单的真正部分。
+
+---
+
+_本文由 AI 自动写作流水线生成。_

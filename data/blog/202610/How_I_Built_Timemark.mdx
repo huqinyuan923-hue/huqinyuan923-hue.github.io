@@ -1,0 +1,138 @@
+---
+images: ['/static/images/blog/how-i-built-timemark.svg']
+title: '提醒该在什么时候响：TimeMark 的时区、校时与 Vercel 部署'
+date: '2026-10-21'
+lastmod: '2026-10-21'
+tags: ['hono', 'postgres', 'vercel', 'timezone']
+draft: false
+summary: 'TimeMark 不是时间戳转换器，而是一个事件提醒系统。这篇讲它为什么用日历日而不是 epoch、怎么把本地墙上时间换成 UTC、Vercel Hobby 的 Cron 限制，以及一次让全站 API 500 的冷启动事故。'
+tldr: 'TimeMark 制作记：DATE + TIME + 用户时区、pg DATE 的本地午夜陷阱、迭代解析 DST、双源校时、±2 分钟提醒窗口，以及单函数部署与 esbuild CJS 冷启动崩溃。'
+authors: ['default']
+---
+
+先澄清一个名字带来的误会：TimeMark 不是「输入时间戳、输出格式化日期」的小工具。它是一个事件提醒系统，管的是生日、纪念日、农历、关系映射，以及在正确的那一分钟把消息发出去。README 里的定位是「智能事件提醒系统，61 个通知渠道」。
+
+这件事比时间戳转换难得多。时间戳是一个确定的瞬时；「每年 10 月 3 日早上 9 点提醒我」不是。后者绑在某个时区的日历上，会跨年重复，会碰夏令时，还会被农历和闰月打断。
+
+## 为什么存日历日，而不是 epoch
+
+TimeMark 的事件表存的是 `DATE`、`TIME` 和重复配置，不是 epoch：
+
+```sql
+date DATE NOT NULL,
+calendar_type TEXT DEFAULT 'gregorian',
+lunar_date TEXT,
+reminder_time TIME DEFAULT '09:00',
+reminder_days_before JSONB DEFAULT '[1, 3, 7]',
+recurring_config JSONB,
+next_occurrence DATE,
+```
+
+一个生日存成 epoch，只对「那一年、那个时区」成立；第二年要么重新算，要么存一堆未来实例。存日历日则把「哪一天」和「几点」保留成人类输入的原始形态，再在每次扫描时结合用户时区换算成瞬时。代价是每次都要算，好处是不会漂移。
+
+时区不在事件上，而在用户或档案上：查询时取 `profiles.timezone`，退回 `user_configs.timezone`，再退回 `Asia/Shanghai`。这意味着同一个账号下的事件默认共享一个时区，而不是每个事件各带一个。
+
+## pg 的 DATE 会变成「本地午夜」
+
+TimeMark 用 `pg` 驱动读 PostgreSQL。`DATE` 列到达 Node 时不是字符串，而是 `new Date(y, m, d)` 构造出来的**本地午夜**。如果顺手用 `toISOString()` 取日期，在东八区会回退一天：`DATE 2026-10-03` 变成 `2026-10-02`。
+
+代码里专门写了一个逆运算：
+
+```ts
+function ymdFromLocalDate(value: Date): string {
+  const y = value.getFullYear()
+  const m = String(value.getMonth() + 1).padStart(2, '0')
+  const d = String(value.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+```
+
+对纯 `YYYY-MM-DD` 字符串则直接切片，不再 parse——`new Date('2026-09-29')` 是 UTC 午夜，在纽约会被读成 09-28。日期字符串和瞬时是两种东西，混着处理就会少一天。
+
+这个坑不只影响显示。提醒任务的去重键是 `YYYY-MM-DD#d<n>#tHH:mm`，其中日期必须是**用户本地日**。注释里记录了一个真实窗口：数据库跑在 UTC、用户在 +08，凌晨 00:00–08:00 时数据库还停在前一天，若用 `CURRENT_DATE` 判断，当天的提醒会被漏掉。
+
+## 本地墙上时间到 UTC：迭代六次
+
+用户在表单里填的是「2026-10-03 09:00，Asia/Shanghai」。要判断提醒是否到点，得先把它换成 UTC 瞬时。代码先大胆假设这是 UTC，再用 `Intl` 取出该时区下的实际年月日时分，计算偏差并修正，最多迭代六次：
+
+```ts
+let guess = Date.UTC(targetY, targetMo - 1, targetD, hour, minute, 0)
+
+for (let i = 0; i < 6; i++) {
+  const p = getZonedParts(new Date(guess), timeZone)
+  const dayDiff = Math.round(
+    (Date.UTC(p.year, p.month - 1, p.day) - Date.UTC(targetY, targetMo - 1, targetD)) / 86_400_000
+  )
+  const minuteDiff = p.hour * 60 + p.minute - (hour * 60 + minute)
+  const correction = dayDiff * 1440 + minuteDiff
+  if (correction === 0) break
+  guess -= correction * 60_000
+}
+```
+
+对常规时区，一两次就收敛；夏令时切换附近可能需要更多次。代码没有对「不存在的时刻」和「重复的时刻」做显式消歧——春季跳过的 2:30 会落到某个相邻瞬时，秋季重复的 1:30 也只能取其一。对提醒系统来说这是可以接受的取舍，但它没有被写成一个明确的策略，而是迭代自然收敛的结果。
+
+## 校时：可用性优先，可观测性不足
+
+服务器时间也可能不准，所以每次计算前会向两个公开时间源取样：worldtimeapi.org 和 timeapi.io，各自 2.5 秒超时，然后排序取中位数。
+
+```ts
+samples.sort((a, b) => a.ts - b.ts)
+return samples[Math.floor(samples.length / 2)]
+```
+
+只有两个样本时，「中位数」实际取到的是较大的那个。这不算错，但和函数名给人的直觉有偏差。更值得注意的是失败路径：两个源都超时，系统仍然返回成功，并回退到本机时间。对提醒服务，这是合理的可用性优先；代价是你无法从结果里知道这次到底校没校时。
+
+提醒窗口默认是目标时刻前后各 2 分钟，也就是设 09:00 会在 08:58–09:02 之间触发；补发只向「迟到」方向扩展，且有上限，提醒永远不会早于设定时刻。
+
+## Vercel：一个函数、一条日 Cron、一个外部分钟表
+
+TimeMark 的前端是 React SPA，后端是一个 Hono 应用。构建时用 esbuild 打成单文件 `api/handler.cjs`，`/api/*` 和 `/share/:token` 全部重写到这一个函数，区域固定在香港 `hkg1`，`maxDuration` 配到 300 秒。数据库是 Neon Postgres，附件走 Blob；没有对象存储 token 时直接返回 503，绝不写本地磁盘。
+
+真正受限的是定时任务。Vercel Hobby 的内置 Cron **每天只能跑一次**，子日级表达式会直接导致部署报错。而提醒扫描需要每分钟一次，所以内置 Cron 只负责每日维护，分钟级任务交给外部的 cron-job.org，带着 `CRON_SECRET` 调用端点。
+
+```json
+"crons": [
+  {
+    "path": "/api/cron/daily-maintenance",
+    "schedule": "0 2 * * *"
+  }
+]
+```
+
+这带来了一个隐式耦合：提醒的可靠性不再只取决于 Vercel，还取决于一个第三方定时器和那条跨域请求。免费方案能跑，但监控面多了一层。
+
+数据库迁移也放在请求路径里：冷启动时执行一次，`initPromise` 保证同一实例只跑一次。首个请求因此更慢，且迁移失败会直接表现为 API 不可用。
+
+## 一次让所有 API 变 500 的冷启动事故
+
+v2.28 上线后，整个后端在生产不可用：所有 `/api/*` 返回 Vercel 裸 500，登录页的 Turnstile 消失只是症状。根因不在数据库，也不在环境变量，而在打包格式：
+
+生产 bundle 是 esbuild 产出的 CJS，`import.meta` 是空对象。代码顶层用 `createRequire(import.meta.url)` 做版本读取，模块求值阶段就抛错——函数还没开始处理请求就死了。
+
+v2.30 的修复有两部分：构建时把版本和 commit 注入 banner，不再依赖 `import.meta`；以及在 bundle 生成后立刻 `require()` 一次，把这类错误拦在构建阶段。
+
+```js
+try {
+  execFileSync(process.execPath, ['-e', 'require("./api/handler.cjs")'], {
+    cwd: root,
+    env: { ...process.env, VERCEL: '1' },
+    stdio: 'pipe',
+  })
+  console.log('[build-vercel-api] cold-start smoke: OK')
+} catch (err) {
+  process.exit(1)
+}
+```
+
+单函数架构把部署复杂度压到最低，也把「模块一加载就崩」的爆炸半径放大到全站。冷启动冒烟不是锦上添花，是这种架构的必需品。
+
+## 时间系统真正难的地方
+
+不是把 `Date` 格式化成 `YYYY-MM-DD HH:mm`。难的是三个问题同时成立：这个「9 点」属于哪个时区？它对应哪一天？这一刻真的到了吗？
+
+TimeMark 用日历日保存意图、用用户时区解释意图、用校时和窗口判断「到了吗」。它仍有明确的边界：时区按用户而非按事件、DST 消歧依赖迭代结果、分钟级调度依赖外部 cron、文档版本号也落后于代码。但把这些边界写清楚之后，系统至少是可解释的。
+
+源码在 [GitHub](https://github.com/huqinyuan923-hue/timemark-vercel)。
+
+> 本文由 AI 自动写作流水线生成；时区、日期解析、提醒窗口、Cron 与冷启动修复均对照仓库源码与部署文档核实，未在生产环境复现 v2.28 故障。
