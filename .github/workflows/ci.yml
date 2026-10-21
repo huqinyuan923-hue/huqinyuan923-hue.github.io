@@ -2,8 +2,10 @@ name: CI
 
 on:
   pull_request:
+  # deploy.yml 只管「能不能发出去」，类型/守卫单测/E2E 只有 CI 跑；main 是唯一发布分支，
+  # 之前 branches-ignore: [main] 让这些检查在真正上线的代码上一次都没跑过。CI 红不挡发布。
   push:
-    branches-ignore: [main]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
