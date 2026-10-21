@@ -2,8 +2,8 @@ name: CI
 
 on:
   pull_request:
-  # deploy.yml 只管「能不能发出去」，类型/守卫单测/E2E 只有 CI 跑；main 是唯一发布分支，
-  # 之前 branches-ignore: [main] 让这些检查在真正上线的代码上一次都没跑过。CI 红不挡发布。
+  # Cloudflare Pages 负责发布，CI 负责类型/守卫单测/E2E；main 是唯一分支，
+  # 这些检查必须在真正上线的代码上跑。CI 红不挡发布。
   push:
     branches: [main]
 
@@ -47,7 +47,7 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
-      # 与 deploy.yml 同步：output: 'export' 不允许 route handler，/api/npm 会在
+      # output: 'export' 不允许 route handler，/api/npm 会在
       # "Collecting page data" 阶段直接报错，必须先把 app/api 挪走。
       - name: Disable API routes (not supported in static export)
         run: mv app/api api.disabled

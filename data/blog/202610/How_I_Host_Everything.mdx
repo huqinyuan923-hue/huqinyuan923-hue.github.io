@@ -112,7 +112,7 @@ async rewrites() {
 GET https://adcakeyuan.top/stats/script.js  →  404（返回的是 404 页面，约 403 KB HTML）
 ```
 
-目前它没造成可观测的损失，因为 `NEXT_UMAMI_ID` 没有配置，页面根本没加载统计脚本。但这是一颗埋着的雷：哪天打开 Umami，脚本会 404，统计静默为空。静态导出还会同样丢掉 `headers()`——博客现在靠 Cloudflare 的 `public/_headers` 文件补安全响应头，而不是靠 Next 配置。**从 Vercel 迁到静态托管时，`rewrites` 和 `headers` 必须逐条翻译成平台配置，不能假设它们跟着代码走。**
+目前它没造成可观测的损失，因为 `NEXT_UMAMI_ID` 没有配置，页面根本没加载统计脚本。但这是一颗埋着的雷：哪天打开 Umami，脚本会 404，统计静默为空。静态导出还会同样丢掉 `headers()`——博客现在靠 Cloudflare 的 `public/_headers` 文件补安全响应头，而不是靠 Next 配置。**从 Vercel 迁到静态托管时，`rewrites` 和 `headers` 必须逐条翻译成平台配置，不能假设它们跟着代码走。** 发布后已删掉这段反代，Umami 组件改为直连 `analytics.umami.is`（仍未启用），日常统计看 Cloudflare Web Analytics。
 
 ### 洞三：博客在两条流水线上同时发布
 
@@ -124,7 +124,7 @@ GET https://adcakeyuan.top/stats/script.js  →  404（返回的是 404 页面�
 - GitHub Pages 每次 push 也构建一份，只是域名没指过去；
 - `huqinyuan923-hue.github.io` 会 301 到 `http://adcakeyuan.top/`，再由 Cloudflare 升级到 HTTPS，多一跳。
 
-它现在不是故障，而是一份「隐形冷备」：如果 Cloudflare 挂了，把 DNS 切回 GitHub Pages 理论上能顶一会儿，但没人验证过、也没写切换步骤。更现实的问题是**每次 push 构建两遍、维护两套静态导出配置（都要执行 `mv app/api api.disabled`）**，以及「哪条是主发布线」在仓库里没有答案。要么删掉 `deploy.yml` 和 CNAME，把 Cloudflare 定为唯一发布线；要么保留它，但写成明确的灾备流程并定期演练。这次没有动。
+它现在不是故障，而是一份「隐形冷备」：如果 Cloudflare 挂了，把 DNS 切回 GitHub Pages 理论上能顶一会儿，但没人验证过、也没写切换步骤。更现实的问题是**每次 push 构建两遍、维护两套静态导出配置（都要执行 `mv app/api api.disabled`）**，以及「哪条是主发布线」在仓库里没有答案。要么删掉 `deploy.yml` 和 CNAME，把 Cloudflare 定为唯一发布线；要么保留它，但写成明确的灾备流程并定期演练。发布后按前一种方案处理：删除 `deploy.yml` 和 `CNAME`，推送不再触发 Pages 部署，Cloudflare 成为唯一发布线。GitHub 不允许关闭 `<user>.github.io` 仓库的 Pages，所以旧站点配置还在，但不会再更新。
 
 ## 五、0 美元的账单，付的是什么
 
@@ -164,12 +164,12 @@ GitHub Pages 只留给「一个 HTML 文件、没有构建、没有后端」的�
 接下来要做的，按优先级：
 
 1. ~~修 SalaryCalc 的证书~~：已完成，见文末补记；
-2. 决定博客的单发布线，删掉另一条；
-3. 配好 Umami 并把 `/stats` 换成静态托管能工作的方案，或者干脆删掉这段死代码；
+2. ~~决定博客的单发布线，删掉另一条~~：已删 Pages 部署工作流，Cloudflare 唯一发布；
+3. ~~配好 Umami 并把 `/stats` 换成静态托管能工作的方案，或者干脆删掉这段死代码~~：已删死反代，统计改用 Cloudflare Web Analytics；
 4. 给 5 个 Neon 库加每周导出，别把 6 小时恢复当备份；
 5. 加一个会跟随重定向、会检查 TLS、会区分 401/307 的巡检脚本——这次的 11/2/1 是手写的，下次应该自动跑。
 
-## 补记：洞一已在当天修复
+## 补记：三个洞都已在当天处理
 
 文章发布后，按上面的顺序把 `salary.adcakeyuan.top` 修好了：
 
@@ -181,6 +181,14 @@ $ printf '{"cname":"salary.adcakeyuan.top"}' | gh api --method PUT repos/huqinyu
 GitHub 自动产生 `b932529 Delete CNAME` 和 `9f26d95 Create CNAME` 两个提交，约 20 秒后证书状态变为 `approved`，`CN=salary.adcakeyuan.top`，由 Let's Encrypt 签发至 2027-01-19；再 `PUT {"https_enforced": true}`。验收结果：HTTP 301 → HTTPS 200，Chromium 里 `window.isSecureContext === true`，页面正常渲染。
 
 中间有一个容易误判的插曲：证书签好后，Windows 上的 `curl` 仍报 `SEC_E_WRONG_PRINCIPAL`，但 OpenSSL、Node 的 `fetch` 和 `curl --http1.1 --tlsv1.2` 都正常。这更像是本机 schannel 在 TLS 1.3 / HTTP/2 协商上的问题，不是站点故障——**同一份证书，换一个客户端再验一次，能省掉一次误判。**
+
+### 洞二：删掉不存在的反代
+
+`next.config.js` 的 `rewrites()` 和 `vercel.json` 里的同一段反代都已删除；Umami 组件若以后配置了 `NEXT_UMAMI_ID`，会直接请求 `https://analytics.umami.is/script.js`，不再依赖 `/stats`。当前页面统计由 Cloudflare Web Analytics 提供：浏览器里能看到 `static.cloudflareinsights.com/beacon.min.js` 和 `POST /cdn-cgi/rum`，不需要额外代码。
+
+### 洞三：只留一条发布线
+
+`.github/workflows/deploy.yml` 与仓库根目录的 `CNAME` 已删除。CI 仍然跑静态导出构建、E2E 和 Lighthouse，所以发布前的验证没有减少；Cloudflare Pages 继续在 push 后构建。GitHub 不允许对 `<user>.github.io` 仓库关闭 Pages（API 返回 `422 Deactivating GitHub pages for this repository is not allowed`），因此旧 Pages 配置仍在，但没有工作流再向它部署，`adcakeyuan.top` 的 DNS 也始终指向 Cloudflare。
 
 ## 七、额度来源
 

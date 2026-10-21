@@ -90,17 +90,6 @@ module.exports = () => {
       ],
       unoptimized,
     },
-    async rewrites() {
-      return [
-        // Proxy Umami script/events to avoid blockers while keeping a stable local path.
-        // /stats/script.js  -> https://analytics.umami.is/script.js
-        // /stats/api/send   -> https://analytics.umami.is/api/send
-        {
-          source: '/stats/:path*',
-          destination: 'https://analytics.umami.is/:path*',
-        },
-      ]
-    },
     async headers() {
       return [
         // Global security headers
