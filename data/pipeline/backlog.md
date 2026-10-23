@@ -14,6 +14,11 @@
 - [x] How_I_Built_Video2code_Replica：video2code 看视频复刻 Raycast 首页，讲计划-取证-审计工作流、证据哈希与还原度评估（2026-10-21 已发布，项目已归档到 \_archive）
 - [x] How_I_Built_Deeplearn_Backend：深学后端（deeplearn/api/index.js），讲 Hono 单函数 + Neon + AI 出题缓存；与已发布的 How_I_Built_DeepLearn 内容架构篇互补（2026-10-21 已发布）
 - [x] How_I_Host_Everything：15 个站点的托管地图（10 Vercel / 3 GitHub Pages / 2 Cloudflare Pages）+ 免费额度与成本账单（2026-10-21 已发布）
+- [ ] How_I_Built_Blog_Rag：给博客装上语义搜索与站内 AI 问答——浏览器端嵌入模型 + Pages Functions + Workers AI 的三次架构转向（素材：本仓库 scripts/build-semantic-index.mjs、functions/api/[[route]].ts、utils/embedding.ts、utils/semantic-search.ts，以及 wrangler.jsonc）
+- [ ] How_I_Built_Auto_Writer：自动写作流水线的设计与安全边界——PR 人工审阅版与 AI 直发版两条路线的取舍、选题查重机制、AI 内容标注规范（素材：.github/auto-writer.md、data/pipeline/backlog.md 的真实运行记录）
+- [ ] How_I_Built_Cha_Dual_Engine：把一门语言的双引擎塞进浏览器——双后端各自的 Worker 会话、对照模式与分歧检测、loopBudget 与输出闸门；与第 8 章的编译原理视角互补，这篇讲工程整合（素材：C:/works/cha-lang 的 playground/main.ts 与本仓库 public/cha/cha-worker.js、components/cha/playground.tsx）
+- [ ] How_I_Built_Arcade_Hub_Backend：40 款游戏背后的账号、排行榜与数据后台——Neon Postgres + Vercel 上的用户系统、统一计分协议与防刷分设计（素材：C:/works/arcade-hub 的 db/seed.ts、API 路由与后台页面）
+- [ ] How_I_Migrated_Mengke：39 篇旧博客文章的迁移与内容治理——frontmatter 批量治理、字体本地化防构建失败、旧 URL 兼容（素材：git 历史 cc4232e / 1f510e2 / 3f836ef 三个提交的完整过程）
 
 ## 已发布
 
