@@ -19,9 +19,6 @@ export function ReflectiveBlackBackground({ className }: { className?: string })
       {/* 基底渐变：暗色深空 / 亮色冷云白 */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-cyan-50 to-indigo-100 dark:from-[#04060c] dark:via-[#070b16] dark:to-[#04050a]" />
 
-      {/* 科技网格层（跟随滚动静止，极淡） */}
-      <div className="bg-tech-grid absolute inset-0" />
-
       {/* 极光晕：暗色青紫两极 + 一束中央辉光；亮色柔和光斑 */}
       <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
         <div className="absolute -left-[12%] -top-[14%] h-[55%] max-h-[62vh] w-[55%] max-w-[62vh] animate-flow-1 rounded-full bg-cyan-300/50 blur-[110px] motion-reduce:animate-none dark:bg-cyan-500/15" />

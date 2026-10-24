@@ -10,6 +10,7 @@ import { Footer } from '~/components/footer'
 import { Header } from '~/components/header'
 import { SiteSearch } from '~/components/search/site-search'
 import { ReflectiveBlackBackground } from '~/components/effects/reflective-black-background'
+import { EntranceOverlay } from '~/components/effects/entrance-overlay'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
 
@@ -149,6 +150,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
+      {/* 进站动画会话标记：水合前执行——
+          看过 → data-boot=done（跳过）；首访 → 立刻写入标记并播放一次。
+          标记在文档开头完成，组件与后续页面不再触碰存储，杜绝竞态。 */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{var s=sessionStorage;if(s.getItem('hud-boot-seen')){document.documentElement.dataset.boot='done'}else{s.setItem('hud-boot-seen','1')}}catch(e){}`,
+        }}
+      />
       <body
         className={clsx([
           'antialiased',
@@ -159,6 +168,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ])}
       >
         <ReflectiveBlackBackground />
+        <EntranceOverlay />
         <ThemeProviders>
           <UmamiAnalytics websiteId={SITE_METADATA.analytics.umamiAnalytics.websiteId} />
           <Header />

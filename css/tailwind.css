@@ -214,3 +214,96 @@ samp {
     0 0 18px rgba(34, 211, 238, 0.45),
     0 0 42px rgba(167, 139, 250, 0.25);
 }
+
+/* ── 进站引导动画（每会话一次）─────────────────────────
+   时序：0-1.5s 引导内容，1.5-2.0s 整层淡出并揭示页面。
+   关键：淡出由 CSS 动画自身 forwards 收尾，不依赖 JS 移除；
+   JS 只负责标记 sessionStorage 并卸载节点。 */
+html[data-boot='done'] .entrance-overlay {
+  display: none;
+}
+.entrance-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 30%, rgba(34, 211, 238, 0.08), transparent), #04060c;
+  animation: boot-exit 0.55s cubic-bezier(0.65, 0, 0.35, 1) 1.55s forwards;
+}
+@keyframes boot-exit {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.04);
+  }
+}
+.entrance-overlay .boot-logo {
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  font-size: clamp(34px, 7vw, 72px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: transparent;
+  background: linear-gradient(100deg, #22d3ee 0%, #60a5fa 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: boot-glow 1.5s ease both;
+}
+@keyframes boot-glow {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+.entrance-overlay .boot-log {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgba(148, 163, 184, 0.9);
+  animation: boot-line 0.35s ease 0.35s both;
+}
+@keyframes boot-line {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.entrance-overlay .boot-bar {
+  width: min(300px, 62vw);
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.15);
+  animation: boot-line 0.35s ease 0.5s both;
+}
+.entrance-overlay .boot-bar::before {
+  content: '';
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22d3ee, #a78bfa);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+  animation: boot-fill 1.05s cubic-bezier(0.3, 0, 0.4, 1) 0.45s forwards;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+@keyframes boot-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance-overlay {
+    display: none;
+  }
+}

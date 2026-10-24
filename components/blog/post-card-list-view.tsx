@@ -35,7 +35,7 @@ export function PostCardListView({
           href={`/blog/${slug}`}
           className={clsx([
             'relative block shrink-0',
-            'h-auto w-full md:h-80 md:w-72',
+            'h-auto w-full md:w-[22rem]',
             'pb-3 pl-0 pr-3 pt-0',
             'transition-all ease-in-out hover:pb-2 hover:pl-1 hover:pr-2 hover:pt-1',
           ])}
@@ -44,11 +44,11 @@ export function PostCardListView({
             src={images && images.length > 0 ? images[0] : SITE_METADATA.postFallback}
             alt={title}
             width={500}
-            height={500}
-            className="aspect-video h-full w-full rounded-xl shadow-2xl"
+            height={262}
+            className="aspect-[40/21] h-full w-full rounded-xl object-cover shadow-2xl"
             loading={loading}
             fetchPriority={loading === 'eager' ? 'high' : undefined}
-            sizes="(min-width: 768px) 288px, 100vw"
+            sizes="(min-width: 768px) 352px, 100vw"
           />
           <GritBackground
             className={clsx([
