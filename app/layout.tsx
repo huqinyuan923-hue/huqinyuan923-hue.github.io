@@ -11,6 +11,8 @@ import { Header } from '~/components/header'
 import { SiteSearch } from '~/components/search/site-search'
 import { ReflectiveBlackBackground } from '~/components/effects/reflective-black-background'
 import { EntranceOverlay } from '~/components/effects/entrance-overlay'
+import { ScrollProgress } from '~/components/effects/scroll-progress'
+import { ScrollReveal } from '~/components/effects/scroll-reveal'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
 
@@ -155,7 +157,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           标记在文档开头完成，组件与后续页面不再触碰存储，杜绝竞态。 */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{var s=sessionStorage;if(s.getItem('hud-boot-seen')){document.documentElement.dataset.boot='done'}else{s.setItem('hud-boot-seen','1')}}catch(e){}`,
+          __html: `try{document.documentElement.classList.add('js-anim');var s=sessionStorage;if(s.getItem('hud-boot-seen')){document.documentElement.dataset.boot='done'}else{s.setItem('hud-boot-seen','1')}}catch(e){}`,
         }}
       />
       <body
@@ -169,6 +171,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <ReflectiveBlackBackground />
         <EntranceOverlay />
+        <ScrollProgress />
+        <ScrollReveal />
         <ThemeProviders>
           <UmamiAnalytics websiteId={SITE_METADATA.analytics.umamiAnalytics.websiteId} />
           <Header />

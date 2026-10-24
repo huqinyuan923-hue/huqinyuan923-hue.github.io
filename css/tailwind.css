@@ -215,6 +215,49 @@ samp {
     0 0 42px rgba(167, 139, 250, 0.25);
 }
 
+/* ── 滚动显现：卡片进入视口上浮淡入 ──
+   初始隐藏仅在 html.js-anim（JS 可用）下生效，无 JS / 减少动效直接可见 */
+html.js-anim.reveal-ready main article,
+html.js-anim.reveal-ready main .glass-card {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.js-anim.reveal-ready main article.revealed,
+html.js-anim.reveal-ready main .glass-card.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js-anim main article,
+  html.js-anim main .glass-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* 渐变文字流光：background-size 200% 缓慢平移 */
+.text-shimmer {
+  background-size: 200% 100% !important;
+  animation: text-shimmer 6s ease-in-out infinite;
+}
+@keyframes text-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-shimmer {
+    animation: none;
+  }
+}
+
 /* ── 进站引导动画（每会话一次）─────────────────────────
    时序：0-1.5s 引导内容，1.5-2.0s 整层淡出并揭示页面。
    关键：淡出由 CSS 动画自身 forwards 收尾，不依赖 JS 移除；
@@ -233,7 +276,7 @@ html[data-boot='done'] .entrance-overlay {
   gap: 22px;
   background:
     radial-gradient(ellipse 90% 60% at 50% 30%, rgba(34, 211, 238, 0.08), transparent), #04060c;
-  animation: boot-exit 0.55s cubic-bezier(0.65, 0, 0.35, 1) 1.55s forwards;
+  animation: boot-exit 0.6s cubic-bezier(0.65, 0, 0.35, 1) 3s forwards;
 }
 @keyframes boot-exit {
   to {
@@ -251,7 +294,7 @@ html[data-boot='done'] .entrance-overlay {
   background: linear-gradient(100deg, #22d3ee 0%, #60a5fa 50%, #a78bfa 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  animation: boot-glow 1.5s ease both;
+  animation: boot-glow 0.9s ease 0.15s both;
 }
 @keyframes boot-glow {
   0% {
@@ -267,10 +310,20 @@ html[data-boot='done'] .entrance-overlay {
 }
 .entrance-overlay .boot-log {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 12px;
-  letter-spacing: 0.2em;
+  font-size: clamp(11px, 1.4vw, 13px);
+  letter-spacing: 0.12em;
   color: rgba(148, 163, 184, 0.9);
-  animation: boot-line 0.35s ease 0.35s both;
+  min-height: 5.4em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.entrance-overlay .boot-log .line {
+  opacity: 0;
+}
+.entrance-overlay .boot-log .ok {
+  color: #a3e635;
 }
 @keyframes boot-line {
   from {
@@ -279,12 +332,12 @@ html[data-boot='done'] .entrance-overlay {
   }
 }
 .entrance-overlay .boot-bar {
-  width: min(300px, 62vw);
+  width: min(320px, 62vw);
   height: 3px;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(148, 163, 184, 0.15);
-  animation: boot-line 0.35s ease 0.5s both;
+  animation: boot-line 0.35s ease 0.4s both;
 }
 .entrance-overlay .boot-bar::before {
   content: '';
@@ -293,9 +346,34 @@ html[data-boot='done'] .entrance-overlay {
   border-radius: inherit;
   background: linear-gradient(90deg, #22d3ee, #a78bfa);
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
-  animation: boot-fill 1.05s cubic-bezier(0.3, 0, 0.4, 1) 0.45s forwards;
+  animation: boot-fill 2s cubic-bezier(0.3, 0, 0.4, 1) 0.5s forwards;
   transform-origin: left;
   transform: scaleX(0);
+}
+@property --bootn {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+.entrance-overlay .boot-pct {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  color: #22d3ee;
+  animation:
+    boot-line 0.3s ease 0.4s both,
+    boot-count 2s cubic-bezier(0.3, 0, 0.4, 1) 0.5s both;
+  counter-reset: bootn var(--bootn);
+}
+.entrance-overlay .boot-pct::after {
+  content: counter(bootn) '%';
+}
+@keyframes boot-count {
+  from {
+    --bootn: 0;
+  }
+  to {
+    --bootn: 100;
+  }
 }
 @keyframes boot-fill {
   to {

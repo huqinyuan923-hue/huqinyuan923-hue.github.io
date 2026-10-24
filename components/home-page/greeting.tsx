@@ -11,6 +11,8 @@ export function Greeting() {
           'text-[40px] leading-[60px] md:text-[68px] md:leading-[100px]',
           'bg-clip-text text-transparent',
           'bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500',
+          'text-shimmer',
+          'glow-title',
           'dark:from-cyan-300 dark:via-blue-400 dark:to-violet-400'
         )}
       >
