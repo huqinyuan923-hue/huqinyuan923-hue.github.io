@@ -1,8 +1,10 @@
 import { clsx } from 'clsx'
 
 /**
- * Reflective background inspired by blog.the37777777.top/friends.
- * Light mode: soft pastel gradient. Dark mode: reflective black with glow orbs.
+ * 「霓虹黑曜石」全站背景。
+ * 暗色：深空黑蓝基底 + 科技网格 + 青/紫双极光晕（呼吸漂移）。
+ * 亮色：冷调云白 + 极淡网格 + 柔和光斑。
+ * 大半径 blur 在移动端光栅化代价高，小屏只保留静态渐变。
  */
 export function ReflectiveBlackBackground({ className }: { className?: string }) {
   return (
@@ -14,15 +16,21 @@ export function ReflectiveBlackBackground({ className }: { className?: string })
         className,
       ])}
     >
-      {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-200 via-indigo-100 to-cyan-200 dark:from-[#07070b] dark:via-[#0b0b12] dark:to-[#050508]" />
+      {/* 基底渐变：暗色深空 / 亮色冷云白 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-cyan-50 to-indigo-100 dark:from-[#04060c] dark:via-[#070b16] dark:to-[#04050a]" />
 
-      {/* Glow orbs：大半径 blur 在移动端光栅化代价很高，小屏只保留静态渐变 */}
+      {/* 科技网格层（跟随滚动静止，极淡） */}
+      <div className="bg-tech-grid absolute inset-0" />
+
+      {/* 极光晕：暗色青紫两极 + 一束中央辉光；亮色柔和光斑 */}
       <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
-        <div className="absolute -left-[10%] -top-[10%] h-[55%] max-h-[60vh] w-[55%] max-w-[60vh] animate-flow-1 rounded-full bg-blue-300/60 blur-[100px] motion-reduce:animate-none dark:bg-indigo-500/15" />
-        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] max-h-[55vh] w-[50%] max-w-[55vh] animate-flow-2 rounded-full bg-purple-300/50 blur-[100px] motion-reduce:animate-none dark:bg-purple-500/10" />
-        <div className="absolute left-[20%] top-[25%] h-[45%] max-h-[50vh] w-[45%] max-w-[50vh] animate-flow-3 rounded-full bg-cyan-300/50 blur-[100px] motion-reduce:animate-none dark:bg-blue-500/10" />
+        <div className="absolute -left-[12%] -top-[14%] h-[55%] max-h-[62vh] w-[55%] max-w-[62vh] animate-flow-1 rounded-full bg-cyan-300/50 blur-[110px] motion-reduce:animate-none dark:bg-cyan-500/15" />
+        <div className="absolute -bottom-[12%] -right-[10%] h-[50%] max-h-[55vh] w-[50%] max-w-[55vh] animate-flow-2 rounded-full bg-violet-300/45 blur-[110px] motion-reduce:animate-none dark:bg-violet-600/15" />
+        <div className="absolute left-[30%] top-[30%] h-[40%] max-h-[46vh] w-[40%] max-w-[46vh] animate-flow-3 rounded-full bg-blue-300/40 blur-[110px] motion-reduce:animate-none dark:bg-blue-600/10" />
       </div>
+
+      {/* 顶部扫描高光线：增加 HUD 质感（仅暗色） */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent dark:block" />
     </div>
   )
 }

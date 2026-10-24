@@ -41,12 +41,12 @@ export function PostCardGridView({
           <GritBackground
             className={clsx([
               'bottom-0 left-3 right-0 top-3',
-              'rounded-xl border-2 border-gray-800 dark:border-gray-400',
+              'rounded-xl border-2 border-cyan-500/30 transition-colors duration-300 group-hover:border-violet-500/60 dark:border-cyan-400/25 dark:group-hover:border-violet-400/50',
             ])}
           />
         </Link>
         <div className="w-full space-y-3">
-          <div className="flex items-center gap-x-1.5 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-x-1.5 font-mono text-xs text-gray-500 dark:text-gray-400">
             <time dateTime={date}>{formatDate(date)}</time>
             <span className="mx-1 text-gray-400">/</span>
             <span>{Math.ceil(readingTime.minutes)} mins read</span>

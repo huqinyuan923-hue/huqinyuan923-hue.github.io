@@ -93,12 +93,19 @@ module.exports = {
       },
       fontFamily: {
         sans: ['var(--font-nunito)', ...fontFamily.sans],
+        grotesk: ['var(--font-grotesk)', 'var(--font-nunito)', ...fontFamily.sans],
         greeting: ['SignaturePlaypen', "'Segoe Script'", "'Brush Script MT'", 'cursive'],
         mono: ['var(--font-jetbrains-mono)', ...fontFamily.mono],
       },
       colors: {
-        primary: colors.indigo,
-        dark: '#1f1f1f',
+        primary: colors.cyan,
+        dark: '#070a12',
+        obsidian: {
+          950: '#05070d',
+          900: '#070a12',
+          850: '#0a0e1a',
+          800: '#0d1220',
+        },
         spotify: '#1DB954',
         goodreads: '#372213',
         facebook: '#1877f2',

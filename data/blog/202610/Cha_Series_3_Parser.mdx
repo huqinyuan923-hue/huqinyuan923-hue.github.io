@@ -1,4 +1,5 @@
 ---
+images: ['/static/images/blog/cha-series-3-parser.svg']
 title: '手写一门编程语言（三）：解析器——优先级是「降」出来的'
 date: '2026-10-07'
 lastmod: '2026-10-07'
@@ -68,10 +69,10 @@ function assignment(): Expr {
 `toAssignTarget` 只放行三种形状——变量、下标、点号成员：
 
 ```ts
-x = 1;        // { kind: 'identifier', name: 'x' }
-a[0] = 1;     // { kind: 'index', target: a, index: 0 }
-m.k = 1;      // { kind: 'member', target: m, key: 'k' }
-1 = 2;        // 报错：这里不能被赋值
+x = 1 // { kind: 'identifier', name: 'x' }
+a[0] = 1 // { kind: 'index', target: a, index: 0 }
+m.k = 1 // { kind: 'member', target: m, key: 'k' }
+1 = 2 // 报错：这里不能被赋值
 ```
 
 代价是 `toAssignTarget` 要把已建好的节点「拆开」重组成 `AssignTarget`，多写两个 case；好处是三种赋值目标共用一条解析路径，复合赋值（`+=` 等）也免费获得同样的支持。四种复合赋值运算符在这里只是 `op` 字段的取值不同，求值器那章会看到它们怎么避免二次求值。
@@ -116,7 +117,7 @@ case 'TEMPLATE_START': {
 { type: 'template', parts: ['合计 ', ' 元'], exprs: [(a + b 的语法树)] }
 ```
 
-插值里多写了表达式（`${1 2}`）会被「解析完还有剩余 token」的检查抓住——报错信息是：*插值表达式只能是一个表达式*。
+插值里多写了表达式（`${1 2}`）会被「解析完还有剩余 token」的检查抓住——报错信息是：_插值表达式只能是一个表达式_。
 
 ## 交付物
 

@@ -41,7 +41,7 @@ function Stack({ builtWith }: { builtWith: string[] }) {
       {builtWith?.map((tool) => (
         <div
           key={tool}
-          className="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          className="flex items-center gap-1 rounded-md bg-gray-900/5 px-2 py-1 font-mono text-[11px] text-gray-700 ring-1 ring-gray-900/10 dark:bg-white/10 dark:text-gray-200 dark:ring-white/10"
         >
           <Brand
             name={tool as keyof typeof BrandsMap}
@@ -70,7 +70,7 @@ export function ProjectCard({ project }: { project: (typeof PROJECTS)[0] }) {
   const href = url || repository?.url
 
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:border-primary-500 hover:shadow-lg dark:border-gray-800 dark:bg-white/5 dark:hover:border-primary-500">
+    <div className="glass-card card-hover-glow group relative flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
         <Image
           src={imgSrc}

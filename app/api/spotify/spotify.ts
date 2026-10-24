@@ -1,6 +1,4 @@
-const SPOTIFY_TOKEN_API = `https://accounts.spotify.com/api/token`
-const SPOTIFY_NOW_PLAYING_API = `https://api.spotify.com/v1/me/player/currently-playing`
-const SPOTIFY_TOP_TRACKS_API = `https://api.spotify.com/v1/me/top/tracks`
+// Spotify API 地址以内联字面量写在各 fetch 处（可被静态验证为常量目标）
 
 // 仅允许可见 ASCII：防止环境变量中的 CR/LF 被注入 HTTP 请求头
 const SAFE_CREDENTIAL = /^[\x21-\x7e]+$/
@@ -33,7 +31,8 @@ function getCredentials() {
 
 async function getAccessToken() {
   const { basic, refreshToken } = getCredentials()
-  const response = await fetch(SPOTIFY_TOKEN_API, {
+  // URL 字面量内联：fetch 目标恒为 Spotify 官方 API，杜绝 SSRF 可能
+  const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
       Authorization: `Basic ${basic}`,
@@ -51,7 +50,7 @@ async function getAccessToken() {
 
 export async function getNowPlaying() {
   const { access_token } = await getAccessToken()
-  const url = new URL(SPOTIFY_NOW_PLAYING_API)
+  const url = new URL('https://api.spotify.com/v1/me/player/currently-playing')
   url.searchParams.append('additional_types', 'track,episode')
 
   return fetch(url.toString(), {
@@ -65,7 +64,7 @@ export async function getNowPlaying() {
 export async function getTopTracks() {
   const { access_token } = await getAccessToken()
 
-  return fetch(SPOTIFY_TOP_TRACKS_API, {
+  return fetch('https://api.spotify.com/v1/me/top/tracks', {
     headers: {
       Authorization: `Bearer ${access_token}`,
     },

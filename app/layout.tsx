@@ -47,6 +47,19 @@ const FONT_JETBRAINS_MONO = localFont({
   variable: '--font-jetbrains-mono',
 })
 
+// 标题/数字的科技感字体：Space Grotesk
+const FONT_GROTESK = localFont({
+  src: [
+    {
+      path: '../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2',
+      weight: '300 700',
+      style: 'normal',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-grotesk',
+})
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -101,7 +114,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang={SITE_METADATA.language}
-      className={clsx('scroll-smooth', FONT_NUNITO.variable, FONT_JETBRAINS_MONO.variable)}
+      className={clsx(
+        'scroll-smooth',
+        FONT_NUNITO.variable,
+        FONT_JETBRAINS_MONO.variable,
+        FONT_GROTESK.variable
+      )}
       suppressHydrationWarning
     >
       <link

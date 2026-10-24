@@ -87,8 +87,9 @@ export function Header() {
     <Container
       as="header"
       className={clsx(
-        'bg-white/75 py-2 backdrop-blur dark:bg-dark/75',
-        'shadow-sm saturate-100 md:rounded-2xl',
+        'border border-gray-900/10 bg-white/70 py-2 backdrop-blur-xl',
+        'dark:border-white/10 dark:bg-[#0a0e1a]/70',
+        'shadow-lg shadow-gray-900/5 saturate-150 dark:shadow-black/40 md:rounded-2xl',
         SITE_METADATA.stickyNav && 'sticky top-2 z-50 lg:top-3'
       )}
     >

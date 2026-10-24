@@ -57,10 +57,8 @@ export function ProfileCard() {
       <div
         style={style}
         className={clsx(
-          'flex flex-col overflow-hidden transition-all duration-200 ease-out',
-          'rounded-3xl',
-          'bg-white shadow-demure dark:bg-dark dark:shadow-mondegreen',
-          'outline outline-1 outline-gray-100 dark:outline-gray-600'
+          'glass-card flex flex-col overflow-hidden transition-all duration-200 ease-out',
+          'rounded-3xl shadow-xl shadow-cyan-500/10 dark:shadow-cyan-500/20'
         )}
       >
         <Image
@@ -85,7 +83,7 @@ export function ProfileCard() {
             ])}
           />
         </div>
-        <span className="h-1.5 bg-gradient-to-r from-green-300 via-blue-500 to-purple-600" />
+        <span className="h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500" />
       </div>
     </div>
   )
