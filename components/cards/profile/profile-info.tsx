@@ -1,8 +1,4 @@
-// import { SITE_METADATA } from '~/data/site-metadata'
 import { Github, Mail, MapPin } from 'lucide-react'
-import { Fragment } from 'react'
-// import JuejinIcon from '~/icons/juejin.svg'
-// import { Twemoji } from '~/components/ui/twemoji'
 import { AUTHOR_INFO } from '~/data/author-info'
 
 function getAccountHandle(url = '') {
@@ -13,67 +9,65 @@ function getAccountHandle(url = '') {
   return url
 }
 
-const SOCIALS = [
-  {
-    platform: 'github',
-    handle: getAccountHandle(AUTHOR_INFO.social.github),
-    href: AUTHOR_INFO.social.github,
-    Icon: () => <Github size={20} strokeWidth={1.5} />,
-    umamiEvent: 'profile-card-github',
-  },
-  // {
-  //   platform: 'linkedin',
-  //   handle: getAccountHandle(AUTHOR_INFO.social.linkedin),
-  //   href: AUTHOR_INFO.social.linkedin,
-  //   Icon: () => <Linkedin size={20} strokeWidth={1.5} />,
-  //   umamiEvent: 'profile-card-linkedin',
-  // },
-]
+/** HUD 数据行：左侧 mono 标签，右侧值 */
+function HudRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-dashed border-gray-200 py-2 dark:border-white/10">
+      <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500">
+        {label}
+      </span>
+      <span className="flex min-w-0 items-center gap-1.5 text-right text-sm text-gray-700 dark:text-gray-200">
+        {children}
+      </span>
+    </div>
+  )
+}
 
 export function ProfileCardInfo() {
+  const handle = getAccountHandle(AUTHOR_INFO.social.github)
+
   return (
-    <div className="hidden py-4 md:block md:px-5">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{AUTHOR_INFO.name}</h2>
-      <h3 className="py-2 text-gray-500 dark:text-gray-400">{AUTHOR_INFO.identity}</h3>
-      <div className="mb-2 mt-4 space-y-4">
-        <div className="flex items-center text-gray-700 dark:text-gray-200">
-          <MapPin strokeWidth={1.5} size={20} />
-          <p className="px-2">
-            {AUTHOR_INFO.address.city}
-            {/* {AUTHOR_INFO.address.flag && (
-              <span className="absolute ml-1 inline-flex pt-px">
-                <Twemoji emoji={AUTHOR_INFO.address.flag} />
-              </span>
-            )} */}
-          </p>
-        </div>
-        <div className="flex min-w-0 items-center text-gray-700 dark:text-gray-200">
-          <Mail strokeWidth={1.5} size={20} className="shrink-0" />
-          <a className="min-w-0 break-all px-2" href={`mailto:${AUTHOR_INFO.email}`}>
+    <div className="hidden flex-col gap-3 py-4 md:flex md:px-5">
+      <div className="flex items-center justify-between">
+        <h2 className="font-grotesk text-xl font-bold text-gray-900 dark:text-white">
+          {AUTHOR_INFO.name}
+        </h2>
+        <span className="rounded border border-primary-500/40 bg-primary-500/10 px-1.5 py-0.5 font-mono text-[10px] text-primary-600 dark:text-primary-300">
+          {'<dev/>'}
+        </span>
+      </div>
+
+      <div className="space-y-0">
+        <HudRow label="loc">
+          <MapPin strokeWidth={1.5} size={14} className="text-primary-500" />
+          {AUTHOR_INFO.address.city}
+        </HudRow>
+        <HudRow label="mail">
+          <Mail strokeWidth={1.5} size={14} className="shrink-0 text-primary-500" />
+          <a
+            className="min-w-0 truncate hover:text-primary-600 dark:hover:text-primary-400"
+            href={`mailto:${AUTHOR_INFO.email}`}
+          >
             {AUTHOR_INFO.email}
           </a>
-        </div>
-        <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-200">
-          {SOCIALS.map(({ platform, handle, href, Icon, umamiEvent }, idx) => (
-            <Fragment key={platform}>
-              <a
-                target="_blank"
-                href={href}
-                rel="noreferrer"
-                className="flex items-center underline-offset-4 hover:underline"
-                data-umami-event={umamiEvent}
-              >
-                <Icon />
-                <span className="ml-px text-gray-500">/</span>
-                <span className="ml-0.5">{handle}</span>
-              </a>
-              {idx !== SOCIALS.length - 1 && (
-                <span className="text-gray-400 dark:text-gray-500">|</span>
-              )}
-            </Fragment>
-          ))}
-        </div>
+        </HudRow>
+        <HudRow label="git">
+          <Github strokeWidth={1.5} size={14} className="text-primary-500" />
+          <a
+            className="truncate hover:text-primary-600 dark:hover:text-primary-400"
+            href={AUTHOR_INFO.social.github}
+            target="_blank"
+            rel="noreferrer"
+            data-umami-event="profile-card-github"
+          >
+            {handle}
+          </a>
+        </HudRow>
       </div>
+
+      <p className="font-mono text-[10px] leading-relaxed text-gray-400 dark:text-gray-500">
+        {'// 学编程 · 折腾有意思的技术 · 写点东西'}
+      </p>
     </div>
   )
 }

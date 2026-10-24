@@ -12,13 +12,24 @@ import { formatDate } from '~/utils/misc'
 export function PostCardListView({
   post,
   loading,
+  index,
 }: {
   post: CoreContent<Blog>
   loading?: 'lazy' | 'eager'
+  index?: number
 }) {
   const { slug, date, title, summary, tags, images, readingTime } = post
   return (
-    <article>
+    <article className="group relative">
+      {/* 大号编号水印 */}
+      {index !== undefined && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-10 right-0 select-none font-grotesk text-[88px] font-bold leading-none text-gray-900/[0.04] dark:text-white/[0.05]"
+        >
+          {String(index + 1).padStart(2, '0')}
+        </span>
+      )}
       <div className="flex flex-col gap-2 space-y-3 md:flex-row md:gap-8">
         <Link
           href={`/blog/${slug}`}
@@ -42,22 +53,22 @@ export function PostCardListView({
           <GritBackground
             className={clsx([
               'bottom-0 left-3 right-0 top-3',
-              'rounded-xl border-2 border-gray-800 dark:border-gray-400',
+              'rounded-xl border-2 border-cyan-500/30 transition-colors duration-300 group-hover:border-violet-500/60 dark:border-cyan-400/25 dark:group-hover:border-violet-400/50',
             ])}
           />
         </Link>
         <div className="space-y-4 md:space-y-5">
           <div className="space-y-4 md:space-y-6">
             <div className="space-y-3">
-              <dl className="text-sm">
+              <dl className="font-mono text-xs text-gray-500 dark:text-gray-400">
                 <dt className="sr-only">Published on</dt>
-                <dd className="font-medium leading-6 text-gray-500 dark:text-gray-400">
+                <dd className="leading-6">
                   <time dateTime={date}>{formatDate(date)}</time>
                   <span className="mx-2 text-gray-400">/</span>
                   <span>{Math.ceil(readingTime.minutes)} mins read</span>
                 </dd>
               </dl>
-              <h2 className="pb-1 text-xl font-bold tracking-tight md:text-2xl">
+              <h2 className="pb-1 font-grotesk text-xl font-bold tracking-tight md:text-2xl">
                 <Link href={`/blog/${slug}`} className="text-gray-900 dark:text-gray-100">
                   <GrowingUnderline data-umami-event="latest-post-title" duration={500}>
                     {title}

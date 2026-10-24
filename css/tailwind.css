@@ -118,3 +118,99 @@ samp {
 .kicker {
   @apply font-mono text-[11px] uppercase tracking-[0.3em] text-primary-600 dark:text-primary-400;
 }
+
+/* ── 全息旋转边框（ID 面板/重点卡专用）────────────────
+   conic-gradient 随 --holo-angle 旋转，内容区覆盖纯色内衬 */
+@property --holo-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes holo-spin {
+  to {
+    --holo-angle: 360deg;
+  }
+}
+.holo-frame {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(from var(--holo-angle), #22d3ee, #6366f1, #a78bfa, #ec4899, #22d3ee) border-box;
+  animation: holo-spin 6s linear infinite;
+}
+.dark .holo-frame {
+  background:
+    linear-gradient(#0a0e1a, #0a0e1a) padding-box,
+    conic-gradient(from var(--holo-angle), #22d3ee, #6366f1, #a78bfa, #ec4899, #22d3ee) border-box;
+}
+.dark .holo-frame:hover {
+  box-shadow:
+    0 0 24px -6px rgba(34, 211, 238, 0.45),
+    0 0 48px -12px rgba(167, 139, 250, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  .holo-frame {
+    animation: none;
+  }
+}
+
+/* HUD 取景框角标：四角短线（此容器需 relative），悬停张开 */
+.hud-corners::before,
+.hud-corners::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(34, 211, 238, 0.7);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+.hud-corners::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.hud-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+.hud-corners:hover::before,
+.hud-corners:hover::after {
+  width: 22px;
+  height: 22px;
+  border-color: rgba(167, 139, 250, 0.9);
+}
+
+/* 霓虹滚动条 + 霓虹选中色 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.4), rgba(167, 139, 250, 0.4));
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.7), rgba(167, 139, 250, 0.7));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::selection {
+  background: rgba(34, 211, 238, 0.35);
+}
+
+/* 大标题辉光 */
+.glow-title {
+  text-shadow:
+    0 0 18px rgba(34, 211, 238, 0.45),
+    0 0 42px rgba(167, 139, 250, 0.25);
+}

@@ -4,7 +4,6 @@ import clsx from 'clsx'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { Container } from '~/components/ui/container'
-import { GrowingUnderline } from '~/components/effects/growing-underline'
 import { Link } from '~/components/ui/link'
 import { HEADER_NAV_LINKS } from '~/data/navigation'
 import { SITE_METADATA } from '~/data/site-metadata'
@@ -96,17 +95,22 @@ export function Header() {
       <div className="flex items-center justify-between gap-3">
         <Logo />
         <div className="flex items-center gap-4">
-          <div className="hidden gap-1.5 md:flex">
+          <div className="hidden gap-1 md:flex">
             {HEADER_NAV_LINKS.map(({ title, href }) => {
               const isActive = pathname.startsWith(href)
               return (
-                <Link key={title} href={href} className="px-3 py-1 font-medium">
-                  <GrowingUnderline
-                    className={clsx(isActive && 'bg-[length:100%_50%]')}
-                    data-umami-event={`nav-${href.replace('/', '')}`}
-                  >
-                    {title}
-                  </GrowingUnderline>
+                <Link
+                  key={title}
+                  href={href}
+                  className={clsx(
+                    'rounded-lg px-3 py-1 font-medium transition-colors',
+                    isActive
+                      ? 'bg-primary-500/15 text-primary-600 ring-1 ring-primary-500/40 dark:text-primary-300'
+                      : 'hover:bg-gray-900/5 dark:hover:bg-white/5'
+                  )}
+                  data-umami-event={`nav-${href.replace('/', '')}`}
+                >
+                  {title}
                 </Link>
               )
             })}

@@ -7,6 +7,7 @@ import { PostCardListView } from '~/components/blog/post-card-list-view'
 import { SnippetCard } from '~/components/cards/snippet'
 import { GrowingUnderline } from '~/components/effects/growing-underline'
 import { Link } from '~/components/ui/link'
+import { SITE_METADATA } from '~/data/site-metadata'
 import type { CoreContent } from '~/types/data'
 
 export function LatestPosts({
@@ -18,33 +19,36 @@ export function LatestPosts({
 }) {
   const [view, setView] = useState<'posts' | 'snippets'>('posts')
   return (
-    <div className="space-y-4 divide-y divide-gray-200 dark:divide-gray-700 md:mt-8 md:space-y-8">
+    <div className="space-y-4 md:mt-10 md:space-y-8">
       <div className="flex items-center justify-between">
-        <div className="flex text-2xl font-bold sm:text-2xl sm:leading-10 md:text-4xl">
-          <span className="mr-2 md:mr-3">Latest</span>
-          <button
-            className={clsx(
-              'underline-offset-4 transition-colors',
-              view === 'posts'
-                ? 'underline'
-                : 'text-gray-300 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200'
-            )}
-            onClick={() => setView('posts')}
-          >
-            <GrowingUnderline data-umami-event="latest-posts">posts</GrowingUnderline>
-          </button>
-          <span className="mx-1">/</span>
-          <button
-            className={clsx(
-              'underline-offset-4 transition-colors',
-              view === 'snippets'
-                ? 'underline'
-                : 'text-gray-300 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200'
-            )}
-            onClick={() => setView('snippets')}
-          >
-            <GrowingUnderline data-umami-event="latest-snippets">snippets</GrowingUnderline>
-          </button>
+        <div>
+          <p className="kicker mb-2">{'~/latest'}</p>
+          <div className="font-grotesk text-2xl font-bold sm:leading-10 md:text-4xl">
+            <span className="mr-2 md:mr-3">Latest</span>
+            <button
+              className={clsx(
+                'underline-offset-4 transition-colors',
+                view === 'posts'
+                  ? 'text-gradient-tech'
+                  : 'text-gray-300 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200'
+              )}
+              onClick={() => setView('posts')}
+            >
+              <GrowingUnderline data-umami-event="latest-posts">posts</GrowingUnderline>
+            </button>
+            <span className="mx-1">/</span>
+            <button
+              className={clsx(
+                'underline-offset-4 transition-colors',
+                view === 'snippets'
+                  ? 'text-gradient-tech'
+                  : 'text-gray-300 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-200'
+              )}
+              onClick={() => setView('snippets')}
+            >
+              <GrowingUnderline data-umami-event="latest-snippets">snippets</GrowingUnderline>
+            </button>
+          </div>
         </div>
         <div className="flex items-center justify-end text-base font-medium leading-6">
           <Link
@@ -60,11 +64,11 @@ export function LatestPosts({
         </div>
       </div>
       {view === 'posts' ? (
-        <ul className="space-y-12 divide-gray-200 pt-6 dark:divide-gray-700 md:space-y-20 md:pt-10">
+        <ul className="space-y-12 divide-gray-200 pt-6 dark:divide-gray-700 md:space-y-16 md:pt-10">
           {!posts.length && 'No posts found.'}
           {posts.map((post, idx) => (
             <li key={post.slug}>
-              <PostCardListView post={post} loading={idx === 0 ? 'eager' : 'lazy'} />
+              <PostCardListView post={post} loading={idx === 0 ? 'eager' : 'lazy'} index={idx} />
             </li>
           ))}
         </ul>
