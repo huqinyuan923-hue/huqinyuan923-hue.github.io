@@ -140,4 +140,24 @@ export const PROJECTS: Project[] = [
     repo: 'huqinyuan923-hue/cha-lang',
     builtWith: ['TypeScript', 'esbuild', 'Vitest', 'Vercel'],
   },
+  {
+    type: 'self',
+    title: '茶镇 · AI 居民小镇',
+    description:
+      '12 位 LLM 居民自主生活的像素小镇：每个居民有记忆流、会反思、按日程生活。访客可以和居民聊天（他们记得你）、触发事件看八卦传播；镇上还会自动读博客，新文章会成为居民的话题。',
+    imgSrc: '/static/images/projects/ai-town.jpg',
+    url: 'https://town.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/cha-town',
+    builtWith: ['TypeScript', 'Cloudflare Workers', 'Workers AI', 'D1'],
+  },
+  {
+    type: 'self',
+    title: '星图 · 数字孪生 Galaxy',
+    description:
+      '把 16 个项目变成一片星系：博客是恒星，项目是行星——大小是代码量、转速是提交热度、光晕是健康状态，AI 小镇的居民是卫星。实时探活 + GitHub 遥测驱动，还藏了一个全站收集任务游戏 Galaxy Quest。',
+    imgSrc: '/static/images/projects/status-galaxy.jpg',
+    url: 'https://status.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/status-galaxy',
+    builtWith: ['Three.js', 'TypeScript', 'Cloudflare Workers', 'D1'],
+  },
 ]
