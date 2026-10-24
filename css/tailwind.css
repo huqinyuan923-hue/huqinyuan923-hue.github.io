@@ -258,6 +258,48 @@ html.js-anim.reveal-ready main .glass-card.revealed {
   }
 }
 
+/* ── 代码块：霓虹描边 + 悬停辉光 ── */
+.prose div[data-rehype-pretty-code-figure] {
+  @apply relative;
+}
+.prose div[data-rehype-pretty-code-figure] pre {
+  @apply border border-gray-700/60 shadow-lg shadow-black/20 transition-all duration-300 dark:border-white/10;
+}
+.prose div[data-rehype-pretty-code-figure] pre:hover {
+  @apply border-primary-500/50;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.2),
+    0 8px 32px -10px rgba(34, 211, 238, 0.3);
+}
+
+/* ── 文章封面：进入视口显形缩放 ── */
+.banner-reveal {
+  animation: banner-reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes banner-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.045);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner-reveal {
+    animation: none;
+  }
+}
+
+/* ── 网格卡片交错显现：同一行第 2/3 列延迟 90/180ms ── */
+html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n + 2) {
+  transition-delay: 90ms;
+}
+html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n) {
+  transition-delay: 180ms;
+}
+
 /* ── 进站引导动画（每会话一次）─────────────────────────
    时序：0-1.5s 引导内容，1.5-2.0s 整层淡出并揭示页面。
    关键：淡出由 CSS 动画自身 forwards 收尾，不依赖 JS 移除；
