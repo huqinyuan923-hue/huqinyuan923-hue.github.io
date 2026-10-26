@@ -19,6 +19,10 @@ export function EntranceOverlay() {
   const [shownLines, setShownLines] = useState(0)
 
   useEffect(() => {
+    if (document.documentElement.dataset.boot === 'done') {
+      setGone(true)
+      return
+    }
     // 日志逐行显现（JS 时钟，与 CSS 动画解耦）
     const timers = BOOT_LINES.map((_, i) =>
       window.setTimeout(() => setShownLines(i + 1), 250 + i * 320)
