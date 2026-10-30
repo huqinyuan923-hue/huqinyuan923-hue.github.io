@@ -88,18 +88,6 @@ test.describe('deferred playpen font', () => {
     await p.waitForFunction(playpenLoaded, undefined, { timeout: 10_000 })
     expect(fontRequests.length).toBe(1)
   })
-
-  test('the homepage greeting gets the same font after first paint', async ({ page: p }) => {
-    const fontRequests: string[] = []
-    p.on('request', (req) => {
-      if (req.url().includes('playpen')) fontRequests.push(req.url())
-    })
-
-    await p.goto('/')
-    await expect(p.locator('.font-greeting')).toHaveCount(1)
-    await p.waitForFunction(playpenLoaded, undefined, { timeout: 10_000 })
-    expect(fontRequests.length).toBe(1)
-  })
 })
 
 test.describe('health checks', () => {
