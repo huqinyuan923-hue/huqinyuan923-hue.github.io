@@ -301,30 +301,37 @@ html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n) {
 }
 
 /* ── 进站引导动画（每会话一次）─────────────────────────
-   时序：0-1.5s 引导内容，1.5-2.0s 整层淡出并揭示页面。
-   关键：淡出由 CSS 动画自身 forwards 收尾，不依赖 JS 移除；
-   JS 只负责标记 sessionStorage 并卸载节点。 */
+   起播锚点：内联脚本等遮罩首帧上屏后把 data-boot 从 playing 切到 go，
+   动画时钟从真正可见时开始；慢网络下不会在首帧前跑完而被截断。
+   收尾：水合完成后 JS 给 html 加 boot-exiting 类由 CSS forwards 淡出，再切 done；
+   兜底：水合迟迟不来时，go 后 6s（未起播则 10s）由内联脚本淡出，避免遮罩挡住内容。 */
 html[data-boot='done'] .entrance-overlay {
   display: none;
 }
 .entrance-overlay {
+  display: none;
   position: fixed;
   inset: 0;
   z-index: 9999;
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 22px;
   background:
     radial-gradient(ellipse 90% 60% at 50% 30%, rgba(34, 211, 238, 0.08), transparent), #04060c;
-  animation: boot-exit 0.6s cubic-bezier(0.65, 0, 0.35, 1) 3s forwards;
+}
+html[data-boot='playing'] .entrance-overlay,
+html[data-boot='go'] .entrance-overlay {
+  display: flex;
+}
+html.boot-exiting .entrance-overlay {
+  animation: boot-exit 0.55s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 @keyframes boot-exit {
   to {
     opacity: 0;
     visibility: hidden;
-    transform: scale(1.04);
+    transform: scale(1.03);
   }
 }
 .entrance-overlay .boot-logo {
@@ -336,18 +343,26 @@ html[data-boot='done'] .entrance-overlay {
   background: linear-gradient(100deg, #22d3ee 0%, #60a5fa 50%, #a78bfa 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  animation: boot-glow 0.9s ease 0.15s both;
 }
-@keyframes boot-glow {
-  0% {
-    opacity: 0;
-    filter: blur(10px);
-    transform: translateY(10px);
-  }
-  100% {
+/* 首帧即出现的光标：主线程卡顿时也保证引导画面是“活”的 */
+.entrance-overlay .boot-caret {
+  display: inline-block;
+  width: 0.055em;
+  height: 0.8em;
+  margin-left: 0.06em;
+  border-radius: 1px;
+  background: #22d3ee;
+  vertical-align: -0.02em;
+  animation: boot-caret 1.1s steps(1, end) infinite;
+}
+@keyframes boot-caret {
+  0%,
+  55% {
     opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
+  }
+  56%,
+  100% {
+    opacity: 0;
   }
 }
 .entrance-overlay .boot-log {
@@ -367,10 +382,29 @@ html[data-boot='done'] .entrance-overlay {
 .entrance-overlay .boot-log .ok {
   color: #a3e635;
 }
+html[data-boot='go'] .entrance-overlay .boot-log .line {
+  animation: boot-line 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(1) {
+  animation-delay: 0.15s;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(2) {
+  animation-delay: 0.5s;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(3) {
+  animation-delay: 0.85s;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(4) {
+  animation-delay: 1.2s;
+}
 @keyframes boot-line {
   from {
     opacity: 0;
     transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 .entrance-overlay .boot-bar {
@@ -379,7 +413,10 @@ html[data-boot='done'] .entrance-overlay {
   border-radius: 999px;
   overflow: hidden;
   background: rgba(148, 163, 184, 0.15);
-  animation: boot-line 0.35s ease 0.4s both;
+  opacity: 0;
+}
+html[data-boot='go'] .entrance-overlay .boot-bar {
+  animation: boot-line 0.35s ease 0.3s both;
 }
 .entrance-overlay .boot-bar::before {
   content: '';
@@ -388,9 +425,11 @@ html[data-boot='done'] .entrance-overlay {
   border-radius: inherit;
   background: linear-gradient(90deg, #22d3ee, #a78bfa);
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
-  animation: boot-fill 2s cubic-bezier(0.3, 0, 0.4, 1) 0.5s forwards;
   transform-origin: left;
   transform: scaleX(0);
+}
+html[data-boot='go'] .entrance-overlay .boot-bar::before {
+  animation: boot-fill 1.7s cubic-bezier(0.3, 0, 0.4, 1) 0.45s forwards;
 }
 @property --bootn {
   syntax: '<integer>';
@@ -401,10 +440,13 @@ html[data-boot='done'] .entrance-overlay {
   font-family: var(--font-jetbrains-mono), monospace;
   font-size: 12px;
   color: #22d3ee;
-  animation:
-    boot-line 0.3s ease 0.4s both,
-    boot-count 2s cubic-bezier(0.3, 0, 0.4, 1) 0.5s both;
+  opacity: 0;
   counter-reset: bootn var(--bootn);
+}
+html[data-boot='go'] .entrance-overlay .boot-pct {
+  animation:
+    boot-line 0.3s ease 0.3s both,
+    boot-count 1.7s cubic-bezier(0.3, 0, 0.4, 1) 0.45s both;
 }
 .entrance-overlay .boot-pct::after {
   content: counter(bootn) '%';
@@ -423,7 +465,8 @@ html[data-boot='done'] .entrance-overlay {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .entrance-overlay {
+  html[data-boot='playing'] .entrance-overlay,
+  html[data-boot='go'] .entrance-overlay {
     display: none;
   }
 }

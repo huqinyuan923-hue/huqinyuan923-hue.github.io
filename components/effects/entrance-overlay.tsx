@@ -9,41 +9,92 @@ const BOOT_LINES = [
   { text: '> establishing uplink', ok: 'READY' },
 ]
 
+const BOOT_FALLBACK_MS = 4500
+const EXIT_FALLBACK_MS = 1200
+
+type BootWindow = Window & { __bootT0?: number }
+
 /**
- * 进站引导动画：终端日志逐行（JS 状态驱动，不依赖 CSS 加载时机）→
- * 徽标辉光 → 霓虹进度条 + 百分比，3.0s 播完 + 0.6s 整层淡出。
- * 每会话仅播一次（layout 内联脚本在文档开头标记）；prefers-reduced-motion 直接跳过。
+ * 进站引导动画：整段共用一条时钟。
+ * 内联脚本在遮罩首帧真正可见后才切到 go（CSS 起播）；
+ * 水合完成的 effect 等到引导播完再触发淡出——此时页面已经水合，
+ * 揭开遮罩后不会再出现第二段入场。每会话仅播一次。
  */
 export function EntranceOverlay() {
   const [gone, setGone] = useState(false)
-  const [shownLines, setShownLines] = useState(0)
 
   useEffect(() => {
-    if (document.documentElement.dataset.boot === 'done') {
+    const root = document.documentElement
+    if (root.dataset.boot === 'done') {
       setGone(true)
       return
     }
-    // 日志逐行显现（JS 时钟，与 CSS 动画解耦）
-    const timers = BOOT_LINES.map((_, i) =>
-      window.setTimeout(() => setShownLines(i + 1), 250 + i * 320)
-    )
-    // 收尾与 CSS 时钟自同步：监听 boot-exit 的 animationend；
-    // 兜底 6s 强制收尾（防后台标签页节流丢事件）
+
+    let fillTimer = 0
+    let fallbackTimer = 0
+    let finishTimer = 0
+
+    const finish = () => {
+      if (root.dataset.boot === 'done') return
+      root.classList.remove('boot-exiting')
+      root.dataset.boot = 'done'
+      setGone(true)
+    }
+    const startExit = () => {
+      if (root.dataset.boot === 'done' || root.classList.contains('boot-exiting')) return
+      root.classList.add('boot-exiting')
+      finishTimer = window.setTimeout(finish, EXIT_FALLBACK_MS)
+    }
     const onAnimEnd = (e: AnimationEvent) => {
-      if (e.animationName === 'boot-exit') {
-        document.documentElement.dataset.boot = 'done'
-        setGone(true)
+      if (e.animationName === 'boot-exit') finish()
+      else if (e.animationName === 'boot-fill') {
+        // 进度条跑到 100% 后再留一拍，整段引导完整播完才淡出
+        fillTimer = window.setTimeout(startExit, 150)
       }
     }
     document.addEventListener('animationend', onAnimEnd)
-    const fallback = window.setTimeout(() => {
-      document.documentElement.dataset.boot = 'done'
-      setGone(true)
-    }, 6000)
+
+    if (root.dataset.boot !== 'playing' && root.dataset.boot !== 'go') {
+      finish()
+      return () => document.removeEventListener('animationend', onAnimEnd)
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finish()
+      return () => document.removeEventListener('animationend', onAnimEnd)
+    }
+
+    // 内联脚本的起播 rAF 若被主线程卡住，这里补一个时钟锚点
+    if (root.dataset.boot === 'playing') {
+      root.dataset.boot = 'go'
+      ;(window as BootWindow).__bootT0 = performance.now()
+    }
+    const t0 = (window as BootWindow).__bootT0 ?? performance.now()
+
+    // 水合晚于进度条结束时，animationend 已经错过：直接补一个短收尾
+    const overlayEl = document.querySelector<HTMLElement>('.entrance-overlay')
+    const fill = overlayEl
+      ?.getAnimations({ subtree: true })
+      .find((a) => (a as CSSAnimation).animationName === 'boot-fill')
+    const fillEnd =
+      fill && fill.startTime !== null
+        ? Number(fill.startTime) + Number(fill.effect?.getComputedTiming().endTime ?? 0)
+        : 0
+    if (fillEnd > 0 && fillEnd <= performance.now()) {
+      fillTimer = window.setTimeout(startExit, 150)
+    }
+
+    // 兜底：水合晚于引导结束时立即收尾；否则等 boot-fill 的结束事件
+    fallbackTimer = window.setTimeout(
+      startExit,
+      Math.max(0, t0 + BOOT_FALLBACK_MS - performance.now())
+    )
+
     return () => {
-      timers.forEach(window.clearTimeout)
       document.removeEventListener('animationend', onAnimEnd)
-      window.clearTimeout(fallback)
+      window.clearTimeout(fillTimer)
+      window.clearTimeout(fallbackTimer)
+      window.clearTimeout(finishTimer)
     }
   }, [])
 
@@ -51,14 +102,13 @@ export function EntranceOverlay() {
 
   return (
     <div className="entrance-overlay" aria-hidden="true">
-      <div className="boot-logo">ADCakeyuan</div>
+      <div className="boot-logo">
+        ADCakeyuan
+        <span className="boot-caret" />
+      </div>
       <div className="boot-log">
-        {BOOT_LINES.map(({ text, ok }, i) => (
-          <span
-            key={text}
-            className="line"
-            style={{ opacity: i < shownLines ? 1 : 0, transition: 'opacity .25s ease' }}
-          >
+        {BOOT_LINES.map(({ text, ok }) => (
+          <span key={text} className="line">
             {text}
             {ok && (
               <>

@@ -153,11 +153,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
       {/* 进站动画会话标记：水合前执行——
-          看过 → data-boot=done（跳过）；首访 → 立刻写入标记并播放一次。
-          标记在文档开头完成，组件与后续页面不再触碰存储，杜绝竞态。 */}
+          看过 → data-boot=done（跳过）；首访 → playing（遮罩立即上屏），
+          等遮罩首帧真正可见后再切 go 起播，慢网络下动画不会被截断；
+          水合迟迟不来时：go 后 6s（未起播则 10s）淡出兜底，绝不长期挡住内容。 */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{document.documentElement.classList.add('js-anim');var s=sessionStorage;if(s.getItem('hud-boot-seen')){document.documentElement.dataset.boot='done'}else{s.setItem('hud-boot-seen','1')}}catch(e){}`,
+          __html: `try{var d=document.documentElement,s=sessionStorage;d.classList.add('js-anim');if(s.getItem('hud-boot-seen')){d.dataset.boot='done'}else{s.setItem('hud-boot-seen','1');d.dataset.boot='playing';var cap=function(){if(d.dataset.boot==='playing'||d.dataset.boot==='go'){d.classList.add('boot-exiting');setTimeout(function(){if(d.dataset.boot!=='done')d.dataset.boot='done'},800)}};var capTimer=setTimeout(cap,10000);var start=function(){if(d.dataset.boot==='playing'){d.dataset.boot='go';window.__bootT0=performance.now();clearTimeout(capTimer);capTimer=setTimeout(cap,6000)}};var go=function(){if(d.dataset.boot!=='playing')return;if(!document.querySelector('.entrance-overlay')){if(go.n++!==100){setTimeout(go,30);return}}var r=window.requestAnimationFrame;if(r){r(function(){r(start)})}else{setTimeout(start,32)}};go.n=0;go()}}catch(e){}`,
         }}
       />
       <body
