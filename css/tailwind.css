@@ -301,11 +301,12 @@ html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n) {
 }
 
 /* ── 进站引导动画（每会话一次）─────────────────────────
-   起播锚点：内联脚本等样式表生效（遮罩 computed position=fixed）后把 data-boot
-   从 playing 切到 go，动画时钟从画面真正可见时开始；慢网络下不会空跑或被截断。
+   起播锚点：内联脚本等样式表生效（遮罩 computed position=fixed）后把 data-boot 切到 go；
+   动画时钟的真正起点是第一个 boot 动画的 animationstart（解析卡顿时会晚于 go），
+   4s 兜底上限从那一刻起算，所以慢网络下既不会被截断也不会空跑。
    收尾：内联脚本监听最后一个动画 boot-ready 的 animationend，不依赖水合——
    播完 +150ms 加 boot-exiting 由 CSS forwards 淡出，再切 done。
-   兜底：animationend 迟迟不来时，go 后 4s（未起播则 10s）由内联脚本淡出，避免遮罩挡住内容。 */
+   兜底：animationend 迟迟不来时起播后 4s（动画从未起跑则 10s）淡出，避免遮罩挡住内容。 */
 html[data-boot='done'] .entrance-overlay {
   display: none;
 }

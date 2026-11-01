@@ -20,9 +20,10 @@ type BootWindow = Window & { __bootT0?: number }
 
 /**
  * 进站引导动画：整段共用一条时钟。
- * 内联脚本等样式表生效（遮罩 computed position=fixed）后才切到 go（CSS 起播），
- * 并在 boot-ready 的 animationend 后 +150ms 触发淡出——不依赖水合，
- * 慢水合不会再卡在 READY；样式表迟迟不来时由这里补锚点并同样按上限收尾。
+ * 内联脚本等样式表生效（遮罩 computed position=fixed）后才切到 go，并把 __bootT0
+ * 校准到第一个动画真正起跑的时刻；淡出由 boot-ready 的 animationend +150ms 触发，
+ * 不依赖水合——慢水合不会再卡在 READY，动画跑得晚也不会被上限掐掉。
+ * 这里是同一时机的兜底副本（内联脚本没跑成时的补锚点与上限收尾），
  * 另负责无动画场景（已播过、减少动效）直接卸载遮罩。每会话仅播一次。
  */
 export function EntranceOverlay() {
