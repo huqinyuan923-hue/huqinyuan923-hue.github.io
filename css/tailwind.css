@@ -304,6 +304,7 @@ html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n) {
    起播锚点：内联脚本等遮罩首帧上屏后把 data-boot 从 playing 切到 go，
    动画时钟从真正可见时开始；慢网络下不会在首帧前跑完而被截断。
    收尾：水合完成后 JS 给 html 加 boot-exiting 类由 CSS forwards 淡出，再切 done；
+   淡出时机 = 最后一个动画 boot-ready 结束 +150ms（整段引导含收尾文案播完）。
    兜底：水合迟迟不来时，go 后 6s（未起播则 10s）由内联脚本淡出，避免遮罩挡住内容。 */
 html[data-boot='done'] .entrance-overlay {
   display: none;
@@ -316,7 +317,7 @@ html[data-boot='done'] .entrance-overlay {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 16px;
   background:
     radial-gradient(ellipse 90% 60% at 50% 30%, rgba(34, 211, 238, 0.08), transparent), #04060c;
 }
@@ -332,6 +333,91 @@ html.boot-exiting .entrance-overlay {
     opacity: 0;
     visibility: hidden;
     transform: scale(1.03);
+  }
+}
+/* HUD 底纹层：静态网格 + 角标 + 一条向下扫过的扫描线（只动 transform/opacity） */
+.entrance-overlay .boot-grid,
+.entrance-overlay .boot-sweep,
+.entrance-overlay .boot-frame {
+  position: absolute;
+  pointer-events: none;
+}
+.entrance-overlay .boot-grid {
+  inset: 0;
+  opacity: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(34, 211, 238, 0.06) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(0deg, rgba(34, 211, 238, 0.06) 0 1px, transparent 1px 64px);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 78%);
+}
+.entrance-overlay .boot-frame {
+  inset: 0;
+  opacity: 0;
+}
+.entrance-overlay .boot-frame::before,
+.entrance-overlay .boot-frame::after {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+}
+.entrance-overlay .boot-frame::before {
+  top: 22px;
+  left: 22px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.entrance-overlay .boot-frame::after {
+  bottom: 22px;
+  right: 22px;
+  border-left: 0;
+  border-top: 0;
+}
+.entrance-overlay .boot-sweep {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 211, 238, 0.5) 35%,
+    rgba(167, 139, 250, 0.5) 65%,
+    transparent
+  );
+}
+html[data-boot='go'] .entrance-overlay .boot-grid {
+  animation: boot-fade-in 0.6s ease 0.1s both;
+}
+html[data-boot='go'] .entrance-overlay .boot-frame {
+  animation: boot-fade-in 0.5s ease 0.18s both;
+}
+html[data-boot='go'] .entrance-overlay .boot-sweep {
+  animation: boot-sweep 2.2s linear 0.2s 1 both;
+}
+@keyframes boot-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes boot-sweep {
+  0% {
+    opacity: 0;
+    transform: translateY(-12vh);
+  }
+  12%,
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(112vh);
   }
 }
 .entrance-overlay .boot-logo {
@@ -370,7 +456,7 @@ html.boot-exiting .entrance-overlay {
   font-size: clamp(11px, 1.4vw, 13px);
   letter-spacing: 0.12em;
   color: rgba(148, 163, 184, 0.9);
-  min-height: 5.4em;
+  min-height: calc(6 * 1.35em + 5 * 4px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -383,19 +469,25 @@ html.boot-exiting .entrance-overlay {
   color: #a3e635;
 }
 html[data-boot='go'] .entrance-overlay .boot-log .line {
-  animation: boot-line 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation: boot-line 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(1) {
-  animation-delay: 0.15s;
+  animation-delay: 0.12s;
 }
 html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(2) {
-  animation-delay: 0.5s;
+  animation-delay: 0.36s;
 }
 html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(3) {
-  animation-delay: 0.85s;
+  animation-delay: 0.6s;
 }
 html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(4) {
-  animation-delay: 1.2s;
+  animation-delay: 0.84s;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(5) {
+  animation-delay: 1.08s;
+}
+html[data-boot='go'] .entrance-overlay .boot-log .line:nth-child(6) {
+  animation-delay: 1.32s;
 }
 @keyframes boot-line {
   from {
@@ -429,7 +521,7 @@ html[data-boot='go'] .entrance-overlay .boot-bar {
   transform: scaleX(0);
 }
 html[data-boot='go'] .entrance-overlay .boot-bar::before {
-  animation: boot-fill 1.7s cubic-bezier(0.3, 0, 0.4, 1) 0.45s forwards;
+  animation: boot-fill 1.55s cubic-bezier(0.3, 0, 0.4, 1) 0.45s forwards;
 }
 @property --bootn {
   syntax: '<integer>';
@@ -446,10 +538,40 @@ html[data-boot='go'] .entrance-overlay .boot-bar::before {
 html[data-boot='go'] .entrance-overlay .boot-pct {
   animation:
     boot-line 0.3s ease 0.3s both,
-    boot-count 1.7s cubic-bezier(0.3, 0, 0.4, 1) 0.45s both;
+    boot-count 1.55s cubic-bezier(0.3, 0, 0.4, 1) 0.45s both;
 }
 .entrance-overlay .boot-pct::after {
   content: counter(bootn) '%';
+}
+.entrance-overlay .boot-hud {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(148, 163, 184, 0.72);
+  opacity: 0;
+}
+html[data-boot='go'] .entrance-overlay .boot-hud {
+  animation: boot-line 0.3s ease 0.6s both;
+}
+.entrance-overlay .boot-ready {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: clamp(11px, 1.5vw, 13px);
+  letter-spacing: 0.28em;
+  color: #a3e635;
+  opacity: 0;
+}
+html[data-boot='go'] .entrance-overlay .boot-ready {
+  animation: boot-ready 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 2.05s both;
+}
+@keyframes boot-ready {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes boot-count {
   from {

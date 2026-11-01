@@ -3,14 +3,18 @@
 import { useEffect, useState } from 'react'
 
 const BOOT_LINES = [
-  { text: '> initializing blog.exe', ok: '' },
+  { text: '> initializing blog.exe', ok: 'OK' },
   { text: '> loading modules · themes · games', ok: 'OK' },
-  { text: '> mounting arcade.decks × 40', ok: 'OK' },
+  { text: '> mounting arcade.decks × 40+', ok: 'OK' },
+  { text: '> indexing posts · 68 mdx · 106 tags', ok: 'OK' },
+  { text: '> linking cha · galaxy · town', ok: 'OK' },
   { text: '> establishing uplink', ok: 'READY' },
 ]
 
 const BOOT_FALLBACK_MS = 4500
 const EXIT_FALLBACK_MS = 1200
+/** 整段引导的最后一个动画：它结束才允许淡出，避免收尾文案被掐掉 */
+const SEQ_END_ANIM = 'boot-ready'
 
 type BootWindow = Window & { __bootT0?: number }
 
@@ -47,8 +51,8 @@ export function EntranceOverlay() {
     }
     const onAnimEnd = (e: AnimationEvent) => {
       if (e.animationName === 'boot-exit') finish()
-      else if (e.animationName === 'boot-fill') {
-        // 进度条跑到 100% 后再留一拍，整段引导完整播完才淡出
+      else if (e.animationName === SEQ_END_ANIM) {
+        // 整段引导（含收尾文案）播完后再留一拍才淡出
         fillTimer = window.setTimeout(startExit, 150)
       }
     }
@@ -71,20 +75,20 @@ export function EntranceOverlay() {
     }
     const t0 = (window as BootWindow).__bootT0 ?? performance.now()
 
-    // 水合晚于进度条结束时，animationend 已经错过：直接补一个短收尾
+    // 水合晚于整段引导结束时，animationend 已经错过：直接补一个短收尾
     const overlayEl = document.querySelector<HTMLElement>('.entrance-overlay')
-    const fill = overlayEl
+    const last = overlayEl
       ?.getAnimations({ subtree: true })
-      .find((a) => (a as CSSAnimation).animationName === 'boot-fill')
-    const fillEnd =
-      fill && fill.startTime !== null
-        ? Number(fill.startTime) + Number(fill.effect?.getComputedTiming().endTime ?? 0)
+      .find((a) => (a as CSSAnimation).animationName === SEQ_END_ANIM)
+    const seqEnd =
+      last && last.startTime !== null
+        ? Number(last.startTime) + Number(last.effect?.getComputedTiming().endTime ?? 0)
         : 0
-    if (fillEnd > 0 && fillEnd <= performance.now()) {
+    if (seqEnd > 0 && seqEnd <= performance.now()) {
       fillTimer = window.setTimeout(startExit, 150)
     }
 
-    // 兜底：水合晚于引导结束时立即收尾；否则等 boot-fill 的结束事件
+    // 兜底：水合迟迟不来时立即收尾；否则等收尾动画的结束事件
     fallbackTimer = window.setTimeout(
       startExit,
       Math.max(0, t0 + BOOT_FALLBACK_MS - performance.now())
@@ -102,6 +106,9 @@ export function EntranceOverlay() {
 
   return (
     <div className="entrance-overlay" aria-hidden="true">
+      <span className="boot-grid" />
+      <span className="boot-sweep" />
+      <span className="boot-frame" />
       <div className="boot-logo">
         ADCakeyuan
         <span className="boot-caret" />
@@ -121,6 +128,8 @@ export function EntranceOverlay() {
       </div>
       <div className="boot-bar" />
       <div className="boot-pct" />
+      <div className="boot-hud">{'SSG · CLOUDFLARE EDGE · 0 COLD START'}</div>
+      <div className="boot-ready">{'READY · WELCOME TO MY DECK'}</div>
     </div>
   )
 }
