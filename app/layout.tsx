@@ -155,14 +155,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       {/* 进站动画会话标记：水合前执行——
           看过 → data-boot=done（跳过）；首访 → playing（遮罩立即上屏），
           等样式表生效（遮罩 computed position=fixed）后再切 go 起播；
-          真正的时钟起点是第一个 boot 动画的 animationstart（解析卡顿时会晚于 go），
-          上限 4s 从那一刻才起算，不会把还没播完的引导掐掉；
+          真正的时钟起点是遮罩内第一个有限长的引导动画的 animationstart
+          （循环的扫描线/光标不算，页面自身的动画也不算），上限 4s 从那一刻才起算，
+          不会把还没播完的引导掐掉；
           收尾不等水合：监听最后一个动画 boot-ready 的 animationend，
           播完 +150ms 淡出（首屏内容此时本就可见，不会露出空白）；
           动画迟迟不结束则起播后 4s（动画从未跑起则 10s）兜底淡出，绝不长期挡住内容。 */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{var d=document.documentElement,s=sessionStorage;d.classList.add('js-anim');if(s.getItem('hud-boot-seen')){d.dataset.boot='done'}else{s.setItem('hud-boot-seen','1');d.dataset.boot='playing';var out=function(){if(d.dataset.boot==='playing'||d.dataset.boot==='go'){d.classList.add('boot-exiting');setTimeout(function(){if(d.dataset.boot!=='done')d.dataset.boot='done'},800)}};var off=function(){document.removeEventListener('animationstart',onA);document.removeEventListener('animationend',onA)};var armed=0;var capTimer=setTimeout(out,10000);var onA=function(e){var n=String(e.animationName);if(e.type==='animationstart'){if(!armed&&n!=='boot-exit'){armed=1;window.__bootT0=performance.now();clearTimeout(capTimer);capTimer=setTimeout(out,4000)}return}if(n==='boot-ready'){off();setTimeout(out,150)}};var start=function(){if(d.dataset.boot==='playing'){d.dataset.boot='go';window.__bootT0=performance.now();document.addEventListener('animationstart',onA);document.addEventListener('animationend',onA)}};var painted=function(){var n=document.querySelector('.entrance-overlay');if(!n||!window.getComputedStyle)return false;return getComputedStyle(n).position==='fixed'};var go=function(){if(d.dataset.boot!=='playing')return;if(!painted()){if(go.n++!==200){setTimeout(go,30)}return}var r=window.requestAnimationFrame;if(r){r(function(){r(start)})}else{setTimeout(start,32)}};go.n=0;go()}}catch(e){}`,
+          __html: `try{var d=document.documentElement,s=sessionStorage;d.classList.add('js-anim');if(s.getItem('hud-boot-seen')){d.dataset.boot='done'}else{s.setItem('hud-boot-seen','1');d.dataset.boot='playing';var out=function(){if(d.dataset.boot==='playing'||d.dataset.boot==='go'){d.classList.add('boot-exiting');setTimeout(function(){if(d.dataset.boot!=='done')d.dataset.boot='done'},800)}};var off=function(){document.removeEventListener('animationstart',onA);document.removeEventListener('animationend',onA)};var armed=0;var capTimer=setTimeout(out,10000);var onA=function(e){var n=String(e.animationName);if(e.type==='animationstart'){if(!armed&&n!=='boot-exit'&&n!=='boot-caret'&&n!=='boot-sweep'&&e.target.closest&&e.target.closest('.entrance-overlay')){armed=1;window.__bootT0=performance.now();clearTimeout(capTimer);capTimer=setTimeout(out,4000)}return}if(n==='boot-ready'){off();setTimeout(out,150)}};var start=function(){if(d.dataset.boot==='playing'){d.dataset.boot='go';window.__bootT0=performance.now();document.addEventListener('animationstart',onA);document.addEventListener('animationend',onA)}};var painted=function(){var n=document.querySelector('.entrance-overlay');if(!n||!window.getComputedStyle)return false;return getComputedStyle(n).position==='fixed'};var go=function(){if(d.dataset.boot!=='playing')return;if(!painted()){if(go.n++!==200){setTimeout(go,30)}return}var r=window.requestAnimationFrame;if(r){r(function(){r(start)})}else{setTimeout(start,32)}};go.n=0;go()}}catch(e){}`,
         }}
       />
       <body
