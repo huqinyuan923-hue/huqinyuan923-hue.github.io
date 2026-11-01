@@ -155,10 +155,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       {/* 进站动画会话标记：水合前执行——
           看过 → data-boot=done（跳过）；首访 → playing（遮罩立即上屏），
           等遮罩首帧真正可见后再切 go 起播，慢网络下动画不会被截断；
-          水合迟迟不来时：go 后 6s（未起播则 10s）淡出兜底，绝不长期挡住内容。 */}
+          收尾不等水合：内联脚本监听最后一个动画 boot-ready 的 animationend，
+          播完 +150ms 淡出（首屏内容此时本就可见，不会露出空白）；
+          事件迟迟不来则 go 后 3.6s（未起播则 10s）兜底淡出，绝不长期挡住内容。 */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{var d=document.documentElement,s=sessionStorage;d.classList.add('js-anim');if(s.getItem('hud-boot-seen')){d.dataset.boot='done'}else{s.setItem('hud-boot-seen','1');d.dataset.boot='playing';var cap=function(){if(d.dataset.boot==='playing'||d.dataset.boot==='go'){d.classList.add('boot-exiting');setTimeout(function(){if(d.dataset.boot!=='done')d.dataset.boot='done'},800)}};var capTimer=setTimeout(cap,10000);var start=function(){if(d.dataset.boot==='playing'){d.dataset.boot='go';window.__bootT0=performance.now();clearTimeout(capTimer);capTimer=setTimeout(cap,6000)}};var go=function(){if(d.dataset.boot!=='playing')return;if(!document.querySelector('.entrance-overlay')){if(go.n++!==100){setTimeout(go,30);return}}var r=window.requestAnimationFrame;if(r){r(function(){r(start)})}else{setTimeout(start,32)}};go.n=0;go()}}catch(e){}`,
+          __html: `try{var d=document.documentElement,s=sessionStorage;d.classList.add('js-anim');if(s.getItem('hud-boot-seen')){d.dataset.boot='done'}else{s.setItem('hud-boot-seen','1');d.dataset.boot='playing';var out=function(){if(d.dataset.boot==='playing'||d.dataset.boot==='go'){d.classList.add('boot-exiting');setTimeout(function(){if(d.dataset.boot!=='done')d.dataset.boot='done'},800)}};var end=function(e){if(e.animationName==='boot-ready'){document.removeEventListener('animationend',end);setTimeout(out,150)}};var capTimer=setTimeout(out,10000);var start=function(){if(d.dataset.boot==='playing'){d.dataset.boot='go';window.__bootT0=performance.now();document.addEventListener('animationend',end);clearTimeout(capTimer);capTimer=setTimeout(out,3600)}};var go=function(){if(d.dataset.boot!=='playing')return;if(!document.querySelector('.entrance-overlay')){if(go.n++!==100){setTimeout(go,30);return}}var r=window.requestAnimationFrame;if(r){r(function(){r(start)})}else{setTimeout(start,32)}};go.n=0;go()}}catch(e){}`,
         }}
       />
       <body

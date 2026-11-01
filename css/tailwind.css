@@ -303,9 +303,9 @@ html.js-anim.reveal-ready main .grid > *.revealed:nth-child(3n) {
 /* ── 进站引导动画（每会话一次）─────────────────────────
    起播锚点：内联脚本等遮罩首帧上屏后把 data-boot 从 playing 切到 go，
    动画时钟从真正可见时开始；慢网络下不会在首帧前跑完而被截断。
-   收尾：水合完成后 JS 给 html 加 boot-exiting 类由 CSS forwards 淡出，再切 done；
-   淡出时机 = 最后一个动画 boot-ready 结束 +150ms（整段引导含收尾文案播完）。
-   兜底：水合迟迟不来时，go 后 6s（未起播则 10s）由内联脚本淡出，避免遮罩挡住内容。 */
+   收尾：内联脚本监听最后一个动画 boot-ready 的 animationend，不依赖水合——
+   播完 +150ms 加 boot-exiting 由 CSS forwards 淡出，再切 done。
+   兜底：animationend 迟迟不来时，go 后 3.6s（未起播则 10s）由内联脚本淡出，避免遮罩挡住内容。 */
 html[data-boot='done'] .entrance-overlay {
   display: none;
 }
@@ -396,7 +396,7 @@ html[data-boot='go'] .entrance-overlay .boot-frame {
   animation: boot-fade-in 0.5s ease 0.18s both;
 }
 html[data-boot='go'] .entrance-overlay .boot-sweep {
-  animation: boot-sweep 2.2s linear 0.2s 1 both;
+  animation: boot-sweep 2.4s linear 0.2s infinite both;
 }
 @keyframes boot-fade-in {
   from {
@@ -562,6 +562,17 @@ html[data-boot='go'] .entrance-overlay .boot-hud {
 }
 html[data-boot='go'] .entrance-overlay .boot-ready {
   animation: boot-ready 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 2.05s both;
+}
+/* READY 行尾的终端方块光标：兜底淡出前的等待期里画面保持“活着” */
+.entrance-overlay .boot-ready::after {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.85em;
+  margin-left: 0.4em;
+  background: #a3e635;
+  vertical-align: -0.08em;
+  animation: boot-caret 1.1s steps(1, end) infinite;
 }
 @keyframes boot-ready {
   from {

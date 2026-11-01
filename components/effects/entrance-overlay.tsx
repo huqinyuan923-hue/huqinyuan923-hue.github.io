@@ -11,7 +11,7 @@ const BOOT_LINES = [
   { text: '> establishing uplink', ok: 'READY' },
 ]
 
-const BOOT_FALLBACK_MS = 4500
+const BOOT_FALLBACK_MS = 3600
 const EXIT_FALLBACK_MS = 1200
 /** 整段引导的最后一个动画：它结束才允许淡出，避免收尾文案被掐掉 */
 const SEQ_END_ANIM = 'boot-ready'
@@ -20,9 +20,10 @@ type BootWindow = Window & { __bootT0?: number }
 
 /**
  * 进站引导动画：整段共用一条时钟。
- * 内联脚本在遮罩首帧真正可见后才切到 go（CSS 起播）；
- * 水合完成的 effect 等到引导播完再触发淡出——此时页面已经水合，
- * 揭开遮罩后不会再出现第二段入场。每会话仅播一次。
+ * 内联脚本在遮罩首帧真正可见后才切到 go（CSS 起播），并在 boot-ready 的
+ * animationend 后 +150ms 触发淡出——不依赖水合，慢水合不会再停在 READY。
+ * 这里是同一时机的兜底副本（水合本身很晚时由 animationend/3.6s 上限接管），
+ * 另负责无动画场景（已播过、减少动效）直接卸载遮罩。每会话仅播一次。
  */
 export function EntranceOverlay() {
   const [gone, setGone] = useState(false)
