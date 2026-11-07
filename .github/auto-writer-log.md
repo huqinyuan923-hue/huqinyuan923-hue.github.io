@@ -5,6 +5,8 @@
 ## 已合并的自动草稿
 
 （暂无）
+| 2026-11-07 | 从一个 NAND 门到俄罗斯方块：门级自制计算机全链 | Nand2Tetris 全链 TS 实现：冻结契约、黄金哈希跨轨对拍、堆损坏整机重启的调试夜 | https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io/pull/2 |
+| 2026-11-07 | 不开 GPU，在浏览器里手写光栅化：一个纯 CPU 渲染器的诞生 | 黄金图先行 + top-left 水密 + 透视校正 + 冻结语义下的逐位等价优化 | https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io/pull/2 |
 
 ## 存量文章（流水线启用前已发布，禁止重复选题）
 

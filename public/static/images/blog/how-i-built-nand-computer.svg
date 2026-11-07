@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#1a1003"/><stop offset="1" stop-color="#3b2a06"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="80%" cy="15%" r="70%">
+    <stop offset="0" stop-color="#fbbf24" stop-opacity=".38"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<rect width="1200" height="630" fill="url(#glow)"/>
+<g opacity=".22" stroke="#fbbf24" stroke-width="1.5" fill="none">
+  <circle cx="140" cy="510" r="170"/>
+  <circle cx="1060" cy="120" r="230"/>
+</g>
+<g stroke="#fde68a" stroke-width="2" fill="none" opacity=".9">
+  <path d="M170 300 h55 a70 70 0 0 1 0 90 h-55 z"/>
+  <circle cx="150" cy="322" r="6" fill="#fbbf24"/>
+  <circle cx="150" cy="368" r="6" fill="#fbbf24"/>
+  <circle cx="245" cy="345" r="6" fill="#fbbf24"/>
+  <path d="M245 345 h40 v-90 h60" stroke-dasharray="6 5"/>
+  <path d="M285 345 h40 l-14 -12 m14 12 l-14 12" fill="none"/>
+</g>
+<g font-family="ui-monospace, Menlo, Consolas, monospace" fill="#fde68a" opacity=".55" font-size="15">
+  <text x="330" y="242">A</text>
+  <text x="330" y="300">B</text>
+  <text x="300" y="180">0;JMP</text>
+  <text x="700" y="150">0000000000010101</text>
+  <text x="700" y="176">1110001100001000</text>
+  <text x="700" y="202">1110110000010000</text>
+</g>
+<g font-family="'PingFang SC','Microsoft YaHei',sans-serif">
+  <text x="110" y="470" font-size="58" font-weight="700" fill="#fef3c7">从一个 NAND 门到俄罗斯方块</text>
+  <text x="112" y="532" font-size="27" fill="#fde68a" opacity=".85">NAND → CPU → 汇编器 → VM → Jack → 门级仿真的 1.66 亿周期对拍</text>
+</g>
+</svg>
