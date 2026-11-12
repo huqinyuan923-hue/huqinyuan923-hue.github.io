@@ -3,6 +3,26 @@ import type { Project } from '~/types/data'
 export const PROJECTS: Project[] = [
   {
     type: 'self',
+    title: 'Hack 计算机全机仿真 · 可视化电路仿真器',
+    description:
+      'Logisim 风格的可视化电路仿真器：画布拖放芯片、正交布线、事件驱动 delta-cycle 仿真，31 种芯片库与子电路展开器，最终把 nand-computer 那台 Hack 计算机以 53 组件网表整机搭出来。5,832 条黄金向量 + 4 条逐周期 trace + SHA-256 帧哈希全部对拍，俄罗斯方块 300 万周期与官方行为核逐字节一致。',
+    imgSrc: '/static/images/projects/cir-sim.png',
+    url: 'https://cir.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/cir-sim',
+    builtWith: ['TypeScript', 'Canvas', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
+    title: 'NES 模拟器 · 浏览器里的红白机',
+    description:
+      '从零手写的 NES 模拟器：6502 CPU（151 个官方 opcode、周期精确）、2C02 PPU（背景/精灵/滚动/调色板）、iNES 与四个 mapper、NTSC 主循环与 Web 调试器。三个会话按冻结契约并行开发，nestest 黄金日志 5003 行 100% 对拍，blargg 测试 116/123，croom 与 240p Test Suite 浏览器可玩。',
+    imgSrc: '/static/images/projects/nes-emu.png',
+    url: 'https://nes.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/nes-emu',
+    builtWith: ['TypeScript', '6502', 'PPU', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
     title: '茶语 MiniGPT · 浏览器推理小模型',
     description:
       '用自己博客的 31.7 万字符语料从零训练的字符级 GPT：2.23M 参数、CPU 训练 2500 步，验证 loss 3.235；逐行 int8 量化到 2.2MB，手写 JS 推理引擎带 KV Cache 与 top-k 采样，在浏览器 Web Worker 里流式续写，支持下载停滞自动重试与移动端使用。',
