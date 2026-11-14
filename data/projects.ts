@@ -60,6 +60,36 @@ export const PROJECTS: Project[] = [
   },
   {
     type: 'self',
+    title: 'nand-computer · 门级 Hack 计算机',
+    description:
+      'nand2tetris 硬件轨的 TypeScript 门级仿真：从 NAND/DFF 两个原语逐层组合出 ALU、CPU 与内存映射，黄金向量逐层对拍，配官方行为核逐周期差分。浏览器 demo 里软件 ROM 直接跑在内存映像上——Tetris 就运行在这台手搓的计算机上（3.8M cycles，2993k cycles/s）。也是电路仿真器与 Hack 软件栈审计两篇文章的主角。',
+    imgSrc: '/static/images/projects/nand-computer.png',
+    url: 'https://cpu.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/nand-computer',
+    builtWith: ['TypeScript', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
+    title: 'Rasterizer · 纯 CPU 软件光栅器',
+    description:
+      '无 WebGL/WebGPU、运行时零 npm 依赖的软件光栅器：三角形光栅化、深度缓冲、明暗与阴影全部自己算，黄金图逐像素对拍（容差 0）。浏览器 demo 512×512 实测 60+fps，拖拽旋转、滚轮缩放。',
+    imgSrc: '/static/images/projects/rasterizer.png',
+    url: 'https://raster.adcakeyuan.top',
+    repo: 'huqinyuan923-hue/rasterizer',
+    builtWith: ['TypeScript', 'Canvas', 'node:test', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
+    title: 'TimeMark · 事件提醒系统',
+    description:
+      '掌控每一个倒计时时刻：61 种通知渠道、农历提醒、WebAuthn 免密登录与 web-push 离线推送。pnpm monorepo（Vite 前端 + Hono 后端 + shared 共享类型），Vercel Serverless + PostgreSQL + Blob 全家桶。',
+    imgSrc: '/static/images/projects/timemark.png',
+    url: 'https://timemark.the37777777.top',
+    repo: 'huqinyuan923-hue/timemark-vercel',
+    builtWith: ['React', 'Vite', 'Hono', 'TypeScript', 'PostgreSQL', 'Vercel'],
+  },
+  {
+    type: 'self',
     title: '茶语 MiniGPT · 浏览器推理小模型',
     description:
       '用自己博客的 31.7 万字符语料从零训练的字符级 GPT：2.23M 参数、CPU 训练 2500 步，验证 loss 3.235；逐行 int8 量化到 2.2MB，手写 JS 推理引擎带 KV Cache 与 top-k 采样，在浏览器 Web Worker 里流式续写，支持下载停滞自动重试与移动端使用。',
