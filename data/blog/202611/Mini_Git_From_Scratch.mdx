@@ -1,0 +1,144 @@
+---
+images: ['/static/images/projects/mini-git.svg']
+title: '用自己写的 git 克隆自己的博客：从零手写 Git 对象模型'
+date: '2026-11-14'
+lastmod: '2026-11-14'
+tags: ['git', 'sha1', 'packfile', 'nodejs', 'typescript']
+draft: false
+summary: '从零手写 2005 年冻结的 Git 对象模型与核心工作流（Node CLI，零 npm 运行时依赖）：blob/tree/commit、SHA-1 内容寻址、DIRC v2 二进制索引、porcelain 逐行等价的 status，以及 packfile v2 的 delta 解包与本地 clone。以系统 git 为裁判逐对象对拍，最后用它克隆了自己的博客仓库——5040 个对象，清单指纹与 git 完全一致。'
+tldr: '零 npm 运行时依赖手写 Git 对象模型与核心工作流（Node CLI，"零维护项目群"唯一的非浏览器成员），系统 git 2.55.0.windows.3 只出现在 tests/ 里当裁判，SHA-1 由 node:crypto 直接算——主角是对象模型的字节布局，不是密码学。对象存储 = sha1("type size\0" + content) 加 zlib，303 个内容各异的文件（空/二进制/Unicode/深路径/5MB/随机）与 git hash-object 逐条相等；tree 的魔鬼在排序：目录条目按"名字+/"参与比较（0x2E < 0x2F < 0x30，裸字符串排序在 foo.bar/foo/foo0 上必翻车）、按 UTF-8 字节序而非码点序、文件目录同名拒绝、mode 落盘 40000 而 cat-file -p 显示 040000，富树（40 文件两层嵌套 + 100755/120000 + 排序坑名字）双侧行 write-tree/commit-tree（两级 parent 链）SHA 全等；DIRC v2 二进制索引：62 字节定长头 + 名字 + NUL 补齐到 8 字节对齐且至少 1 个 NUL（恰为 8 的倍数时补整 8），flags 名长字段仅 12 位（≥0xFFF 时写 0xFFF、扫到 NUL 才知真长），尾部 20 字节 SHA-1 校验和先验后解析，TREE/EOIE 扩展透传，双向互通——git 完全接受我们写的 index，mgit 也读得懂 git 的；status --porcelain 的口径逐项探针锁定：tracked 条目在前（路径字节序）untracked 在后、未跟踪整目录折叠成 ?? dir/ 而目录内有跟踪文件则逐个列、空目录完全无视、目录名撞 index 文件路径的 D/F 冲突整目录静默吞掉、删除态靠"index 有而 readdir 没扫到"的反向补漏（第一版漏报，120 步 fuzz 第 2 步翻车）、非 ASCII 路径走 core.quotepath 八进制转义——200+120+40+15 步随机变更序列逐行一致；packfile v2 是最深的坑：node:zlib 不告诉你 deflate 流消费了多少输入（对流尾+垃圾静默成功、对截断抛错，最小成功长度单调），初版 crc32 锚定二分每对象 10+ 次 inflate（博客仓库 clone 20s），终版 idx 偏移铺盖——pack 条目天然连续铺满 [12, len-20)，条目终点即下一偏移，零搜索（20s→8.9s），偏移重复/越界/断裂本身构成 idx 损坏检测；idx crc32 覆盖整个条目（varint 头 + zlib 数据 + ref_delta 的 20 字节基 sha，verify-pack 口径），首版只算 zlib 段，冒烟 clone 第一发即炸 "crc32 不符 @114"；ofs 负偏移 varint 用 ((v+1)<<7)|b 的进位技巧、copy 指令 size==0 表示 0x10000、delta 递归带深度上限防环；连 pack 校验和、idx 记录、idx 校验和一起伪造的"聪明坏数据"，倒在"每对象重算 SHA-1 必须命中 idx"这道最朴素的闸上——7 类坏数据全抛错、零静默错解。clone 刻意以松散对象落盘，让 delta 解包与全量校验成为必经之路。高光时刻：mgit clone C:/works/mengke.me 解开 5040 个对象（多 pack、ofs delta 链），两侧 cat-file --batch-all-objects 清单排序后 sha256 指纹一致，git fsck 零对象级错误，克隆体 status 干净、log 与源一致、checkout 出的站点文件逐字节可用。25/25 测试全绿；性能（Node 24.16 / Windows 11）：5MB hash-object 105ms（git 49ms），1000 文件 add 2915ms 反超 git 的 3748ms，博客仓库 clone 8.9s（git 硬链接 0.9s，优化前 20s）。已知边界：refs 只读 clone HEAD，无 smart HTTP/SSH/pack 写/gc/合并，.gitignore 未实现，diff 为自有口径不含逐字节对拍。'
+authors: ['default']
+---
+
+<Twemoji emoji="package" />
+
+终端打出 `objects: 5040 个（全部校验通过，新写入 5040）` 那一刻，我没有先庆祝，而是去跑那个仪式性的对拍：源仓库与克隆体各自执行 `git cat-file --batch-check --batch-all-objects`，排序，取 sha256。两串指纹一字不差。`git fsck` 在克隆体上 exit=0、零对象级错误，`git status --porcelain` 是空的，`git log` 逐行与源仓库相同。
+
+我手写的 git——一个零 npm 依赖的 Node CLI——刚把我自己的博客仓库整个克隆了下来：多 pack、ofs delta 链、4829 个打包对象加松散对象，5040 个对象全部解开、全部校验、全部落盘，HEAD 指向的提交被 checkout 成一棵真实的工作区。裁判是系统 git 本体，它没有异议。
+
+这一幕在任务书里是提前写死的验收项："clone 自家博客仓库成功且对象清单与 git 完全一致——这是本项目的高光时刻，截图留档。"写任务书时它还是一句愿景；跑通那天，愿景靠证据文件说话，`docs/evidence/highlight-blog-clone.txt` 把对拍全程留了档。
+
+这篇记它的骨架：内容寻址、树与提交、DIRC v2 索引、status 的口径考古，以及全项目最深的坑——packfile 的对象边界定位。git 的行为手册不是背出来的，是对拍一格一格挖出来的；挖到的隐藏口径，比开工前预想的多。
+
+## 为什么是 Git
+
+2005 年 4 月 git 诞生，对象模型当年定型，此后二十年字节布局没动过一行。一份当年写入的对象，今天的 git 逐字节读得懂；反过来，今天照规格新写的实现，能和这二十年间的全部存量仓库互通——这篇的高光时刻就是后半句：一个零依赖的手写实现，把一个多 pack、带 delta 链的真实仓库完整克隆了下来。它是"零维护项目群"的一名成员，也是群里唯一的 CLI 项目：没有浏览器、没有可视化，产出就是一个命令行工具；Git 对象模型 2005 年冻结，写完即封存。
+
+任务书把验收锁死在"逐对象等价"上：同内容同 SHA 逐条相等、树与提交的 SHA 相等、`status --porcelain` 逐行一致、clone 后对象清单集合完全相等、坏数据必须抛错。裁判由系统 git 2.55.0.windows.3 出任，测试里经 child_process 调用——只当裁判，不进运行时。SHA-1 同理，node:crypto 直接算，不从零实现哈希：这个项目的主角从来不是算法，是对象模型的字节布局——头部怎么拼、树怎么排序、索引怎么对齐、pack 的 varint 怎么读。运行时只准用 Node 内建模块：zlib、crypto、fs、path。
+
+CLI 面是任务书固定的公开签名：`init` / `hash-object` / `cat-file` / `add` / `write-tree` / `commit-tree` / `commit` / `log` / `ls-files` / `status` / `diff` / `clone`。每个 flag 都是对拍所需的最小集：hash-object 的 `-w`、cat-file 的 `-p`/`-t`/`-s`、commit-tree 的 `-p`、log 的 `-n`、diff 的 `--cached`、status 的 `--porcelain`——多一个都是镀金，少一个对拍就缺一块。
+
+## 内容寻址：一个头部格式走天下
+
+Git 的所有对象只有一种形状：`sha1("<type> <size>\0" + content)`，zlib 压缩后按前两位分片落进 `.git/objects/xx/yyyy…`。blob、tree、commit 的区别只在 type 与 content，寻址完全同一：同内容必同 SHA，改一个字节，整条引用链全部换血。这套自验证结构是后面一切校验的地基——连"聪明坏数据"都逃不过它，后面会讲。
+
+差分 1 铺了 303 个内容各异的文件：空文件、二进制、Unicode、深路径、5MB 大件、295 条随机内容，`mgit hash-object` 与 `git hash-object` 逐条相等，0 差异，另有 28 条批量对拍与空对象的黄金值压阵。第一层薄得近乎无聊——头部 `<type> <size>\0` 拼对，SHA 就对——但后面每一层等价性都站在这 303 个相等的 SHA 上：tree 的 SHA 要靠 blob 拼，commit 要靠 tree 拼，clone 的对象清单对拍要靠全部。
+
+## 树与提交：排序规则的魔鬼
+
+tree 是目录快照：每条目 = mode + 名字 + 20 字节 SHA。mode 是 ASCII 串，`100644`/`100755`/`120000` 原样写，目录写 `40000`——落盘五位数，`cat-file -p` 却显示 `040000`，七位补零只活在显示层。真正的魔鬼在排序：目录条目比较时名字临时追加 `/`，`.`(0x2E) < `/`(0x2F) < `0`(0x30)，于是 `foo.bar < foo/（目录 foo） < foo0`——裸字符串排序在这里必翻车。再叠两条：比较必须按 UTF-8 字节序而非码点序；文件与目录同名冲突必须报错，`git write-tree` 同样拒绝。
+
+commit 是指向 tree 的元数据：tree、parent 链、author 与 committer 两行，格式为 `名字 <邮箱> <unix 时间戳> ±HHMM`，时区随行落盘。差分 2 把 author、时间戳、时区全部固定，富树——40 个文件两层嵌套、三种 mode、专挑排序坑的名字——双侧行 `write-tree` 与 `commit-tree`（含两级 parent 链），tree SHA、commit SHA、child commit SHA 逐个相等。
+
+本机没有符号链接权限，120000 的覆盖改走 `git update-index --cacheinfo` 注入加链接文本 blob；checkout 时 symlink 创建失败自动降级普通文件——与 git `core.symlinks=false` 的行为一致。log 沿 parent 链遍历还藏着一个小坑：候选提交的平局顺序必须与 git 一致，遍历容器用了栈，LIFO 让顺序翻车，换成 FIFO 队列才对齐。
+
+## 索引：DIRC v2 的二进制账本
+
+add、status、diff 的共同地基是 `.git/index`：`DIRC` 魔数、v2 版本号、条目数组。每条目 62 字节定长（stat 信息、mode、SHA、flags）接路径名，再补 NUL。三处格式细节，一处都不能含糊：
+
+- 填充补到 8 字节对齐，且至少 1 个 NUL——62 加名字长恰好是 8 的倍数时，要补整 8 个，不是 0 个；
+- flags 的名字长度字段只有 12 位，路径长度 ≥0xFFF 时字段写 0xFFF，真实长度扫到 NUL 才知道；
+- 文件尾 20 字节是前面全部字节的 SHA-1。git 读到不符即报 "index file corrupt"——写盘时精确计算，读盘时先验再解析，坏索引绝不静默。
+
+扩展区（TREE/EOIE 等）透传跳过，stage>0 的未合并条目直接报不支持——clone 最小集用不到。验收是双向互通：`mgit add` 写完的 index，`git status`、`git ls-files -s`、`git write-tree` 全部正确接受；反向 `git add` 之后，mgit 读 git 的 index（连 TREE 扩展一起）同样正确。二进制格式写到能与 oracle 互换，才算真的会写。
+
+环境账另记三笔：本机全局 `core.autocrlf=true` 会污染对拍，所有 git 调用经 GIT_CONFIG_GLOBAL/SYSTEM 指向空文件隔离；git 的松散对象与 pack 在 Windows 上是 0444 只读，测试篡改前先 chmod（EPERM 现场一枚）；`nul.dat` 是 Windows 保留设备名，写文件静默进黑洞——夹具改名 `zero.dat`，con/aux/prn 一族全部进了保留名单。
+
+## status：200 步对拍挖出的行为手册
+
+status 的验收口径定得最狠：随机生成工作区变更序列（增/删/改/改回/未跟踪/暂存交错），每步之后 `mgit status --porcelain` 与 `git status --porcelain` 逐行比对——200 步、120 步、40 步 CLI E2E、15 步脚本化场景，全部逐行一致。难的不是比较，是 git 的输出口径本身，这些规则全是探针一格格挖出来的：
+
+- tracked 条目在前（按路径字节序），untracked 在后——不是混排；
+- 未跟踪的整目录折叠成 `?? dir/`，但目录里一旦有跟踪文件就逐个列出；空目录完全无视——git 不追踪目录；
+- 目录名撞上 index 里的文件路径（D/F 冲突）时，整个目录既不展开也不报 untracked，被静默吞掉——这条隐藏口径靠对拍才现形；
+- 删除态要反向补漏：readdir 只看得见"存在"的文件，` D`、`AD` 得靠"index 有而工作区没扫到"的补漏扫描报出来，第一版漏报，120 步 fuzz 第 2 步就翻车；
+- 非 ASCII 路径按 core.quotepath 的 C 风格转义：`中文.txt` 显示为 `"\344\270\255\346\226\207.txt"`，控制字符转 `\a\b\t\n\v\f\r`；
+- mgit 的 status 不做 rename 相似度检测，差分夹具于是让每个文件内容全局唯一（名字加序号进内容），rename 相似性无从触发，两边的对拍口径整整齐齐。
+
+XY 组合也逐个探针锁定，几个少见但必考的：
+
+| XY               | 实测含义                                     |
+| ---------------- | -------------------------------------------- |
+| `AM`             | 暂存区新文件，工作区又改了                   |
+| `AD`             | 暂存区新文件，工作区又删了                   |
+| `D` 加 `??` 同现 | 暂存了删除（Y 位空格），文件却又出现在工作区 |
+
+性能上走 stat 快路径，stat 变了才重哈希裁决——与 git 的 raciness 策略同向，stat 字段的精度差异只影响速度不影响正确性。
+
+这 200 步里每一步的输出都逐行一致，包括那些"看起来 git 应该会报但偏偏不报"的时刻——对拍红的时候，错的一方未必是我们，先查口径再查实现，是这个阶段的家常便饭。
+
+## packfile：从 delta 链里解出真实仓库
+
+前三个里程碑都在"写"自己的对象，M4 开始"读"git 的——读 packfile，然后 clone。这个项目叙事上的一半，压在这一章。
+
+pack v2 的结构不复杂：12 字节头（PACK 魔数、版本、对象数），背靠背的对象条目（type/size varint + zlib 数据，delta 对象另带基引用），尾部 20 字节整包 SHA-1。idx v2 与之配对：fanout 表、SHA 表、crc32 表、偏移表，尾部 40 字节 = pack 的 SHA-1 加 idx 自身的 SHA-1——idx 记录的 packSha 与 pack 实际不符直接拒，配对检测是白送的。
+
+真正的深渊是：**node:zlib 不告诉你 deflate 流消费了多少输入**。pack 里对象背靠背，不知道上一条在哪结束，下一条从哪读起都是猜。先写了个探针脚本（`.tmp/probe.mjs`）对着 API 试行为：`inflateSync` 喂"流尾+垃圾"静默成功，喂截断流抛 "unexpected end of file"。两个读数合起来是一条关键性质——成败与输入长度单调，"最小成功长度"就是流的真实终点，而单调意味着可以二分。
+
+初版方案顺着探针走：以 idx 的 crc32 当锚做二分搜索，每个对象的边界要 10+ 次 inflate。能跑，但博客仓库 clone 要 20 秒。破局是把问题反过来——数据格式自己会说话，idx 的偏移表早就把答案写好了：pack 条目天然连续铺满 [12, len-20)，每个条目的终点就是字节序的下一条偏移，末条目的哨兵是 len-20。边界直接查表，每对象 1 次 inflate 加 1 次 crc32，博客仓库 clone 20s → 8.9s。副产品是坏数据检测反而更强：偏移重复、越界、铺盖断裂，本身就是 idx 损坏的罪证。
+
+坑还埋在别处。idx v2 的 crc32 覆盖**整个条目**——type/size varint 头、zlib 数据，ref_delta 还要加上 20 字节基 sha——这是 git verify-pack 的口径。第一版只算了 zlib 段，冒烟 clone 第一发就炸在 "crc32 不符 @114"，现场重学一遍"校验什么范围"这道题。
+
+delta 解包三件套：ofs 的负偏移 varint 用 `((v+1) << 7) | b` 的 +1 进位技巧；copy 指令的 size==0 表示 0x10000；结果尺寸必须与声明严格相等，基对象递归展开带深度上限防环。ref_delta 在条目里直接带 20 字节基 SHA，ofs_delta 只带偏移——两个变体，一套展开器。
+
+校验的最后一道闸最朴素：每个对象解出后重算 SHA-1，必须命中 idx 记录。测试里有一类"聪明坏数据"——pack 校验和、idx 记录、idx 自身校验和一起伪造，所有结构性检查全部通过——最后倒在对象级 SHA-1 上。连同截断（头/腰/尾）、篡改 pack、篡改/截断 idx、篡改松散对象，7 类坏数据全部抛错，零静默错解。
+
+clone 的一个设计选择如实交代：克隆体以松散对象落盘，不直拷 pack 字节。刻意的——让 delta 解包与逐对象校验成为 clone 的必经之路，代价是空间与时间，换来的是"克隆过的每个对象都亲手验过"。
+
+## 数字
+
+总账：25/25 测试全绿，`tsc --noEmit` 零错误，五项差分验收全部在列：
+
+| 验收项       | 口径                                                      | 结果                                    |
+| ------------ | --------------------------------------------------------- | --------------------------------------- |
+| 同内容同 SHA | 303 个内容各异的文件，双端 hash-object                    | 逐条相等，0 差异                        |
+| 树与提交等价 | 富树双侧行 write-tree / commit-tree，两级 parent 链       | tree / commit / child-commit SHA 全等   |
+| status 等价  | 200 + 120 + 40 + 15 步随机变更序列                        | `--porcelain` 逐行一致                  |
+| clone 等价   | 3 个造仓库 + 5MB blob 真实感仓库 + mengke.me（5040 对象） | 对象清单集合完全相等，fsck 无对象级错误 |
+| 坏数据       | 7 类截断 / 篡改 / 伪造校验和                              | 全部抛错，零静默错解                    |
+
+clone 那一行的三个造仓库：ofs_delta pack 一个、ref_delta pack 一个、松散加 pack 加 tag 混合一个——把"对象可能以什么形态存在"这个变量铺满。对拍不止对象清单：工作区逐字节一致、克隆体 status 干净、`git log` 与源一致，都在断言里。
+
+差分抓出的真 bug 记账五条：`mgit add` 只算 SHA 没落盘 blob 对象，write-tree 的"缺对象"检查（对齐 git 的行为）当场抓获；pack crc32 校验区间少了 varint 头，冒烟 clone 第一发即炸；status 漏报工作区删除，120 步 fuzz 第 2 步翻车；log 遍历用栈，平局顺序与 git 不符，改 FIFO 队列；`mgit add .` 被自己的"仓库之外"检查误杀，`rel==''` 才是合法的全仓递归。五条全是单元测试抓不到的——两边各自"看着都对"，只有对拍知道谁错了。
+
+性能（Windows 11 / Node 24.16 / git 2.55.0.windows.3，`node scripts/bench.mjs` 可复现）：
+
+| 项                                     | mgit          | 系统 git     | 备注                                                |
+| -------------------------------------- | ------------- | ------------ | --------------------------------------------------- |
+| hash-object 5MB（5 次中位）            | 105 ms        | 49 ms        | 同为 zlib/crypto 原语，差在进程模型与缓存           |
+| 1000 文件 add + write-tree             | 2915 + 187 ms | 3748 + 65 ms | 树 SHA 一致；add 反超——git 额外做 ignore 与 refresh |
+| 中型仓库 clone（186 文件 + 5MB blob）  | 437 ms        | 237 ms       | git 走硬链接，不经历解包                            |
+| mengke.me clone（5040 对象、delta 链） | 8.9 s         | 0.9 s        | 优化前 20s；git 是硬链接本地 clone                  |
+
+`write-tree` 的 187ms 则是优化来的：has() 从"全量读对象校验"改成廉价存在性检查，原先要 2800ms——树 SHA 不变，只是不再为"存在性"付全价。
+
+表里最慢的一行就是本项目的高光时刻：5040 个对象全部解包、逐对象 SHA-1 终检、松散落盘、checkout，8.9 秒——git 只用 0.9 秒，但它是硬链接 clone，一个对象都没解开，两者的工作量不在一个量级。对拍结果照抄进 REPORT：两侧对象清单排序后的 sha256 指纹同为 `745f5924…84ea`，`git fsck` exit=0 零对象级错误（四条 dangling commit 是源仓库本来的形状，不是克隆缺陷），克隆体 `status --porcelain` 为空，checkout 出来的站点文件直接可用——你现在读到的这篇文章，就住在那次克隆的源仓库里。
+
+## 封存
+
+已知边界，任务书的"明确不做"与实况补充，如实入档：
+
+- 引用管理只做 clone 必需的最小集：refs 只读 clone HEAD，commit 会写 HEAD 指向的那一个 ref 文件，仅此而已，packed-refs 不解析；
+- smart HTTP / SSH / 远程协议不做，packfile 只读不写，gc、合并、fsck 全量不做；
+- `.gitignore` 未实现，status 对拍口径为无 ignore 文件的工作区；
+- cat-file 支持四种对象类型的 `-p`/`-t`/`-s`，`--batch` 系列未实现；log 不支持 `-p`，reflog 不写；
+- status 的 rename 口径绑定在当前 oracle 上，若换新版 git 需重探；
+- diff 输出为 mgit 自有口径（对齐 git 的 hunk 合并规则与 `/dev/null` 惯例），差分验收不含 diff 逐字节对拍；
+- 大于 2GB 的 pack 其大偏移表代码路径已实现，但没有 >2GB 夹具实测；
+- SHA-1 是 2005 年冻结的既定格式，照实复刻；生产场景应关注 git 自身的 SHA-256 仓库格式迁移。
+
+想复核：`npm install && npm test`，25 项测试把五类差分与坏数据一次跑完，裁判就是你自己机器上的 git；`npm run mgit -- clone <某个仓库> <目标目录>`，克隆出来的仓库 git 完全认账。
+
+回头看，这一站与前几站共用同一套方法论，裁判却是最重的一个：模拟器的裁判是一包测试 ROM，zlib 的裁判是一个函数，git 的裁判是一整个活了二十年的生态——tree 里每一个字节的顺序、index 里每一段填充、porcelain 的每一行输出，都是被亿万仓库固化下来的约定。差分对拍在这里不只是验证手段，是研究手段：好几条口径（D/F 吞目录、删除反向补漏、目录折叠的边界）是先看见对拍红，再倒回去做探针才明白的。至此，"零维护项目群"五名成员全部上线、全部封存——收官的这一站不是浏览器页面，是一个能把自己作者的博客整个克隆下来的命令行工具。
+
+姊妹篇：[《一条三十年没人改的位流：从零手写 DEFLATE/gzip 编解码器》](https://adcakeyuan.top/blog/deflate-from-scratch)、[《像素拆到只剩余弦：从零手写基线 JPEG 编解码器》](https://adcakeyuan.top/blog/jpeg-from-scratch)、[《让 4.19MHz 的掌机笑起来：Game Boy 模拟器三部曲》](https://adcakeyuan.top/blog/game-boy-emulator-dmg)。
