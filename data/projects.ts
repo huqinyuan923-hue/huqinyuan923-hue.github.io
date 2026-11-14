@@ -3,6 +3,43 @@ import type { Project } from '~/types/data'
 export const PROJECTS: Project[] = [
   {
     type: 'self',
+    title: 'Game Boy 模拟器 · 浏览器里的 DMG',
+    description:
+      '从零手写的 Game Boy 模拟器：SM83 CPU（500 opcode、T 周期精确、HALT bug 复现）、Pixel FIFO 渲染、MBC1/3/5、Timer 与五源中断。blargg 全家桶（cpu_instrs、mem_timing、halt_bug）与 dmg-acid2 逐像素对拍全过，整机 1.38ms/帧（≈725fps）。挖出一条真机规则：LCDC.5 下降沿复位窗口行计数器。',
+    imgSrc: '/static/images/projects/gb-emu.png',
+    url: 'https://gb-emu.pages.dev',
+    repo: null,
+    builtWith: ['TypeScript', 'SM83', 'Pixel FIFO', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
+    title: 'mini-Git · 从零手写的对象模型',
+    description:
+      'Node CLI 版 Git：blob/tree/commit 对象、SHA-1 内容寻址、DIRC v2 索引、status/diff/log 全套，读 packfile v2 与 delta 解包，实现本地 clone。以系统 git 为裁判：同内容同 SHA 逐条等价、status --porcelain 逐行一致，成功克隆本博客仓库（5040 个对象，与 git cat-file 完全一致）。',
+    imgSrc: '/static/images/projects/mini-git.svg',
+    repo: null,
+    builtWith: ['TypeScript', 'Node', 'SHA-1', 'Vitest'],
+  },
+  {
+    type: 'self',
+    title: 'DEFLATE/gzip 编解码器',
+    description:
+      '从零手写 RFC 1951/1952：inflate（三种块类型 + canonical Huffman）+ deflate（懒匹配 LZ77、动态 Huffman、块类型决策）+ CRC32 容器。以 node:zlib 为裁判双向差分 1 万条语料逐字节相等，2,000 条坏流模糊测试全抛错，纯前端单文件工具。',
+    imgSrc: '/static/images/projects/deflate-lab.png',
+    url: 'https://deflate-lab.pages.dev',
+    builtWith: ['TypeScript', 'Huffman', 'LZ77', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
+    title: 'JPEG 编解码器 · 从零实现 T.81',
+    description:
+      '从零手写基线 JPEG（ITU-T T.81）：Huffman、反量化、三套 IDCT 互相差分、YCbCr 与色度上采样、restart marker；编码侧 FDCT/量化/熵编码闭环。以 jpeg-js 为 oracle：50 图解码 ≥99.9% 象素相等，100 图编码 round-trip PSNR 达标，2,000 条坏流全抛错。',
+    imgSrc: '/static/images/projects/jpeg-lab.png',
+    url: 'https://jpeg-lab.pages.dev',
+    builtWith: ['TypeScript', 'DCT', 'Huffman', 'Vitest', 'Cloudflare Pages'],
+  },
+  {
+    type: 'self',
     title: 'Hack 计算机全机仿真 · 可视化电路仿真器',
     description:
       'Logisim 风格的可视化电路仿真器：画布拖放芯片、正交布线、事件驱动 delta-cycle 仿真，31 种芯片库与子电路展开器，最终把 nand-computer 那台 Hack 计算机以 53 组件网表整机搭出来。5,832 条黄金向量 + 4 条逐周期 trace + SHA-256 帧哈希全部对拍，俄罗斯方块 300 万周期与官方行为核逐字节一致。',

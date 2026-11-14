@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0d1117"/>
+  <text x="60" y="110" font-family="Consolas, monospace" font-size="44" fill="#c9d1d9" font-weight="bold">mini-Git · 从零手写的对象模型</text>
+  <text x="60" y="160" font-family="Consolas, monospace" font-size="22" fill="#8b949e">$ mgit clone C:/works/mengke.me</text>
+  <text x="60" y="200" font-family="Consolas, monospace" font-size="22" fill="#7ee787">✓ 5040 objects · 与 git cat-file --batch-check 完全一致</text>
+
+  <!-- git graph -->
+  <g stroke="#30363d" stroke-width="4" fill="none">
+    <line x1="120" y1="300" x2="120" y2="480"/>
+    <line x1="120" y1="330" x2="320" y2="300"/>
+    <line x1="320" y1="300" x2="320" y2="480"/>
+    <line x1="320" y1="330" x2="520" y2="300"/>
+    <line x1="520" y1="300" x2="520" y2="480"/>
+    <line x1="520" y1="300" x2="720" y2="330"/>
+    <line x1="720" y1="330" x2="720" y2="480"/>
+  </g>
+  <g fill="#238636" stroke="#7ee787" stroke-width="3">
+    <circle cx="120" cy="330" r="16"/>
+    <circle cx="320" cy="330" r="16"/>
+    <circle cx="520" cy="330" r="16"/>
+    <circle cx="720" cy="330" r="16" fill="#da3633" stroke="#ff7b72"/>
+  </g>
+  <text x="120" y="530" font-family="Consolas, monospace" font-size="18" fill="#8b949e">a1b2c3d</text>
+  <text x="310" y="530" font-family="Consolas, monospace" font-size="18" fill="#8b949e">e4f5a6b</text>
+  <text x="510" y="530" font-family="Consolas, monospace" font-size="18" fill="#8b949e">c7d8e9f</text>
+  <text x="668" y="530" font-family="Consolas, monospace" font-size="18" fill="#ff7b72">HEAD → main</text>
+
+  <text x="60" y="590" font-family="Consolas, monospace" font-size="20" fill="#58a6ff">blob · tree · commit · packfile v2 · delta</text>
+</svg>
