@@ -100,9 +100,10 @@ export const christmasConfig: ChristmasConfig = yamlConfig.christmas || {
 };
 
 // Map YAML bgm config
-export const bgmConfig: { enabled: boolean; metingApi?: string; audio: BgmAudioGroup[] } = {
+export const bgmConfig: { enabled: boolean; metingApi?: string; autoplay: boolean; audio: BgmAudioGroup[] } = {
   enabled: yamlConfig.bgm?.enabled ?? (yamlConfig.bgm?.audio?.length ?? 0) > 0,
   metingApi: yamlConfig.bgm?.metingApi,
+  autoplay: yamlConfig.bgm?.autoplay ?? false,
   audio: yamlConfig.bgm?.audio ?? [],
 };
 

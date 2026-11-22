@@ -127,10 +127,38 @@ export async function fetchMeting(server: string, type: string, id: string, apiU
   return songs;
 }
 
+/**
+ * 本地内置音频（bgm.audio[].list 里以 `/` 开头的条目）：
+ * 文件放在 public/music/ 下，文件名按「歌手 - 歌名.mp3」约定即可自动解析出元数据，
+ * 无需 Meting API，离线可用。
+ */
+export function parseLocalTrack(url: string): MetingSong {
+  let rawName = url.split('/').at(-1) ?? '';
+  try {
+    rawName = decodeURIComponent(rawName);
+  } catch {
+    // keep raw
+  }
+  const stem = rawName.replace(/\.[a-z0-9]+$/i, '').trim();
+  const separatorIndex = stem.indexOf(' - ');
+  const hasArtist = separatorIndex > 0 && separatorIndex + 3 < stem.length - 1;
+  return {
+    name: hasArtist ? stem.slice(separatorIndex + 3).trim() : stem,
+    artist: hasArtist ? stem.slice(0, separatorIndex).trim() : '',
+    url,
+    pic: '',
+    lrc: '',
+  };
+}
+
 /** Resolve multiple music URLs into a flat song list. */
 export async function resolvePlaylist(urls: string[], apiUrl?: string): Promise<MetingSong[]> {
   const results = await Promise.allSettled(
     urls.map((url) => {
+      // 本地内置音频：以 / 开头的条目直接生成曲目，不经过 Meting API
+      if (url.startsWith('/')) {
+        return Promise.resolve([parseLocalTrack(url)]);
+      }
       const parsed = parseMusicUrl(url);
       if (!parsed) return Promise.resolve([]);
       return fetchMeting(parsed.server, parsed.type, parsed.id, apiUrl);

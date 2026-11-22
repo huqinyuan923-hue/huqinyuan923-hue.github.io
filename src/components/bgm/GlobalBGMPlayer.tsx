@@ -25,15 +25,17 @@ import { resolvePlaylist } from '@lib/meting';
 import { useStore } from '@nanostores/react';
 import { $isAnyModalOpen, $isDrawerOpen } from '@store/modal';
 import { AnimatePresence, m } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { $bgmPanelOpen, closeBgmPanel } from '@/store/bgm';
 
 interface GlobalBGMPlayerProps {
   audioGroups: BgmAudioGroup[];
   metingApi?: string;
+  /** 进站自动播放（被浏览器拦截时退化为首次交互后播放） */
+  autoplay?: boolean;
 }
 
-export default function GlobalBGMPlayer({ audioGroups, metingApi }: GlobalBGMPlayerProps) {
+export default function GlobalBGMPlayer({ audioGroups, metingApi, autoplay = false }: GlobalBGMPlayerProps) {
   const { t } = useTranslation();
   const isMounted = useIsMounted();
   const panelOpen = useStore($bgmPanelOpen);
@@ -95,7 +97,34 @@ export default function GlobalBGMPlayer({ audioGroups, metingApi }: GlobalBGMPla
 
   // Audio hook at top level — Audio element persists across panel open/close
   const player = useAudioPlayer(tracks);
+  const playerRef = useRef(player);
+  playerRef.current = player;
   const currentTrack = tracks[player.state.currentIndex] ?? null;
+
+  // 进站自动播放：先直接尝试；被浏览器自动播放策略拦截时，
+  // 退化为监听访客的第一次任意交互（点击/按键）后开始播放。
+  // 仅在自动播放尚未成功时挂一次性监听，成功后自动清理。
+  const autoplayStartedRef = useRef(false);
+  useEffect(() => {
+    if (!autoplay || loading || tracks.length === 0 || autoplayStartedRef.current) return;
+    autoplayStartedRef.current = true;
+
+    playerRef.current.play();
+    const gestureStart = () => {
+      if (!playerRef.current.state.playing) playerRef.current.play();
+    };
+    const timer = window.setTimeout(() => {
+      if (!playerRef.current.state.playing) {
+        window.addEventListener('pointerdown', gestureStart, { once: true });
+        window.addEventListener('keydown', gestureStart, { once: true });
+      }
+    }, 1000);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('pointerdown', gestureStart);
+      window.removeEventListener('keydown', gestureStart);
+    };
+  }, [autoplay, loading, tracks.length]);
 
   // Hide panel when drawer is open
   const isHidden = isDrawerOpen || isAnyModalOpen;

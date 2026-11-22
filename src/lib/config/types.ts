@@ -638,6 +638,8 @@ export interface BgmAudioGroup {
 
 export interface BgmConfig {
   enabled?: boolean;
+  /** 进站自动播放；被浏览器拦截时退化为首次交互后播放 */
+  autoplay?: boolean;
   /** Meting API endpoint URL. Defaults to 'https://163.hyc.moe/' */
   metingApi?: string;
   audio?: BgmAudioGroup[];

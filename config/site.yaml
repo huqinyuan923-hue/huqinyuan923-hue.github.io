@@ -722,14 +722,16 @@ seo:
 # =============================================================================
 bgm:
   enabled: true  # (有 audio 时自动启用，显式 false 可禁用)
-  # metingApi: https://163.hyc.moe/  # Meting API 地址，默认为 https://163.hyc.moe/，推荐自部署
+  autoplay: true # 进站自动播放；被浏览器拦截时退化为访客首次点击/按键后播放
+  # metingApi: https://163.hyc.moe/  # 仅网易云/QQ 音乐外链需要；本地文件不需要
   audio:
-    - title: 最爱山山
+    - title: 我的歌单
       list:
-        - https://music.163.com/playlist?id=8676645748
-    - title: Love Vocaloid
-      list:
-        - https://music.163.com/playlist?id=8882890045
+        # 本地内置歌曲：文件放进 public/music/，文件名按「歌手 - 歌名.mp3」
+        # 命名即可自动解析出歌手与歌名（不带歌手则只显示歌名）。
+        # 换成自己的歌时直接替换下面两行占位曲并增删条目即可。
+        - '/music/晨光 Melody.wav'   # 占位示例曲（自研合成氛围音）
+        - '/music/夜航 Starlight.wav' # 占位示例曲（自研合成氛围音）
 
 christmas:
   enabled: false # 总开关

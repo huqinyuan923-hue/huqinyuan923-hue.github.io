@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test, { type TestContext } from 'node:test';
-import { fetchMeting, type MetingSong } from './meting';
+import { fetchMeting, type MetingSong, parseLocalTrack } from './meting';
 
 const song: MetingSong = {
   name: 'Test song',
@@ -74,4 +74,14 @@ test('inline lyrics, relative assets, and absent lyrics remain unchanged', async
   mockMeting(t, [inline, noLyrics]);
   const resolved = await fetchMeting('netease', 'playlist', '42');
   assert.deepEqual(resolved, [inline, noLyrics]);
+});
+
+test('local playlist entries resolve from the filename without any network call', () => {
+  const withArtist = parseLocalTrack('/music/周杰伦 - 晴天.mp3');
+  assert.deepEqual(withArtist, { name: '晴天', artist: '周杰伦', url: '/music/周杰伦 - 晴天.mp3', pic: '', lrc: '' });
+  const titleOnly = parseLocalTrack('/music/晨光 Melody.wav');
+  assert.deepEqual(titleOnly, { name: '晨光 Melody', artist: '', url: '/music/晨光 Melody.wav', pic: '', lrc: '' });
+  const encoded = parseLocalTrack('/music/%E5%91%A8%E6%9D%B0%E4%BC%A6%20-%20%E6%99%B4%E5%A4%A9.flac');
+  assert.equal(encoded.name, '晴天');
+  assert.equal(encoded.artist, '周杰伦');
 });
