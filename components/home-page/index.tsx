@@ -32,12 +32,14 @@ export function Home({
   posts,
   snippets,
   randomPosts,
+  randomPool,
   stats,
 }: {
   pinned: CoreContent<Blog>
   posts: CoreContent<Blog>[]
   snippets: CoreContent<Snippet>[]
   randomPosts: CoreContent<Blog>[]
+  randomPool: CoreContent<Blog>[]
   stats: HomeStats
 }) {
   return (
@@ -59,7 +61,7 @@ export function Home({
             <PinnedPost post={pinned} />
             <LatestPosts posts={posts} snippets={snippets} />
             <FeaturedCategories />
-            <RandomPosts posts={randomPosts} />
+            <RandomPosts initial={randomPosts} pool={randomPool} />
             <section aria-label="传送门" className="md:mt-10">
               <p className="kicker mb-2">{'~/teleport'}</p>
               <h2 className="mb-6 font-heading text-2xl font-bold md:text-4xl">传送门</h2>

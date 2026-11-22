@@ -35,12 +35,17 @@ export default async function HomePage() {
   // ── 最新文章网格：排除置顶后的前 N 篇 ──
   const latest = posts.filter((p) => p.slug !== pinned?.slug).slice(0, MAX_POSTS_DISPLAY)
 
-  // ── 随手翻一篇：构建时随机抽样（每次部署换一批）──
+  // ── 随手翻一篇：构建时随机抽样 + 客户端「换一批」的 pool ──
   const pool = posts.filter((p) => p.slug !== pinned?.slug)
   const randomPosts = pool
     .map((p) => ({ p, r: Math.random() }))
     .sort((a, b) => a.r - b.r)
     .slice(0, MAX_RANDOM_DISPLAY)
+    .map(({ p }) => p)
+  const randomPool = pool
+    .map((p) => ({ p, r: Math.random() }))
+    .sort((a, b) => a.r - b.r)
+    .slice(0, 10)
     .map(({ p }) => p)
 
   const snippets = allCoreContent(sortPosts(allSnippets)).slice(0, MAX_SNIPPETS_DISPLAY)
@@ -51,6 +56,7 @@ export default async function HomePage() {
       posts={latest}
       snippets={snippets}
       randomPosts={randomPosts}
+      randomPool={randomPool}
       stats={stats}
     />
   )

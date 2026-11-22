@@ -15,6 +15,11 @@ import { ReflectiveBlackBackground } from '~/components/effects/reflective-black
 import { EntranceOverlay } from '~/components/effects/entrance-overlay'
 import { ScrollProgress } from '~/components/effects/scroll-progress'
 import { ScrollReveal } from '~/components/effects/scroll-reveal'
+import { FloatingBalls } from '~/components/effects/floating-balls'
+import { ThemeOverride } from '~/components/effects/theme-override'
+import { allCoreContent } from '~/utils/contentlayer'
+import { sortPosts } from '~/utils/misc'
+import { allBlogs } from 'contentlayer/generated'
 import { SITE_METADATA } from '~/data/site-metadata'
 import { ThemeProviders } from './theme-providers'
 
@@ -115,6 +120,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const basePath = process.env.BASE_PATH || ''
+  // 悬浮球「随手翻一篇」的 slug 池：构建时取最新 20 篇（排除草稿）
+  const randomSlugs = allCoreContent(sortPosts(allBlogs))
+    .filter((p) => !p.draft)
+    .slice(0, 20)
+    .map((p) => p.slug)
 
   return (
     <html
@@ -180,12 +190,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <EntranceOverlay />
         <ScrollProgress />
         <ScrollReveal />
+        <ThemeOverride />
         <ThemeProviders>
           <UmamiAnalytics websiteId={SITE_METADATA.analytics.umamiAnalytics.websiteId} />
           <Header />
           <main className="mb-auto grow">{children}</main>
           <AskAILazy />
           <SiteSearch configs={SITE_METADATA.search.kbarConfigs} />
+          <FloatingBalls randomSlugs={randomSlugs} />
           <Footer />
         </ThemeProviders>
       </body>
