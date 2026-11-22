@@ -115,6 +115,8 @@ export const Blog = defineDocumentType(() => ({
     tags: { type: 'list', of: { type: 'string' }, default: [] },
     lastmod: { type: 'date' },
     draft: { type: 'boolean' },
+    /** 置顶标记：frontmatter 写 pinned: true 的文章显示在首页置顶卡 */
+    pinned: { type: 'boolean' },
     summary: { type: 'string' },
     tldr: { type: 'string' },
     images: { type: 'json' },

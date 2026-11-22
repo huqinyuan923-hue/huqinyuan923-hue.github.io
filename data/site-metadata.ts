@@ -7,6 +7,8 @@ export const SITE_METADATA = {
   language: 'en-US',
   theme: 'system', // system, dark or light
   siteUrl: 'https://adcakeyuan.top',
+  /** 建站日期（取自仓库首次提交）：用于运行天数统计 */
+  siteStartDate: '2026-10-20',
   siteRepo: 'https://github.com/huqinyuan923-hue/huqinyuan923-hue.github.io',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/avatar-256.webp`,
   profileBanner: `${process.env.BASE_PATH || ''}/static/images/profile-banner.webp`,

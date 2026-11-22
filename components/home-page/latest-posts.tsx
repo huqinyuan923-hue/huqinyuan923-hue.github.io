@@ -3,7 +3,7 @@
 import { clsx } from 'clsx'
 import { useState } from 'react'
 import type { Blog, Snippet } from '~/.contentlayer/generated'
-import { PostCardListView } from '~/components/blog/post-card-list-view'
+import { PostGridCard } from '~/components/home-page/post-grid-card'
 import { SnippetCard } from '~/components/cards/snippet'
 import { GrowingUnderline } from '~/components/effects/growing-underline'
 import { Link } from '~/components/ui/link'
@@ -64,14 +64,12 @@ export function LatestPosts({
         </div>
       </div>
       {view === 'posts' ? (
-        <ul className="space-y-12 divide-gray-200 pt-6 dark:divide-gray-700 md:space-y-16 md:pt-10">
+        <div className="grid gap-x-6 gap-y-8 pt-6 sm:grid-cols-2 md:gap-y-10 md:pt-10">
           {!posts.length && 'No posts found.'}
           {posts.map((post, idx) => (
-            <li key={post.slug}>
-              <PostCardListView post={post} loading={idx === 0 ? 'eager' : 'lazy'} index={idx} />
-            </li>
+            <PostGridCard key={post.slug} post={post} loading={idx === 0 ? 'eager' : 'lazy'} />
           ))}
-        </ul>
+        </div>
       ) : (
         <div className="py-10">
           <div className="grid-cols-2 gap-x-6 gap-y-10 space-y-10 md:grid md:space-y-0">
