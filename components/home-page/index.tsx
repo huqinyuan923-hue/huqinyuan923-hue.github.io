@@ -1,44 +1,62 @@
-import type { Blog, Snippet } from '~/.contentlayer/generated'
 import { ProfileCard } from '~/components/cards/profile'
 import { Container } from '~/components/ui/container'
-import { Twemoji } from '~/components/ui/twemoji'
 import type { CoreContent } from '~/types/data'
-import { Greeting } from './greeting'
-import { Intro } from './intro'
-import { LatestPosts } from './latest-posts'
+import type { Blog, Snippet } from '~/.contentlayer/generated'
 import { BlogLinks } from './links'
-import { TypedBios } from './typed-bios'
+import { Hero } from './hero'
+import { LatestPosts } from './latest-posts'
+import { OwnerStats } from './owner-stats'
+import { WaveDivider } from './wave-divider'
 
+export type HomeStats = {
+  posts: number
+  tags: number
+  /** 任务 3 扩展：总字数（构建时统计） */
+  words: number
+  /** 任务 3 扩展：建站运行天数 */
+  days: number
+  /** 任务 3 扩展：共鸣天数（首篇文章至今） */
+  resonation: number
+}
+
+/**
+ * 首页骨架（参考站同构，爱弥斯主题）：
+ * 全屏 Hero（HUD 终端 + 星屑）→ 星轨波浪 → 左栏站长卡（sticky）/ 右栏内容流。
+ */
 export function Home({
   posts,
   snippets,
+  stats,
 }: {
   posts: CoreContent<Blog>[]
   snippets: CoreContent<Snippet>[]
+  stats: HomeStats
 }) {
   return (
-    <Container as="div" className="pt-4 lg:pt-12">
-      <div className="py-6 md:pb-8 xl:grid xl:grid-cols-3">
-        <div className="space-y-4 md:space-y-6 md:pr-8 xl:col-span-2">
-          <Greeting />
-          <div className="text-base leading-7 text-gray-600 dark:text-gray-400 md:text-lg md:leading-8">
-            <Intro />
-            <TypedBios />
-            <div className="mb-6 mt-4 md:mb-8">
-              <p>Enjoys music, games, sports, travel, and food.</p>
+    <div className="pt-0">
+      <Hero stats={stats} />
+      <WaveDivider />
+      <Container as="div" className="pb-8">
+        <div className="mt-4 gap-10 lg:mt-6 lg:grid lg:grid-cols-[300px_minmax(0,1fr)]">
+          {/* 左栏：站长卡（HUD 全息卡 + Spotify 在播）+ 统计卡，桌面端吸顶 */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-20 space-y-6 pb-6">
+              <ProfileCard />
+              <OwnerStats stats={stats} variant="card" />
             </div>
-            <BlogLinks />
-            <p className="my-6 flex md:my-8">
-              <span className="mr-2">欢迎来访</span>
-              <Twemoji emoji="clinking-beer-mugs" />
-            </p>
+          </aside>
+
+          {/* 右栏：内容流（最新文章）+ 传送门 */}
+          <div className="min-w-0 space-y-12 md:space-y-16">
+            <LatestPosts posts={posts} snippets={snippets} />
+            <section aria-label="传送门" className="md:mt-10">
+              <p className="kicker mb-2">{'~/teleport'}</p>
+              <h2 className="mb-6 font-heading text-2xl font-bold md:text-4xl">传送门</h2>
+              <BlogLinks />
+            </section>
           </div>
         </div>
-        <div className="hidden pt-8 xl:block xl:pl-14">
-          <ProfileCard />
-        </div>
-      </div>
-      <LatestPosts posts={posts} snippets={snippets} />
-    </Container>
+      </Container>
+    </div>
   )
 }

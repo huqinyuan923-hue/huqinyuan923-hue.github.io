@@ -87,7 +87,7 @@ export function Header() {
       as="header"
       className={clsx(
         'border border-gray-900/10 bg-white/70 py-2 backdrop-blur-xl',
-        'dark:border-white/10 dark:bg-[#0a0e1a]/70',
+        'dark:border-white/10 dark:bg-card/70',
         'shadow-lg shadow-gray-900/5 saturate-150 dark:shadow-black/40 md:rounded-2xl',
         SITE_METADATA.stickyNav && 'sticky top-2 z-50 lg:top-3'
       )}

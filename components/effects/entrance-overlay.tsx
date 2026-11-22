@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react'
 
 const BOOT_LINES = [
-  { text: '> initializing blog.exe', ok: 'OK' },
-  { text: '> loading modules · themes · games', ok: 'OK' },
-  { text: '> mounting arcade.decks × 40+', ok: 'OK' },
-  { text: '> indexing posts · 68 mdx · 106 tags', ok: 'OK' },
-  { text: '> linking cha · galaxy · town', ok: 'OK' },
-  { text: '> establishing uplink', ok: 'READY' },
+  { text: '> 共鸣核心启动 resonance-core', ok: 'OK' },
+  { text: '> 加载模块 · 主题 · 游戏舱', ok: 'OK' },
+  { text: '> 挂载 arcade.decks × 40+', ok: 'OK' },
+  { text: '> 索引文章 · 68 mdx · 106 tags', ok: 'OK' },
+  { text: '> 连接 cha · galaxy · town', ok: 'OK' },
+  { text: '> 建立共鸣链路 uplink', ok: 'READY' },
 ]
 
 const BOOT_FALLBACK_MS = 4000
@@ -131,7 +131,7 @@ export function EntranceOverlay() {
       <div className="boot-bar" />
       <div className="boot-pct" />
       <div className="boot-hud">{'SSG · CLOUDFLARE EDGE · 0 COLD START'}</div>
-      <div className="boot-ready">{'READY · WELCOME TO MY DECK'}</div>
+      <div className="boot-ready">{'READY · 共鸣连接已建立'}</div>
     </div>
   )
 }

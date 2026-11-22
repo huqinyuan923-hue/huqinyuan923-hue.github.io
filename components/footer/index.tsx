@@ -13,7 +13,7 @@ export function Footer() {
       <div
         className={clsx([
           'grid grid-cols-1 gap-x-8 gap-y-8 py-8 md:grid-cols-2 xl:grid-cols-3',
-          'border-t border-gray-200 dark:border-gray-700',
+          'border-t border-border',
         ])}
       >
         <div className="col-span-1 space-y-4 xl:col-span-2">

@@ -12,7 +12,7 @@ function getAccountHandle(url = '') {
 /** HUD 数据行：左侧 mono 标签，右侧值 */
 function HudRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-dashed border-gray-200 py-2 dark:border-white/10">
+    <div className="flex items-center justify-between gap-3 border-b border-dashed border-border py-2 dark:border-white/10">
       <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500">
         {label}
       </span>
