@@ -30,6 +30,11 @@ export function BlogMeta({ date, lastmod, slug, readingTime }: BlogMetaProps) {
         )}
         <span className="text-gray-400">/</span>
         <div className="flex items-center">
+          <Twemoji emoji="memo" size="base" />
+          <span className="ml-1.5 md:ml-2">{readingTime.words} 字</span>
+        </div>
+        <span className="text-gray-400">/</span>
+        <div className="flex items-center">
           <Twemoji emoji="three-o-clock" size="base" />
           <span className="ml-1.5 md:ml-2">{Math.ceil(readingTime.minutes)} 分钟读完</span>
         </div>

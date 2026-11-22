@@ -32,7 +32,7 @@ export default function MomentPage() {
       <PageHeader
         title="Moment"
         description="记录生活的碎片，分享日常的想法与见闻"
-        className="border-b border-gray-200 pb-6 dark:border-gray-700"
+        className="border-b border-border pb-6"
       />
       <div className="mx-auto mt-8 max-w-2xl space-y-8">
         {moments.map((moment) => {
@@ -41,12 +41,10 @@ export default function MomentPage() {
             <article key={moment._id} className="group">
               <div
                 className={clsx([
-                  'relative overflow-hidden rounded-2xl',
-                  'bg-white shadow-sm transition-all duration-300',
-                  'dark:bg-white/5 dark:shadow-none',
-                  'border border-gray-100 dark:border-gray-800',
-                  'hover:shadow-lg hover:shadow-gray-900/5',
-                  'dark:hover:shadow-black/20',
+                  'card-hover-glow relative overflow-hidden rounded-2xl',
+                  'hud-corners',
+                  'bg-card/70 backdrop-blur-sm transition-all duration-300',
+                  'border border-border',
                 ])}
               >
                 <GritBackground className="absolute inset-0 opacity-30 dark:opacity-100" />
@@ -58,15 +56,15 @@ export default function MomentPage() {
                         alt={AUTHOR_INFO.name}
                         width={128}
                         height={128}
-                        className="h-10 w-10 rounded-full ring-2 ring-white dark:ring-gray-800"
+                        className="h-10 w-10 rounded-full ring-2 ring-card"
                       />
-                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900"></div>
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-card"></div>
                     </div>
                     <div className="leading-tight">
                       <div className="font-semibold text-gray-900 dark:text-gray-100">
                         {AUTHOR_INFO.name}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="font-mono text-xs tracking-wider text-muted-foreground">
                         {formatDate(moment.date)}
                       </div>
                     </div>
@@ -105,8 +103,8 @@ export default function MomentPage() {
         })}
         {moments.length === 0 && (
           <div className="mx-auto max-w-2xl">
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50">
-              <div className="text-gray-500 dark:text-gray-400">
+            <div className="rounded-2xl border border-border bg-card/50 p-12 text-center">
+              <div className="text-muted-foreground">
                 <div className="mb-2 text-lg font-medium">还没有内容</div>
                 <div className="text-sm">暂时没有分享过动态</div>
               </div>
