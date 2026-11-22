@@ -1,69 +1,41 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# build output
+dist/
+.sonda/
+
+# generated types
+.astro/
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
-/.yarn/*
-!/.yarn/releases
-!/.yarn/plugins
-!/.yarn/sdks
+node_modules
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-public/sitemap.xml
-.vercel
-
-# production
-/build
-*.xml
-
-# rss feed
-/public/feed.xml
-
-# search
-/public/search.json
-
-# misc
-.DS_Store
-
-# debug
-*.log
+# logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# local env files
+# environment variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.production
+.env*.local
 
-# Contentlayer
-.contentlayer
+# vercel
+.vercel
+.superset
 
-# VSCode
-/.vscode/
+# macOS-specific files
+.DS_Store
 
-# eslint cache file
-.eslintcache
+# jetbrains setting folder
+.idea/
+.vscode/
 
-scripts/imdb-movies.csv
+# Transformers.js model cache
+.cache/*
+# Keep OG data cache for Vercel builds
+!.cache/og-data.json
 
-# test & build artifacts
-test-results/
-playwright-report/
-tsconfig.tsbuildinfo
+# Backup files
+backups/
 .mimosa/
-out/
-
-# semantic search index (generated at build time by scripts/build-semantic-index.mjs)
-/public/search-vectors.json
-
-# lighthouse ci output
-.lighthouseci/
+.cache/

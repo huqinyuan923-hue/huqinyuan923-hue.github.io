@@ -1,0 +1,74 @@
+---
+import HomeSider from '@components/layout/HomeSider.astro';
+import Cover from '@components/ui/cover/Cover.astro';
+import { siteConfig } from '@constants/site-config';
+import { PROJECTS } from '@data/projects';
+import Layout from '@layouts/Layout.astro';
+import TwoColumnLayout from '@layouts/TwoColumnLayout.astro';
+import { defaultLocale } from '@/i18n';
+
+interface Props {
+  locale?: string;
+}
+
+const { locale = defaultLocale } = Astro.props;
+const title = `项目 | ${siteConfig.title}`;
+const description = '我的自研项目：模拟器、编译器、编解码器与各类实用工具。';
+---
+
+<Layout locale={locale} title={title} description={description}>
+  <TwoColumnLayout>
+    <Cover slot="cover" title="项目" compact />
+    <HomeSider slot="sider" />
+    <div
+      class="shadow-box bg-gradient-start mx-0 flex min-w-0 w-full max-w-full flex-col gap-8 overflow-x-clip px-4 py-6 sm:px-6 md:px-8"
+    >
+      <p class="text-sm opacity-70 md:text-base">
+        从模拟器、编译器到各类实用工具，全部自己动手从零实现。
+        每个项目背后都有对应的
+        <a class="text-primary hover:underline" href="/archives">手写系列文章</a>。
+      </p>
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {
+          PROJECTS.map((project) => (
+            <article class="shadow-box group flex flex-col overflow-hidden rounded-xl bg-card/60">
+              <a href={project.url ?? (project.repo ? `https://github.com/${project.repo}` : undefined)} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={project.imgSrc}
+                  alt={project.title}
+                  width="800"
+                  height="450"
+                  loading="lazy"
+                  class="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+              </a>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <h2 class="text-lg font-bold">
+                  <a href={project.url ?? (project.repo ? `https://github.com/${project.repo}` : undefined)} target="_blank" rel="noopener noreferrer">
+                    {project.title}
+                  </a>
+                </h2>
+                <p class="text-sm leading-relaxed opacity-80">{project.description}</p>
+                <div class="mt-auto flex flex-wrap items-center gap-2 pt-1">
+                  {project.builtWith.map((tech) => (
+                    <span class="rounded-md bg-muted px-2 py-0.5 text-xs opacity-70">{tech}</span>
+                  ))}
+                </div>
+                {project.repo && (
+                  <a
+                    href={`https://github.com/${project.repo}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary text-sm hover:underline"
+                  >
+                    GitHub → {project.repo}
+                  </a>
+                )}
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </TwoColumnLayout>
+</Layout>

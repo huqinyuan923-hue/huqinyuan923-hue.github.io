@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/blog", "destination": "/posts/1" },
+    { "source": "/blog/:slug*", "destination": "/post/:slug*" },
+    { "source": "/moment", "destination": "/about" },
+    { "source": "/snippets", "destination": "/archives" },
+    { "source": "/playground", "destination": "/cha-playground/" }
+  ]
+}

@@ -1,0 +1,58 @@
+---
+link: 'how-i-built-arcade-hub'
+title: '我如何做一个在线游戏厅：Arcade Hub 制作记'
+description: '先从一次上线即全站 404 的排查讲起，再倒回来说这个 40 款游戏的街机厅是怎么一步步搭起来的。'
+date: '2026-10-06'
+cover: '/static/images/blog/how-i-built-arcade-hub.svg'
+categories: ['笔记']
+tags: ['nextjs', 'vercel', 'postgres', 'fullstack', 'game']
+---
+🎮
+
+先讲一次事故。
+
+[Arcade Hub](https://arcade-hub-nu.vercel.app) 上线那天，我打开线上地址，页面加载了——背景、Logo、标题都对，但点任何地方都是 404。只有 `public/` 目录里的静态文件能访问，其余所有路由全部返回平台级 404，响应头里一个冷冰冰的 `X-Vercel-Error: NOT_FOUND`。
+
+我第一反应是构建出了问题，翻构建日志，绿色的 ✓，一切正常。本地 `pnpm build` 也正常，页面也能跑。折腾了很久才发现：Vercel 项目设置里的 `framework` 字段不知道什么时候是空的。这个字段一旦为空，Vercel 就不按 Next.js 的方式处理构建产物，页面和 API 函数根本不会被部署上去，而它连一句警告都不给。
+
+修完就一行设置的事。但我把这个坑记在了仓库 README 的"运维备注"里，标题写的是"重要，勿改"——因为我自己差点就把它当垃圾清理掉。
+
+## 倒回来说这是个什么东西
+
+一个在线街机游戏厅。站内自带 40 款游戏：2048、贪吃蛇、俄罗斯方块、扫雷、打砖块、五子棋（带三档 AI）、成语填空、霓虹小鸟……大部分是经典玩法，个别是自己瞎发明的。每款游戏都有排行榜，注册用户可以收藏、评分、交成绩，另外还有一个管理后台负责游戏上架、用户管理和数据统计。
+
+技术栈是 Next.js 16 + React 19 + Tailwind v4，数据库用 Neon 的 Serverless Postgres，ORM 是 Drizzle。选 Neon 的原因很实际：它走 HTTP 驱动，在 Vercel 的 Serverless 函数里没有连接池和冷启动的麻烦。
+
+## 40 款游戏，不可能写 40 套对接
+
+这个项目最核心的设计决定，是让游戏对平台一无所知。
+
+每款站内游戏就是一个单文件 HTML，扔在 `public/games/<slug>/` 下，门户页面用 iframe 嵌它。游戏里唯一的"平台感知"是一个 16 行的桥接脚本：
+
+```js
+window.ArcadeBridge = {
+  submitScore: function (score) {
+    parent.postMessage({ type: 'arcade:score', score: Math.round(score) }, '*')
+  },
+}
+```
+
+游戏结算时调一下 `ArcadeBridge.submitScore(score)`，外层页面收到 message，校验来源，再写进数据库。就这么多。
+
+这个设计后来的回报远超预期。写新游戏时我完全不用想排行榜怎么接；甚至从别处找来的单文件游戏，加一行脚本调用就能进排行榜。第三方游戏更是零成本，后台填个 iframe 地址就上架。原本以为要做"游戏接入系统"，结果一个 postMessage 就够了。
+
+## 音效是合成的，不是放的和弦
+
+40 款游戏要是每款都带音效文件，仓库体积没法看。所以我用 WebAudio 写了一个全站共享的芯片音乐引擎，所有 8-bit 音效和背景 BGM 都是实时合成出来的——跳跃、得分、爆炸，全是数学，一个音频文件都没有。音量滑块和静音全站同步，切后台自动暂停 BGM。写这个引擎的时间不比写游戏少，但它是整个项目里我最有成就感的一块。
+
+## 用户系统，朴素但够用
+
+bcryptjs 哈希密码，jose 签 JWT 放 httpOnly Cookie，`middleware.ts` 守住 `/admin`。排行榜有三层：单游戏 Top10、玩家总榜（各游戏最高分求和）、纪录榜。都是最普通的 SQL，Drizzle 写起来像拼积木。
+
+没有 OAuth，没有第三方登录。邮箱注册十秒钟的事，我不想让用户为一个玩游戏的网站填问卷。
+
+## 写完之后
+
+40 款游戏里，五子棋的 AI 调了我最久——三档难度，最低档要故意输得像人。成语填空的词库是我一边玩一边补的。这些琐碎的部分不会写进任何架构图里，但游戏厅好不好玩，全由它们决定。
+
+源码在 [GitHub](https://github.com/huqinyuan923-hue/arcade-hub) 上开源，来 [打两把](https://arcade-hub-nu.vercel.app)也行，榜上见。

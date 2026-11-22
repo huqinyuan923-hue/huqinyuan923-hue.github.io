@@ -1,0 +1,6 @@
+# Cloudflare Pages 兜底重定向（Vercel 用 vercel.json，CF Pages 用本文件）
+/blog            /posts/1           301
+/blog/*          /post/:splat       301
+/moment          /about             301
+/snippets        /archives          301
+/playground      /cha-playground/   301
