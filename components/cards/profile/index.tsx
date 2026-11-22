@@ -60,7 +60,7 @@ export function ProfileCard() {
         className="holo-frame relative rounded-3xl transition-all duration-200 ease-out"
       >
         {/* HUD 取景角标 */}
-        <span className="pointer-events-none absolute -left-px -top-px z-10 h-4 w-4 rounded-tl-3xl border-l-2 border-t-2 border-cyan-400/80" />
+        <span className="pointer-events-none absolute -left-px -top-px z-10 h-4 w-4 rounded-tl-3xl border-l-2 border-t-2 border-primary-400/80" />
         <span className="pointer-events-none absolute -bottom-px -right-px z-10 h-4 w-4 rounded-br-3xl border-b-2 border-r-2 border-violet-400/80" />
 
         <div className="overflow-hidden rounded-3xl">
@@ -82,8 +82,8 @@ export function ProfileCard() {
               <span className="rounded bg-black/40 px-1.5 py-0.5 backdrop-blur-sm">ID-0x4144</span>
               <span className="flex items-center gap-1.5 rounded bg-black/40 px-1.5 py-0.5 backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary-400" />
                 </span>
                 ONLINE
               </span>
@@ -96,11 +96,11 @@ export function ProfileCard() {
               className={clsx([
                 'mt-auto bg-gray-950/90 px-3 py-1.5',
                 '[--song-color:theme(colors.gray.200)]',
-                '[--artist-color:theme(colors.cyan.300)]',
+                '[--artist-color:theme(colors.primary.300)]',
               ])}
             />
           </div>
-          <span className="h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500" />
+          <span className="h-1 bg-[image:var(--gradient-button)]" />
         </div>
       </div>
     </div>

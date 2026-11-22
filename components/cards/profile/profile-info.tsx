@@ -29,7 +29,7 @@ export function ProfileCardInfo() {
   return (
     <div className="hidden flex-col gap-3 py-4 md:flex md:px-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-grotesk text-xl font-bold text-gray-900 dark:text-white">
+        <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-white">
           {AUTHOR_INFO.name}
         </h2>
         <span className="rounded border border-primary-500/40 bg-primary-500/10 px-1.5 py-0.5 font-mono text-[10px] text-primary-600 dark:text-primary-300">

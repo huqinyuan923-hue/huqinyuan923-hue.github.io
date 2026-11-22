@@ -2,6 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== ✦ 星海轻歌 · 爱弥斯 亮色 ===== */
+:root {
+  --background: 234 40% 97%;
+  --foreground: 234 28% 16%;
+  --card: 0 0% 100%;
+  --card-foreground: 234 28% 15%;
+  --primary: 342 85% 62%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 235 28% 93%;
+  --muted: 235 25% 93%;
+  --muted-foreground: 234 12% 45%;
+  --accent: 348 65% 94%;
+  --border: 231 20% 88%;
+  --ring: 342 80% 56%;
+  --gradient-bg: linear-gradient(180deg, #f9faff 10%, #eef1fb 100%);
+  --gradient-button: linear-gradient(to right, #ef6a92 0%, #b96be0 100%);
+  --torch-gold: 42 90% 55%;
+  --fusion-ember: 16 85% 55%;
+  --hud-line: hsl(342 80% 62% / 0.35);
+}
+
+/* ===== 🌌 数据之海 · 暗色 ===== */
+.dark {
+  --background: 233 34% 10%;
+  --foreground: 240 40% 92%;
+  --card: 233 28% 13%;
+  --card-foreground: 240 40% 92%;
+  --primary: 344 90% 70%;
+  --secondary: 234 26% 18%;
+  --muted-foreground: 236 16% 68%;
+  --border: 234 24% 22%;
+  --gradient-bg: linear-gradient(180deg, #131631 10%, #0a0d21 100%);
+  --gradient-button: linear-gradient(to right, rgb(242 115 161 / 0.85), rgb(196 118 231 / 0.85));
+  --torch-gold: 42 85% 62%;
+  --fusion-ember: 16 90% 62%;
+  --hud-line: hsl(344 90% 70% / 0.3);
+}
+
+/* 得意黑（Smiley Sans，OFL）：标题/Hero 大字，自托管于 public/fonts */
+@font-face {
+  font-family: 'Smiley Sans';
+  src: url('/fonts/SmileySans-Oblique.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 正文底色：星尘白 / 数据之海渐变（亮暗跟随 --gradient-bg） */
+body {
+  background: var(--gradient-bg);
+}
+
+/* 标题默认走得意黑（组件内显式 font-heading / font-* 类优先于此） */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Smiley Sans', var(--font-nunito), sans-serif;
+}
+
 .task-list-item::before {
   @apply hidden;
 }
@@ -77,8 +139,8 @@ samp {
 /* 深空科技网格：亮色极淡、暗色青紫细线 */
 .bg-tech-grid {
   background-image:
-    linear-gradient(to right, rgba(34, 211, 238, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 211, 238, 0.055) 1px, transparent 1px);
+    linear-gradient(to right, hsl(var(--primary) / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--primary) / 0.07) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 :root:not(.dark) .bg-tech-grid {
@@ -101,17 +163,17 @@ samp {
     transform 0.3s ease;
 }
 .card-hover-glow:hover {
-  border-color: rgba(34, 211, 238, 0.55);
+  border-color: hsl(var(--primary) / 0.55);
   box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.25),
-    0 8px 32px -8px rgba(34, 211, 238, 0.35),
+    0 0 0 1px hsl(var(--primary) / 0.25),
+    0 8px 32px -8px hsl(var(--primary) / 0.35),
     0 8px 32px -8px rgba(167, 139, 250, 0.25);
 }
 
 /* 科技渐变文字：青 → 紫 */
 .text-gradient-tech {
   @apply bg-clip-text text-transparent;
-  background-image: linear-gradient(100deg, #22d3ee 0%, #60a5fa 45%, #a78bfa 100%);
+  background-image: linear-gradient(100deg, hsl(var(--primary)) 0%, #b96be0 100%);
 }
 
 /* HUD 小节标签：等宽 + 字距 */
@@ -136,13 +198,29 @@ samp {
   border: 1px solid transparent;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
-    conic-gradient(from var(--holo-angle), #22d3ee, #6366f1, #a78bfa, #ec4899, #22d3ee) border-box;
+    conic-gradient(
+        from var(--holo-angle),
+        hsl(var(--primary)),
+        #6366f1,
+        #a78bfa,
+        #ec4899,
+        hsl(var(--primary))
+      )
+      border-box;
   animation: holo-spin 6s linear infinite;
 }
 .dark .holo-frame {
   background:
     linear-gradient(#0a0e1a, #0a0e1a) padding-box,
-    conic-gradient(from var(--holo-angle), #22d3ee, #6366f1, #a78bfa, #ec4899, #22d3ee) border-box;
+    conic-gradient(
+        from var(--holo-angle),
+        hsl(var(--primary)),
+        #6366f1,
+        #a78bfa,
+        #ec4899,
+        hsl(var(--primary))
+      )
+      border-box;
 }
 .dark .holo-frame:hover {
   box-shadow:
@@ -162,7 +240,7 @@ samp {
   position: absolute;
   width: 14px;
   height: 14px;
-  border-color: rgba(34, 211, 238, 0.7);
+  border-color: hsl(var(--primary) / 0.7);
   transition: all 0.3s ease;
   pointer-events: none;
 }
@@ -194,24 +272,24 @@ samp {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.4), rgba(167, 139, 250, 0.4));
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.4), rgba(167, 139, 250, 0.4));
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.7), rgba(167, 139, 250, 0.7));
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.7), rgba(167, 139, 250, 0.7));
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::selection {
-  background: rgba(34, 211, 238, 0.35);
+  background: hsl(var(--primary) / 0.35);
 }
 
 /* 大标题辉光 */
 .glow-title {
   text-shadow:
-    0 0 18px rgba(34, 211, 238, 0.45),
+    0 0 18px hsl(var(--primary) / 0.45),
     0 0 42px rgba(167, 139, 250, 0.25);
 }
 
@@ -268,8 +346,8 @@ html.js-anim.reveal-ready main .glass-card.revealed {
 .prose div[data-rehype-pretty-code-figure] pre:hover {
   @apply border-primary-500/50;
   box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.2),
-    0 8px 32px -10px rgba(34, 211, 238, 0.3);
+    0 0 0 1px hsl(var(--primary) / 0.2),
+    0 8px 32px -10px hsl(var(--primary) / 0.3);
 }
 
 /* ── 文章封面：进入视口显形缩放 ── */

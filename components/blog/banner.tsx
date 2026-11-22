@@ -16,7 +16,7 @@ export function Banner({ banner, className }: { banner: string; className?: stri
           alt={capitalize(kebabCaseToPlainText(handle)) || 'Article banner photo'}
           width={1600}
           height={900}
-          className="banner-reveal h-auto w-full rounded-lg border border-gray-900/10 shadow-2xl shadow-cyan-500/10 dark:border-white/10"
+          className="banner-reveal h-auto w-full rounded-lg border border-gray-900/10 shadow-2xl shadow-primary-500/10 dark:border-white/10"
         />
       </Zoom>
       <GritBackground className="inset-0 rounded-lg opacity-75" />

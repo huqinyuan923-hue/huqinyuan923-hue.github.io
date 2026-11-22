@@ -92,13 +92,47 @@ module.exports = {
         14: '3.5rem',
       },
       fontFamily: {
-        sans: ['var(--font-nunito)', ...fontFamily.sans],
+        /* 正文：霞鹜文楷（回退 nunito / 系统字体） */
+        sans: ['"LXGW WenKai Screen"', 'var(--font-nunito)', ...fontFamily.sans],
+        /* 标题/Hero：得意黑（回退 sans 栈） */
+        heading: ['"Smiley Sans"', ...fontFamily.sans],
         grotesk: ['var(--font-grotesk)', 'var(--font-nunito)', ...fontFamily.sans],
         greeting: ['SignaturePlaypen', "'Segoe Script'", "'Brush Script MT'", 'cursive'],
         mono: ['var(--font-jetbrains-mono)', ...fontFamily.mono],
       },
       colors: {
-        primary: colors.cyan,
+        /* ── 爱弥斯·星海轻歌 token ───────────────────────────
+           primary：星辉粉（亮 500 #f14b7d ≈ hsl(342 85% 62%)） */
+        primary: {
+          50: '#fdf2f6',
+          100: '#fce7ef',
+          200: '#fbd0de',
+          300: '#f8a9c4',
+          400: '#f47ba6',
+          500: '#f14b7d',
+          600: '#e52f65',
+          700: '#c22252',
+          800: '#a01d45',
+          900: '#831b3d',
+          950: '#4d0c22',
+        },
+        /* 星炬金点缀（amber 阶，500 覆盖为 #e8a33d） */
+        torch: { ...colors.amber, 500: '#e8a33d' },
+        /* 语义色：取值走 css/tailwind.css 的亮暗 CSS 变量 */
+        background: 'hsl(var(--background) / <alpha-value>)',
+        foreground: 'hsl(var(--foreground) / <alpha-value>)',
+        card: {
+          DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+          foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+        },
+        secondary: 'hsl(var(--secondary) / <alpha-value>)',
+        muted: {
+          DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+          foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+        },
+        accent: 'hsl(var(--accent) / <alpha-value>)',
+        border: 'hsl(var(--border) / <alpha-value>)',
+        ring: 'hsl(var(--ring) / <alpha-value>)',
         dark: '#070a12',
         obsidian: {
           950: '#05070d',

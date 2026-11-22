@@ -23,7 +23,7 @@ export function LatestPosts({
       <div className="flex items-center justify-between">
         <div>
           <p className="kicker mb-2">{'~/latest'}</p>
-          <div className="font-grotesk text-2xl font-bold sm:leading-10 md:text-4xl">
+          <div className="font-heading text-2xl font-bold sm:leading-10 md:text-4xl">
             <span className="mr-2 md:mr-3">Latest</span>
             <button
               className={clsx(

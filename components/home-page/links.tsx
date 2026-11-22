@@ -55,9 +55,9 @@ export function BlogLinks() {
           key={title}
           href={href}
           data-umami-event={event}
-          className="glass-card group flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/60 hover:shadow-[0_8px_24px_-8px_rgba(34,211,238,0.35)]"
+          className="glass-card group flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-400/60 hover:shadow-lg hover:shadow-primary-500/30"
         >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gray-900/5 text-lg ring-1 ring-gray-900/10 transition-colors group-hover:bg-cyan-400/10 group-hover:ring-cyan-400/40 dark:bg-white/5 dark:ring-white/10">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gray-900/5 text-lg ring-1 ring-gray-900/10 transition-colors group-hover:bg-primary-400/10 group-hover:ring-primary-400/40 dark:bg-white/5 dark:ring-white/10">
             <Twemoji emoji={emoji} />
           </span>
           <span className="min-w-0 flex-1 truncate text-sm font-medium leading-6">{title}</span>

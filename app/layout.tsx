@@ -1,5 +1,7 @@
 import 'css/tailwind.css'
 import 'css/twemoji.css'
+// 正文楷体：霞鹜文楷（屏幕版，分包 woff2，按 unicode-range 按需加载）
+import 'lxgw-wenkai-screen-webfont/lxgwwenkaiscreen.css'
 
 import clsx from 'clsx'
 import type { Metadata, Viewport } from 'next'
@@ -171,8 +173,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'antialiased',
           'relative min-h-screen pl-[calc(100vw-100%)]',
           'flex flex-col',
-          'bg-white text-gray-900',
-          'dark:bg-dark dark:text-gray-100',
+          'text-foreground',
         ])}
       >
         <ReflectiveBlackBackground />

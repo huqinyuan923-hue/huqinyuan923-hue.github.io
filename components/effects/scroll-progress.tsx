@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 /**
- * 顶部滚动进度条：2px 青→紫渐变，宽度随页面滚动百分比。
+ * 顶部滚动进度条：2px 星辉粉→辉光紫渐变，宽度随页面滚动百分比。
  */
 export function ScrollProgress() {
   const [pct, setPct] = useState(0)
@@ -31,7 +31,7 @@ export function ScrollProgress() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5">
       <div
-        className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 shadow-[0_0_8px_rgba(34,211,238,0.7)] transition-[width] duration-100 ease-out"
+        className="h-full bg-[image:var(--gradient-button)] shadow-md shadow-primary-500/60 transition-[width] duration-100 ease-out"
         style={{ width: `${pct}%` }}
       />
     </div>

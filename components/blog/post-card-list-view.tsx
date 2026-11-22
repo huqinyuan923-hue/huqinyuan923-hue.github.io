@@ -53,7 +53,7 @@ export function PostCardListView({
           <GritBackground
             className={clsx([
               'bottom-0 left-3 right-0 top-3',
-              'rounded-xl border-2 border-cyan-500/30 transition-colors duration-300 group-hover:border-violet-500/60 dark:border-cyan-400/25 dark:group-hover:border-violet-400/50',
+              'rounded-xl border-2 border-primary-500/30 transition-colors duration-300 group-hover:border-violet-500/60 dark:border-primary-400/25 dark:group-hover:border-violet-400/50',
             ])}
           />
         </Link>
@@ -68,7 +68,7 @@ export function PostCardListView({
                   <span>{Math.ceil(readingTime.minutes)} mins read</span>
                 </dd>
               </dl>
-              <h2 className="pb-1 font-grotesk text-xl font-bold tracking-tight md:text-2xl">
+              <h2 className="pb-1 font-heading text-xl font-bold tracking-tight md:text-2xl">
                 <Link href={`/blog/${slug}`} className="text-gray-900 dark:text-gray-100">
                   <GrowingUnderline data-umami-event="latest-post-title" duration={500}>
                     {title}

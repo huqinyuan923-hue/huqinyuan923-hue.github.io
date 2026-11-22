@@ -7,13 +7,12 @@ export function Greeting() {
       <p className="kicker mb-3">{'// hello world'}</p>
       <div
         className={clsx(
-          'font-grotesk font-bold tracking-tight',
+          'font-heading font-bold tracking-tight',
           'text-[40px] leading-[60px] md:text-[68px] md:leading-[100px]',
           'bg-clip-text text-transparent',
-          'bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500',
+          'bg-[image:var(--gradient-button)]',
           'text-shimmer',
-          'glow-title',
-          'dark:from-cyan-300 dark:via-blue-400 dark:to-violet-400'
+          'glow-title'
         )}
       >
         Howdy, fellow! <Twemoji emoji="waving-hand" size="base" />
