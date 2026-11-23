@@ -721,13 +721,13 @@ bgm:
   autoplay: true # 进站自动播放；被浏览器拦截时退化为访客首次点击/按键后播放
   # metingApi: https://163.hyc.moe/  # 仅网易云/QQ 音乐外链需要；本地文件不需要
   audio:
-    - title: 我的歌单
+    - title: 鸣潮 · 循环歌单
       list:
         # 本地内置歌曲：文件放进 public/music/，文件名按「歌手 - 歌名.mp3」
         # 命名即可自动解析出歌手与歌名（不带歌手则只显示歌名）。
-        # 换成自己的歌时直接替换下面两行占位曲并增删条目即可。
-        - '/music/晨光 Melody.wav'   # 占位示例曲（自研合成氛围音）
-        - '/music/夜航 Starlight.wav' # 占位示例曲（自研合成氛围音）
+        # 播放模式为顺序播放，播完最后一首自动回到第一首，无限循环。
+        - '/music/鸣潮先约电台 - 酣梦于彼岸深红.mp3'
+        - '/music/鸣潮先约电台 - 星炬不熄.mp3'
 
 christmas:
   enabled: false # 总开关
