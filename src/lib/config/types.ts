@@ -219,6 +219,8 @@ export interface MotionConfig {
   heroPetals?: boolean;
   /** Petal burst where interactive elements are clicked; only runs at the `lively` level. */
   clickBurst?: boolean;
+  /** 爱弥斯「飞行雪绒」stardust over the page whitespace; only runs at the `lively` level. */
+  snowvelvet?: boolean;
 }
 
 /** Motion config after defaults are applied — no optional fields. */

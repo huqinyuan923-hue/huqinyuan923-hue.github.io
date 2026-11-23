@@ -20,6 +20,7 @@
 @import "./theme/shoka-audio-player.css";
 @import "./theme/encrypted-block.css";
 @import "./components/wave.css";
+@import "./components/whitespace-wash.css";
 @import "./components/cover.css";
 @import "./components/header.css";
 @import "./components/segmented.css";

@@ -1,0 +1,139 @@
+---
+/**
+ * 爱弥斯「飞行雪绒」ambient layer: stardust, snowvelvet and the occasional morning star
+ * drifting over the page whitespace, behind the article paper.
+ *
+ * Decorative only — `aria-hidden`, `pointer-events-none`, fixed behind the content — and it
+ * stops at the `subtle`/`reduced` motion levels or while the tab is hidden. Mirrors
+ * SakuraPetals so both ambient effects follow the same lifecycle rules.
+ */
+import { motionConfig } from '@constants/site-config';
+
+const { snowvelvet } = motionConfig;
+---
+
+{
+  snowvelvet && (
+    <snowvelvet-stardust
+      class="pointer-events-none fixed inset-0 z-0"
+      aria-hidden="true"
+      transition:persist="snowvelvet-stardust"
+    >
+      <canvas class="block h-full w-full"></canvas>
+    </snowvelvet-stardust>
+  )
+}
+
+<style>
+  /* Sits above the page gradient (z-0) and below the page frame (z-10 in AppShell), so the
+     motes show through the whitespace but never over the opaque article paper. */
+  snowvelvet-stardust {
+    opacity: 0;
+    transition: opacity 1200ms var(--ease-out-quart);
+  }
+
+  snowvelvet-stardust.is-active {
+    opacity: 1;
+  }
+
+  /* Decoration over the page background only; never printed and never above the paper. */
+  @media print {
+    snowvelvet-stardust {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { StardustField } from '@lib/aemeath/stardust';
+  import { readMotionLevel, subscribeMotionLevel } from '@lib/motion-level';
+
+  const FADE_MS = 1200;
+
+  const whenIdle = (callback: () => void): (() => void) => {
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(callback, { timeout: 1500 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = window.setTimeout(callback, 600);
+    return () => window.clearTimeout(handle);
+  };
+
+  class SnowvelvetStardust extends HTMLElement {
+    private field: StardustField | null = null;
+    private ready = false;
+    private stopTimer = 0;
+    private cancelIdle: (() => void) | null = null;
+    private cleanups: Array<() => void> = [];
+
+    connectedCallback() {
+      const canvas = this.querySelector('canvas');
+      if (!canvas) return;
+      if (!this.field) {
+        try {
+          this.field = new StardustField(canvas);
+        } catch {
+          return;
+        }
+      }
+      const field = this.field;
+
+      const onResize = () => field.resize(window.innerWidth, window.innerHeight);
+      onResize();
+      const onVisibilityChange = () => this.sync();
+      window.addEventListener('resize', onResize, { passive: true });
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      const unsubscribe = subscribeMotionLevel(() => this.sync());
+
+      this.cleanups = [
+        () => window.removeEventListener('resize', onResize),
+        () => document.removeEventListener('visibilitychange', onVisibilityChange),
+        unsubscribe,
+      ];
+
+      if (this.ready) {
+        this.sync();
+        return;
+      }
+      this.cancelIdle = whenIdle(() => {
+        this.cancelIdle = null;
+        if (!this.isConnected) return;
+        this.ready = true;
+        onResize();
+        this.sync();
+      });
+    }
+
+    disconnectedCallback() {
+      this.cancelIdle?.();
+      this.cancelIdle = null;
+      for (const cleanup of this.cleanups) cleanup();
+      this.cleanups = [];
+      window.clearTimeout(this.stopTimer);
+      this.field?.stop();
+    }
+
+    private sync() {
+      const field = this.field;
+      if (!field || !this.isConnected) return;
+      const onScreen = document.visibilityState === 'visible';
+      const level = readMotionLevel();
+      // Ambient decoration: only the lively level runs it, matching the hero petals.
+      const allowed = this.ready && level === 'lively';
+      this.classList.toggle('is-active', allowed);
+      window.clearTimeout(this.stopTimer);
+      if (allowed && onScreen) {
+        field.start();
+      } else if (!onScreen || level === 'reduced') {
+        field.stop();
+      } else {
+        // Let the canvas finish its fade before the loop stops.
+        this.stopTimer = window.setTimeout(() => field.stop(), FADE_MS);
+      }
+    }
+  }
+
+  if (!customElements.get('snowvelvet-stardust')) {
+    customElements.define('snowvelvet-stardust', SnowvelvetStardust);
+  }
+</script>

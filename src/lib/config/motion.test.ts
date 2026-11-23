@@ -14,16 +14,18 @@ test('defaults are applied per field', () => {
   assert.equal(resolved.level, 'subtle');
   assert.equal(resolved.heroPetals, true);
   assert.equal(resolved.clickBurst, true);
+  assert.equal(resolved.snowvelvet, true);
 });
 
 test('explicit false disables the sakura effects', () => {
-  const resolved = normalizeMotionConfig({ heroPetals: false, clickBurst: false });
+  const resolved = normalizeMotionConfig({ heroPetals: false, clickBurst: false, snowvelvet: false });
   assert.equal(resolved.heroPetals, false);
   assert.equal(resolved.clickBurst, false);
+  assert.equal(resolved.snowvelvet, false);
 });
 
 test('unknown levels and wrongly typed flags fall back to the default', () => {
-  const resolved = normalizeMotionConfig({ level: 'wild', heroPetals: 'yes', clickBurst: 1 } as never);
+  const resolved = normalizeMotionConfig({ level: 'wild', heroPetals: 'yes', clickBurst: 1, snowvelvet: 0 } as never);
   assert.deepEqual(resolved, MOTION_DEFAULTS);
 });
 

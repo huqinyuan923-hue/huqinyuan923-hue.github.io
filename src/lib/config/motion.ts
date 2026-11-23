@@ -14,6 +14,7 @@ export const MOTION_DEFAULTS: ResolvedMotionConfig = {
   level: 'lively',
   heroPetals: true,
   clickBurst: true,
+  snowvelvet: true,
 };
 
 export function isMotionLevel(value: unknown): value is MotionLevel {
@@ -30,5 +31,6 @@ export function normalizeMotionConfig(raw?: Partial<MotionConfig> | null): Resol
     level: isMotionLevel(source.level) ? source.level : MOTION_DEFAULTS.level,
     heroPetals: typeof source.heroPetals === 'boolean' ? source.heroPetals : MOTION_DEFAULTS.heroPetals,
     clickBurst: typeof source.clickBurst === 'boolean' ? source.clickBurst : MOTION_DEFAULTS.clickBurst,
+    snowvelvet: typeof source.snowvelvet === 'boolean' ? source.snowvelvet : MOTION_DEFAULTS.snowvelvet,
   };
 }

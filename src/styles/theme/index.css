@@ -1,6 +1,9 @@
 :root {
-  --gradient-bg-start: #fdfbfb;
-  --gradient-bg-end: #ebedee;
+  /* Near-white paper. These double as the page colour for cut-out surfaces (sider avatar halo,
+     header capsule, wave fill), so the pink-white wash is painted separately in
+     `components/whitespace-wash.css` — turning these pink would tint all of those. */
+  --gradient-bg-start: #fffafc;
+  --gradient-bg-end: #ffeef5;
   --gradient-bg: linear-gradient(180deg, var(--gradient-bg-start) 10%, var(--gradient-bg-end) 100%);
   --gradient-pink: linear-gradient(279deg, #f96676 0%, #e91e63 100%);
   --gradient-header: linear-gradient(-225deg, #e3fdf5 0, #ffe6fa 100%);
@@ -40,8 +43,9 @@
 }
 
 .dark {
-  --gradient-bg-start: #1d1a27;
-  --gradient-bg-end: #15121d;
+  /* Night sakura keeps the same pink-leaning neutrals; the wash layer handles the tint. */
+  --gradient-bg-start: #221a26;
+  --gradient-bg-end: #1b1420;
   --gradient-bg: linear-gradient(180deg, var(--gradient-bg-start) 10%, var(--gradient-bg-end) 100%);
   --gradient-pink: linear-gradient(279deg, #f96676 0%, #e91e63 100%);
   --gradient-header: linear-gradient(-225deg, #2a2438 0, #372739 100%);

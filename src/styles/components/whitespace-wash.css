@@ -1,0 +1,49 @@
+/*
+  Pink-white wash for the page whitespace.
+
+  This lives in its own fixed layer instead of `--gradient-bg-start/-end` because those two
+  variables double as the page colour for cut-out surfaces: the sider avatar halo punches
+  itself out of the page with `--sider-surface`, the header capsule mixes against it, and the
+  wave SVG fills with it. Turning them pink would tint every one of those off-key.
+
+  So the variables stay a near-white paper colour and the tint is painted separately, above
+  the page background and below the page frame (which is `relative` and therefore paints
+  later). Opaque article cards cover it; only the gaps between content show the wash.
+*/
+
+.whitespace-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Four stops so the pink breathes rather than ramps monotonically: blush at the top,
+     near-white through the reading zone, and a soft pink floor under the footer. */
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 214 232 / 0.55), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgb(255 200 224 / 0.4), transparent 72%),
+    linear-gradient(180deg, #fff5f9 0%, #fffafc 42%, #fffafc 68%, #ffedf4 100%);
+}
+
+.dark .whitespace-wash {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgb(120 60 96 / 0.38), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgb(104 52 84 / 0.3), transparent 72%),
+    linear-gradient(180deg, #241b28 0%, #1f1724 42%, #1f1724 68%, #251a2a 100%);
+}
+
+/* Ink and chrome must stay legible on the wash, so keep the paper surfaces slightly lifted. */
+@media (prefers-contrast: more) {
+  .whitespace-wash {
+    background: #fffafc;
+  }
+
+  .dark .whitespace-wash {
+    background: #1f1724;
+  }
+}
+
+@media print {
+  .whitespace-wash {
+    display: none;
+  }
+}

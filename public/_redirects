@@ -1,19 +1,30 @@
 # Cloudflare Pages 兜底重定向（Vercel 用 vercel.json，CF Pages 用本文件）
-# 新站列表第一页是 /posts/，第二页起是 /posts/2、/posts/3；/posts/1 不存在（实测 404），
-# 所以 /blog 指向 /posts/，不要指向 /posts/1（那会 301 → 404）。
-# 每条规则都写「无斜杠 / 带斜杠」两份：CF Pages 的规范 URL 带尾斜杠，
-# 只写前者的话 /blog/x/ 走不到规则、直接 404（实测）。
-/blog            /posts/           301
-/blog/           /posts/           301
-/blog/*          /post/:splat/     301
-/moment          /about            301
-/moment/         /about/           301
-/snippets        /archives         301
-/snippets/       /archives/        301
-/playground      /cha-playground/  301
-/playground/     /cha-playground/  301
+#
+# 三条必须记住的规则：
+# 1. 新站列表第一页就是 /posts/，没有 /posts/1（实测 404），所以 /blog 要指 /posts/。
+# 2. 每条规则都写「无斜杠 / 带斜杠」两份：CF Pages 规范 URL 带尾斜杠，
+#    只写前者的话 /blog/x/ 走不到规则、直接 404。
+# 3. 旧站分页是 /blog/page/N（见旧仓库 app/blog/page/[page]/page.tsx），
+#    它必须排在 /blog/* 通配之前，否则会被吃成 /post/page/N/ 而 404。
 
-# 已删除的 39 篇旧文章（作者溯源删除，见 HANDOFF.md 第 8 节）统一回列表页，避免硬 404
+# —— 旧站分页：先于通配规则 ——
+/blog/page/:page   /posts/:page       301
+/blog/page/:page/  /posts/:page/      301
+
+# —— 列表页与固定页 ——
+/blog              /posts/            301
+/blog/             /posts/            301
+/blog/*            /post/:splat/      301
+/moment            /about             301
+/moment/           /about/            301
+/snippets          /archives          301
+/snippets/         /archives/         301
+/playground        /cha-playground/   301
+/playground/       /cha-playground/   301
+
+# —— 已删除的 39 篇旧文章（作者溯源删除，见 HANDOFF.md 第 8 节）——
+# 软 404 会伤收录，但直接把老外链丢给真 404 对读者更差，所以统一回列表页；
+# 这些 slug 之间没有前缀冲突，顺序不影响匹配。
 /post/1-project-8-font                           /posts/  301
 /post/1-project-8-font/                          /posts/  301
 /post/2023-year-summary                          /posts/  301

@@ -333,12 +333,17 @@ content:
 #     reduced 减弱：关闭装饰性动效，只保留必要的交互反馈
 #   heroPetals: 头图樱花飘落（仅 lively 档生效）
 #   clickBurst: 点击按钮、链接等可交互元素时迸出花瓣（仅 lively 档生效）
+#   snowvelvet: 页面留白处的「飞行雪绒」星屑（仅 lively 档生效）
+#     取自《鸣潮》爱弥斯（Aemeath，别名飞行雪绒）：星炬、启明星、化光而行的意象。
+#     三种形态：stardust 细星屑上升 / snowvelvet 绒雪缓落 / morningstar 金色四芒星（稀有）。
+#     纯装饰层，位于正文纸张之下；subtle 与 reduced 档不渲染，打印时隐藏。
 # 系统开启「减少动态效果」(prefers-reduced-motion) 时，始终按 reduced 处理
 # -----------------------------------------------------------------------------
 motion:
   level: lively
   heroPetals: true
   clickBurst: true
+  snowvelvet: true
 
 # =============================================================================
 # Moments Archive (optional)

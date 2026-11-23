@@ -11,6 +11,7 @@ interface Props {
   articleTools?: boolean;
 }
 
+import SnowvelvetStardust from '@components/aemeath/SnowvelvetStardust.astro';
 import AnnouncementProvider from '@components/announcement/AnnouncementProvider.astro';
 import GlobalBGMPlayer from '@components/bgm/GlobalBGMPlayer';
 import ChristmasEffects from '@components/christmas/ChristmasEffects.astro';
@@ -29,7 +30,11 @@ const { post, siderType, isPostPage, articleTools = true } = Astro.props;
 ---
 
 <ChristmasEffects transition:persist="christmas-snowfall" />
-<div class="flex min-h-screen flex-col text-black dark:text-white">
+{/* The pink-white wash is paint, not motion: it stays even when ambient effects are off. */}
+<div class="whitespace-wash" aria-hidden="true"></div>
+<SnowvelvetStardust />
+{/* `relative` keeps the page frame painting above the fixed wash + stardust layers. */}
+<div class="relative flex min-h-screen flex-col text-black dark:text-white">
   <Header isPostPage={isPostPage} tocNumbering={post?.data.tocNumbering ?? true} />
   <main class="relative flex grow flex-col gap-4">
     {(<slot />)}
