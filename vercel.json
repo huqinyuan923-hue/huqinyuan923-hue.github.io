@@ -1,50 +1,440 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
-    { "source": "/blog", "destination": "/posts/" },
-    { "source": "/blog/", "destination": "/posts/" },
-    { "source": "/blog/:slug*", "destination": "/post/:slug*" },
-    { "source": "/moment", "destination": "/about" },
-    { "source": "/snippets", "destination": "/archives" },
-    { "source": "/playground", "destination": "/cha-playground/" },
-    { "source": "/post/1-project-8-font", "destination": "/posts/" },
-    { "source": "/post/2023-year-summary", "destination": "/posts/" },
-    { "source": "/post/2024-year-summary", "destination": "/posts/" },
-    { "source": "/post/2025-year-summary", "destination": "/posts/" },
-    { "source": "/post/array-flattening-summary", "destination": "/posts/" },
-    { "source": "/post/avp-introduction", "destination": "/posts/" },
-    { "source": "/post/blog-timeline", "destination": "/posts/" },
-    { "source": "/post/centos7-mysql-install", "destination": "/posts/" },
-    { "source": "/post/cmb-wechat-notice", "destination": "/posts/" },
-    { "source": "/post/deepseek-dify-builds-knowledge-base", "destination": "/posts/" },
-    { "source": "/post/handle-numeric-ids-in-queryselector", "destination": "/posts/" },
-    { "source": "/post/hongkong-bank-card-guide", "destination": "/posts/" },
-    { "source": "/post/how-independent-developers-issue-invoices", "destination": "/posts/" },
-    { "source": "/post/indexeddb-quick-start", "destination": "/posts/" },
-    { "source": "/post/join-us", "destination": "/posts/" },
-    { "source": "/post/leapday-20240229", "destination": "/posts/" },
-    { "source": "/post/learningwebsites", "destination": "/posts/" },
-    { "source": "/post/mcp-quick-start", "destination": "/posts/" },
-    { "source": "/post/mcp-revisited", "destination": "/posts/" },
-    { "source": "/post/nest-typrorm-many-to-many", "destination": "/posts/" },
-    { "source": "/post/neteasy-cloud-music-download-mp3", "destination": "/posts/" },
-    { "source": "/post/non-perceptual-screen-recording", "destination": "/posts/" },
-    { "source": "/post/pinia-source-code", "destination": "/posts/" },
-    { "source": "/post/pinia-started-guide", "destination": "/posts/" },
-    { "source": "/post/react-router-dom-basic", "destination": "/posts/" },
-    { "source": "/post/remove-android-webview-video-poster", "destination": "/posts/" },
-    { "source": "/post/skill-progressive-disclosure", "destination": "/posts/" },
-    { "source": "/post/started-quickly-deno", "destination": "/posts/" },
-    { "source": "/post/started-quickly-nextjs", "destination": "/posts/" },
-    { "source": "/post/started-quickly-vue3", "destination": "/posts/" },
-    { "source": "/post/start-end-flex-start-flex-end", "destination": "/posts/" },
-    { "source": "/post/static-resource-prefetch", "destination": "/posts/" },
-    { "source": "/post/strapi-introduction", "destination": "/posts/" },
-    { "source": "/post/the-first-mcp-server", "destination": "/posts/" },
-    { "source": "/post/travels-in-japan", "destination": "/posts/" },
-    { "source": "/post/try-the-vue3-combination-api", "destination": "/posts/" },
-    { "source": "/post/vue-data-reactivity", "destination": "/posts/" },
-    { "source": "/post/webgl-notes-1", "destination": "/posts/" },
-    { "source": "/post/youth-is-not-a-health-pass", "destination": "/posts/" }
+    {
+      "source": "/blog",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/blog/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/blog/:slug*",
+      "destination": "/post/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/moment",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/moment/",
+      "destination": "/about/",
+      "permanent": true
+    },
+    {
+      "source": "/snippets",
+      "destination": "/archives",
+      "permanent": true
+    },
+    {
+      "source": "/snippets/",
+      "destination": "/archives/",
+      "permanent": true
+    },
+    {
+      "source": "/playground",
+      "destination": "/cha-playground/",
+      "permanent": true
+    },
+    {
+      "source": "/playground/",
+      "destination": "/cha-playground/",
+      "permanent": true
+    },
+    {
+      "source": "/post/1-project-8-font",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/1-project-8-font/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2023-year-summary",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2023-year-summary/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2024-year-summary",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2024-year-summary/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2025-year-summary",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/2025-year-summary/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/array-flattening-summary",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/array-flattening-summary/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/avp-introduction",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/avp-introduction/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/blog-timeline",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/blog-timeline/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/centos7-mysql-install",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/centos7-mysql-install/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/cmb-wechat-notice",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/cmb-wechat-notice/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/deepseek-dify-builds-knowledge-base",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/deepseek-dify-builds-knowledge-base/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/handle-numeric-ids-in-queryselector",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/handle-numeric-ids-in-queryselector/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/hongkong-bank-card-guide",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/hongkong-bank-card-guide/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/how-independent-developers-issue-invoices",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/how-independent-developers-issue-invoices/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/indexeddb-quick-start",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/indexeddb-quick-start/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/join-us",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/join-us/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/leapday-20240229",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/leapday-20240229/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/learningwebsites",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/learningwebsites/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/mcp-quick-start",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/mcp-quick-start/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/mcp-revisited",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/mcp-revisited/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/nest-typrorm-many-to-many",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/nest-typrorm-many-to-many/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/neteasy-cloud-music-download-mp3",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/neteasy-cloud-music-download-mp3/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/non-perceptual-screen-recording",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/non-perceptual-screen-recording/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/pinia-source-code",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/pinia-source-code/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/pinia-started-guide",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/pinia-started-guide/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/react-router-dom-basic",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/react-router-dom-basic/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/remove-android-webview-video-poster",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/remove-android-webview-video-poster/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/skill-progressive-disclosure",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/skill-progressive-disclosure/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-deno",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-deno/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-nextjs",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-nextjs/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-vue3",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/started-quickly-vue3/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/start-end-flex-start-flex-end",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/start-end-flex-start-flex-end/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/static-resource-prefetch",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/static-resource-prefetch/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/strapi-introduction",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/strapi-introduction/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/the-first-mcp-server",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/the-first-mcp-server/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/travels-in-japan",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/travels-in-japan/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/try-the-vue3-combination-api",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/try-the-vue3-combination-api/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/vue-data-reactivity",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/vue-data-reactivity/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/webgl-notes-1",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/webgl-notes-1/",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/youth-is-not-a-health-pass",
+      "destination": "/posts/",
+      "permanent": true
+    },
+    {
+      "source": "/post/youth-is-not-a-health-pass/",
+      "destination": "/posts/",
+      "permanent": true
+    }
   ]
 }
