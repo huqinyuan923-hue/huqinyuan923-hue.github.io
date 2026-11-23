@@ -96,10 +96,6 @@ featuredCategories:
     label: 笔记
     image: /img/cover/4.webp
     description: 技术笔记、从零手写系列
-  - link: life # 对应 categoryMap 中 随笔: life
-    label: 随笔
-    image: /img/cover/2.webp
-    description: 生活记录、年度总结
   - link: weekly # 对应 categoryMap 中 周刊: weekly
     label: 周刊
     image: /img/cover/11.webp
