@@ -65,7 +65,7 @@ const { post, siderType, isPostPage, articleTools = true } = Astro.props;
   import { setupArrivalRender } from '@lib/arrival-render';
   import { setupHeaderContinuity } from '@lib/header-continuity';
   import { setupMorphTransitions } from '@lib/morph-transitions';
-  import { setupPetalBurst } from '@lib/sakura/petal-burst';
+  import { setupStarBurst } from '@lib/aemeath/star-burst';
   import { setupScrollReveal } from '@lib/scroll-reveal';
   import { setupScrollbarActivity } from '@lib/scrollbar-activity';
   import { setupTouchPrefetch } from '@lib/touch-prefetch';
@@ -84,5 +84,5 @@ const { post, siderType, isPostPage, articleTools = true } = Astro.props;
   setupScrollReveal();
   setupScrollbarActivity();
   setupTouchPrefetch();
-  if (motionConfig.clickBurst) setupPetalBurst();
+  if (motionConfig.clickBurst) setupStarBurst();
 </script>

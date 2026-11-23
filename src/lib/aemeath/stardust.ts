@@ -18,11 +18,11 @@
 export const MOTE_KINDS = ['stardust', 'snowvelvet', 'morningstar'] as const;
 export type MoteKind = (typeof MOTE_KINDS)[number];
 
-/** Relative share of each kind; morningstar is deliberately rare. */
+/** Relative share of each kind; morningstar is no longer vanishingly rare — it is the signature. */
 export const MOTE_WEIGHTS: Readonly<Record<MoteKind, number>> = {
-  stardust: 0.6,
-  snowvelvet: 0.33,
-  morningstar: 0.07,
+  stardust: 0.5,
+  snowvelvet: 0.3,
+  morningstar: 0.2,
 };
 
 /** Mote colors: pink-white dust, cooler frost, and a warm morning star. */
@@ -44,8 +44,8 @@ const SPRITE_SIZE = 24;
  * short window still shows a few motes.
  */
 export function resolveMoteCount(width: number, height: number, coarse: boolean): number {
-  const density = (width * height) / (coarse ? 42000 : 26000);
-  return Math.round(Math.min(coarse ? 26 : 46, Math.max(coarse ? 8 : 16, density)));
+  const density = (width * height) / (coarse ? 15000 : 9000);
+  return Math.round(Math.min(coarse ? 70 : 130, Math.max(coarse ? 24 : 44, density)));
 }
 
 /** Draw one kind from the weighted table using an injected `random` so it stays testable. */
@@ -67,11 +67,20 @@ function createRoundSprite(color: string, scale: number): HTMLCanvasElement {
   const center = SPRITE_SIZE / 2;
   const gradient = ctx.createRadialGradient(center, center, 0, center, center, center);
   gradient.addColorStop(0, color);
-  gradient.addColorStop(0.45, color);
+  gradient.addColorStop(0.3, color);
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
   ctx.fillStyle = gradient;
+  // A soft outer bloom lifts the mote off the pale wash; a bare dot disappears on white.
+  const bloom = ctx.createRadialGradient(center, center, 0, center, center, center);
+  bloom.addColorStop(0, `${color}55`);
+  bloom.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = bloom;
   ctx.beginPath();
   ctx.arc(center, center, center, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(center, center, center * 0.55, 0, Math.PI * 2);
   ctx.fill();
   return canvas;
 }
@@ -84,12 +93,12 @@ function createStarSprite(color: string, scale: number): HTMLCanvasElement {
   if (!ctx) return canvas;
   ctx.scale(scale, scale);
   const c = SPRITE_SIZE / 2;
-  const outer = c * 0.96;
-  const inner = c * 0.2;
+  const outer = c * 0.98;
+  const waist = c * 0.16;
   ctx.fillStyle = color;
   ctx.beginPath();
   for (let i = 0; i < 8; i++) {
-    const radius = i % 2 === 0 ? outer : inner;
+    const radius = i % 2 === 0 ? outer : waist;
     const angle = (Math.PI / 4) * i - Math.PI / 2;
     const x = c + Math.cos(angle) * radius;
     const y = c + Math.sin(angle) * radius;
@@ -98,6 +107,13 @@ function createStarSprite(color: string, scale: number): HTMLCanvasElement {
   }
   ctx.closePath();
   ctx.fill();
+  // Halo under the star so a 12px spark still registers at a glance.
+  const halo = ctx.createRadialGradient(c, c, 0, c, c, c);
+  halo.addColorStop(0, `${color}66`);
+  halo.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
   return canvas;
 }
 
@@ -193,9 +209,10 @@ export class StardustField {
       x: random(-30, this.width + 30),
       y: scatter ? random(0, this.height) : rises ? random(this.height + 20, this.height + 140) : random(-140, -20),
       rise: rises ? -random(6, 20) * (0.6 + depth * 0.4) : random(8, 22) * (0.6 + depth * 0.4),
-      size: (isStar ? random(1.1, 1.8) : random(0.5, 1.15)) * (0.55 + depth * 0.45),
+      // Stars are the signature, so they carry more size than the dust they sit among.
+      size: (isStar ? random(1.9, 3.1) : random(0.85, 1.7)) * (0.55 + depth * 0.45),
       depth,
-      alpha: (isStar ? random(0.5, 0.9) : random(0.28, 0.6)) * (0.5 + depth * 0.5),
+      alpha: (isStar ? random(0.75, 1) : random(0.45, 0.85)) * (0.5 + depth * 0.5),
       twinklePhase: random(0, Math.PI * 2),
       twinkleSpeed: isStar ? random(1.1, 2) : random(0.5, 1.5),
       swayPhase: random(0, Math.PI * 2),

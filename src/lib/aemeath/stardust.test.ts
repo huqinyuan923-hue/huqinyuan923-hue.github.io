@@ -8,34 +8,40 @@ test('mote weights cover every kind and sum to one', () => {
   for (const kind of MOTE_KINDS) assert.ok(MOTE_WEIGHTS[kind] > 0, `${kind} must be reachable`);
 });
 
-test('the morning star stays the rarest mote', () => {
-  const rare = MOTE_WEIGHTS.morningstar;
+test('the morning star stays rarer than the dust it sits among', () => {
+  const star = MOTE_WEIGHTS.morningstar;
   for (const kind of MOTE_KINDS) {
     if (kind === 'morningstar') continue;
-    assert.ok(rare < MOTE_WEIGHTS[kind], `morningstar should be rarer than ${kind}`);
+    assert.ok(star < MOTE_WEIGHTS[kind], `morningstar should be rarer than ${kind}`);
   }
 });
 
+test('morning stars are common enough to be the signature, not a rarity', () => {
+  // Raised from 7%: at that share the gold sparks read as an accident rather than a motif.
+  assert.ok(MOTE_WEIGHTS.morningstar >= 0.15, `morningstar share too low: ${MOTE_WEIGHTS.morningstar}`);
+  assert.ok(MOTE_WEIGHTS.morningstar < 0.5, 'stardust must still dominate the field');
+});
+
 test('pickMoteKind maps the random draw onto the weighted table', () => {
-  // Boundaries are cumulative: stardust 0–0.6, snowvelvet 0.6–0.93, morningstar 0.93–1.
+  // Cumulative boundaries: stardust 0–0.5, snowvelvet 0.5–0.8, morningstar 0.8–1.
   assert.equal(
     pickMoteKind(() => 0),
     'stardust',
   );
   assert.equal(
-    pickMoteKind(() => 0.59),
+    pickMoteKind(() => 0.49),
     'stardust',
   );
   assert.equal(
-    pickMoteKind(() => 0.6),
+    pickMoteKind(() => 0.5),
     'snowvelvet',
   );
   assert.equal(
-    pickMoteKind(() => 0.92),
+    pickMoteKind(() => 0.79),
     'snowvelvet',
   );
   assert.equal(
-    pickMoteKind(() => 0.93),
+    pickMoteKind(() => 0.8),
     'morningstar',
   );
   assert.equal(
@@ -56,12 +62,15 @@ test('mote count scales with the viewport but stays inside the clamp', () => {
   const desktop = resolveMoteCount(1440, 900, false);
   const ultrawide = resolveMoteCount(5120, 1440, false);
 
-  assert.ok(phone >= 8 && phone <= 26, `phone motes out of range: ${phone}`);
-  assert.ok(desktop >= 16 && desktop <= 46, `desktop motes out of range: ${desktop}`);
-  assert.equal(ultrawide, 46, 'a huge viewport must clamp to the desktop ceiling');
+  assert.ok(phone >= 24 && phone <= 70, `phone motes out of range: ${phone}`);
+  assert.ok(desktop >= 44 && desktop <= 130, `desktop motes out of range: ${desktop}`);
+  assert.equal(ultrawide, 130, 'a huge viewport must clamp to the desktop ceiling');
   assert.ok(desktop > phone, 'a desktop viewport should carry more motes than a phone');
 
+  // Dense enough to read as a field rather than scattered dots on a typical desktop.
+  assert.ok(desktop >= 120, `desktop field too sparse: ${desktop}`);
+
   // A tiny window must still render a floor, not zero, so the layer never looks broken.
-  assert.equal(resolveMoteCount(320, 200, true), 8);
-  assert.equal(resolveMoteCount(320, 200, false), 16);
+  assert.equal(resolveMoteCount(320, 200, true), 24);
+  assert.equal(resolveMoteCount(320, 200, false), 44);
 });

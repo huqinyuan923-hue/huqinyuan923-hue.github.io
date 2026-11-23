@@ -124,6 +124,22 @@ const DEBUG_CAT_STATE = false;
             <span data-nf-text="browseArchives">{t(locale, 'notFound.browseArchives')}</span>
           </a>
         </div>
+
+        {/* 爱弥斯（飞行雪绒）：迷路时陪你看一眼星图。纯装饰，读屏跳过。 */}
+        <figure class="aemeath-aside" aria-hidden="true">
+          <img
+            src="/img/aemeath/aemeath-figure.webp"
+            alt=""
+            width="280"
+            height="360"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>
+            <span class="aemeath-star">✦</span>
+            星炬引路，这一页走丢了
+          </figcaption>
+        </figure>
       </div>
 
   <script is:inline define:vars={{ localeCopy, defaultLocale }}>
@@ -150,6 +166,45 @@ const DEBUG_CAT_STATE = false;
   </script>
 
 <style>
+  /* 爱弥斯立绘：桌面端在内容右侧陪衬，窄屏收到下方，不挤压 404 主视觉。 */
+  .aemeath-aside {
+    display: none;
+    margin: 2.5rem 0 0;
+    text-align: center;
+  }
+
+  .aemeath-aside img {
+    width: min(280px, 62vw);
+    height: auto;
+    /* 立绘边缘做了羽化，这里再补一层柔光是让它坐进粉白底而不是浮在上面。 */
+    filter: drop-shadow(0 1.25rem 2rem rgb(233 84 107 / 0.22));
+  }
+
+  .aemeath-aside figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .aemeath-star {
+    color: #f0a92b;
+    margin-right: 0.35rem;
+  }
+
+  @media (width >= 768px) {
+    .aemeath-aside {
+      display: block;
+    }
+  }
+
+  /* 动效关闭时不额外做任何动画；这里本来也只有静态图，保留规则便于以后加动效。 */
+  @media (prefers-reduced-motion: reduce) {
+    .aemeath-aside img {
+      filter: drop-shadow(0 1.25rem 2rem rgb(233 84 107 / 0.22));
+    }
+  }
+
   .cat-404-container {
     /* Palette - soft pastel colors for light mode */
     --c-stroke: #f5a0b8;

@@ -9,8 +9,8 @@
 
 import { useIsMounted } from '@hooks/useIsMounted';
 import { useTranslation } from '@hooks/useTranslation';
+import { holdStarBurst } from '@lib/aemeath/star-burst';
 import { isMotionDisabled } from '@lib/motion-level';
-import { holdPetalBurst } from '@lib/sakura/petal-burst';
 import { cn } from '@lib/utils';
 import { useCallback, useEffect, useState } from 'react';
 import './theme-toggle.css';
@@ -77,7 +77,7 @@ function useTheme() {
         applyTheme(newIsDark);
         setIsDark(newIsDark);
       });
-      holdPetalBurst(transition);
+      holdStarBurst(transition);
 
       transition.finished.finally(() => {
         rootElement.classList.remove('theme-transition');

@@ -244,8 +244,8 @@ html.motion-off [data-astro-transition-scope] {
   }
 }
 
-/* Click petal burst layer (see src/lib/sakura/petal-burst.ts). */
-.petal-burst-layer {
+/* Click star burst layer (see src/lib/aemeath/star-burst.ts). */
+.star-burst-layer {
   position: fixed;
   inset: 0;
   z-index: 2147483000;
@@ -253,20 +253,27 @@ html.motion-off [data-astro-transition-scope] {
   pointer-events: none;
 }
 
-.petal-burst {
+.star-burst {
   position: absolute;
   top: 0;
   left: 0;
-  mask: var(--petal-mask) center / contain no-repeat;
+  mask: var(--star-mask) center / contain no-repeat;
+  /* A warm halo so each spark reads as light on the pale page, not as a flat dot. */
+  filter: drop-shadow(0 0 3px rgb(255 209 102 / 0.9));
   will-change: transform, opacity;
 }
 
+/* Keep the retired petal layer inert if a stale snapshot still carries it. */
+.petal-burst-layer {
+  display: none;
+}
+
 /* During a view transition the layer is shown live above both pages, never from its frozen snapshot. */
-::view-transition-group(petal-burst),
-::view-transition-new(petal-burst) {
+::view-transition-group(aemeath-star-burst),
+::view-transition-new(aemeath-star-burst) {
   animation: none;
 }
 
-::view-transition-old(petal-burst) {
+::view-transition-old(aemeath-star-burst) {
   display: none;
 }

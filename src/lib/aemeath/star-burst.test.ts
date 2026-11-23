@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { holdPetalBurst, setupPetalBurst } from './petal-burst';
+import { holdStarBurst, setupStarBurst } from './star-burst';
 
 class FakeFlight {
   cancelCount = 0;
@@ -32,6 +32,10 @@ class FakeElement extends EventTarget {
   children: FakeElement[] = [];
   style = {
     viewTransitionName: '',
+    width: '',
+    height: '',
+    margin: '',
+    background: '',
     setProperty: () => {},
     removeProperty: (name: string) => {
       if (name === 'view-transition-name') this.style.viewTransitionName = '';
@@ -67,7 +71,7 @@ class FakeElement extends EventTarget {
   }
 }
 
-test('petal bursts cancel on motion/visibility changes and cannot resume after transition readiness', async () => {
+test('star bursts cancel on motion/visibility changes and cannot resume after transition readiness', async () => {
   const previous = new Map(
     ['document', 'window', 'Element', 'MutationObserver'].map((name) => [
       name,
@@ -111,14 +115,15 @@ test('petal bursts cancel on motion/visibility changes and cannot resume after t
   };
 
   try {
-    setupPetalBurst();
+    setupStarBurst();
     press();
-    assert.equal(flights.length, 7);
+    // One burst throws 12 sparks, one animate() call each.
+    assert.equal(flights.length, 12);
     let ready!: () => void;
     const transitionReady = new Promise<void>((resolve) => {
       ready = resolve;
     });
-    holdPetalBurst({ ready: transitionReady } as ViewTransition);
+    holdStarBurst({ ready: transitionReady } as ViewTransition);
     assert.ok(flights.every((flight) => flight.pauseCount === 1));
 
     root.dataset.motion = 'reduced';
@@ -129,23 +134,23 @@ test('petal bursts cancel on motion/visibility changes and cannot resume after t
     assert.equal(root.children[0].children.length, 0);
     assert.equal(root.children[0].style.viewTransitionName, '');
     press();
-    assert.equal(flights.length, 7);
+    assert.equal(flights.length, 12);
 
     root.dataset.motion = 'lively';
     notifyMotion();
     press();
-    assert.equal(flights.length, 14);
+    assert.equal(flights.length, 24);
     documentMock.hidden = true;
     documentEvents.dispatchEvent(new Event('visibilitychange'));
     assert.ok(flights.every((flight) => flight.cancelCount === 1));
     press();
-    assert.equal(flights.length, 14);
+    assert.equal(flights.length, 24);
 
     documentMock.hidden = false;
     root.dataset.motion = 'subtle';
     notifyMotion();
     press();
-    assert.equal(flights.length, 14);
+    assert.equal(flights.length, 24);
   } finally {
     for (const [name, descriptor] of previous) {
       if (descriptor) Object.defineProperty(globalThis, name, descriptor);
