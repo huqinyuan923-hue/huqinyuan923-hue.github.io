@@ -30,6 +30,11 @@ function writePost(contentDir: string, relativePath: string, frontmatter: string
   return filePath;
 }
 
+/** Glob output and generated links are always POSIX-separated, whatever the host OS. */
+function toPosix(value: string): string {
+  return value.replaceAll('\\', '/');
+}
+
 function writeBackupManifest(stage: string, presentDestinations: string[]): void {
   const present = new Set(presentDestinations);
   const manifest = {
@@ -50,6 +55,31 @@ function createTestWorkspace(prefix: string): KoharuWorkspace {
   fs.mkdirSync(workspace.backupDir, { recursive: true });
   return workspace;
 }
+
+/**
+ * Creating symlinks needs a privilege Windows does not grant by default
+ * (SeCreateSymbolicLinkPrivilege / Developer Mode). The symlink-rejection tests
+ * probe behaviour that cannot exist where the fixture itself cannot be built,
+ * so they skip instead of reporting a false failure.
+ */
+function detectSymlinkSupport(): boolean {
+  const probeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-symlink-probe-'));
+  try {
+    const target = path.join(probeRoot, 'target');
+    fs.writeFileSync(target, '');
+    fs.symlinkSync(target, path.join(probeRoot, 'link'));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    fs.rmSync(probeRoot, { recursive: true, force: true });
+  }
+}
+
+const symlinkSupported = detectSymlinkSupport();
+const symlinkSkipReason = symlinkSupported
+  ? false
+  : 'the platform does not allow creating symlinks here (Windows needs Developer Mode or an elevated shell)';
 
 function createArchive(workspace: KoharuWorkspace, stage: string, name: string): string {
   const archive = path.join(workspace.backupDir, `${name}-${process.pid}-${Date.now()}.tar.gz`);
@@ -74,7 +104,9 @@ test('blog content glob excludes underscore-prefixed files and directories', () 
       cwd: root,
       ignore: excludes.map((pattern) => pattern.replace(/^!/, '')),
       nodir: true,
-    }).toSorted();
+    })
+      .map(toPosix)
+      .toSorted();
 
     assert.deepEqual(matches, ['normal.md', 'note/visible.mdx']);
     assert.equal(isBlogContentFile('normal.md'), true);
@@ -104,7 +136,7 @@ test('content migration preserves URLs and is idempotent', () => {
     assert.equal(first.changes.length, 5);
     assert.equal(first.unchangedFiles, 2);
     assert.deepEqual(first.errors, []);
-    assert.equal(first.changes.find((change) => change.file.endsWith('/en/note/paired.md'))?.link, 'custom-paired');
+    assert.equal(first.changes.find((change) => toPosix(change.file).endsWith('/en/note/paired.md'))?.link, 'custom-paired');
 
     applyContentMigration(first);
 
@@ -180,7 +212,7 @@ test('generated links preserve Astro legacy path slugs', () => {
 
     assert.deepEqual(plan.errors, []);
     assert.deepEqual(
-      plan.changes.map(({ sourcePath, link }) => [path.relative(contentDir, sourcePath), link]),
+      plan.changes.map(({ sourcePath, link }) => [toPosix(path.relative(contentDir, sourcePath)), link]),
       [
         ['Camel Case.md', 'camel-case'],
         ['Foo Bar/index.md', 'foo-bar'],
@@ -316,7 +348,7 @@ test('content migration ignores underscore paths and their duplicate links', () 
   }
 });
 
-test('content migration rejects symlinks without writing their external targets', () => {
+test('content migration rejects symlinks without writing their external targets', { skip: symlinkSkipReason }, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-migrate-symlink-content-'));
   const external = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-migrate-symlink-external-'));
   try {
@@ -481,6 +513,13 @@ test('atomic migration writes preserve the source file mode', () => {
     const contentDir = path.join(root, 'src/content/blog');
     const pendingFile = writePost(contentDir, 'pending.md', '');
     fs.chmodSync(pendingFile, 0o640);
+
+    const requestedMode = fs.statSync(pendingFile).mode & 0o777;
+    if (requestedMode !== 0o640) {
+      // Windows has no POSIX mode bits: chmod only toggles the read-only flag, so
+      // there is no mode to preserve and the assertion below cannot hold.
+      return;
+    }
 
     runContentMigration({ contentDir, siteConfigPath: configPath });
 
@@ -669,7 +708,7 @@ test('restore previews report the migration errors that fail a non-interactive r
   }
 });
 
-test('restore rejects symlinked targets without deleting external files', () => {
+test('restore rejects symlinked targets without deleting external files', { skip: symlinkSkipReason }, () => {
   const workspace = createTestWorkspace('koharu-restore-symlink-target-');
   const root = workspace.root;
   const external = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-restore-symlink-external-'));

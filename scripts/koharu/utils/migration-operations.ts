@@ -472,11 +472,20 @@ function readRegularFileState(filePath: string): RegularFileState {
   }
 }
 
-function writeFileAtomically(filePath: string, expected: string, replacement: string): void {
-  // 内容根边界校验：迁移只允许写项目内的 markdown 文件
-  const projectRoot = path.resolve(PROJECT_ROOT);
-  if (filePath !== projectRoot && !filePath.startsWith(projectRoot + path.sep)) {
-    throw new Error(`${displayPath(filePath)} 超出项目根目录，拒绝写入`);
+/**
+ * Refuse to write anywhere outside the blog content directory being migrated.
+ *
+ * The boundary is the resolved content root of the current plan, not a hardcoded
+ * project root: the migration is invoked with an explicit `contentDir` (tests and
+ * `--content-dir` both pass a temp directory), and anchoring on `PROJECT_ROOT`
+ * made every such run fail with "超出项目根目录". Confining to the content root
+ * keeps the same guarantee — no write can escape the files the migration scanned.
+ */
+function writeFileAtomically(filePath: string, expected: string, replacement: string, contentRoot: string): void {
+  const resolvedRoot = path.resolve(contentRoot);
+  const resolvedFile = path.resolve(filePath);
+  if (resolvedFile === resolvedRoot || !resolvedFile.startsWith(resolvedRoot + path.sep)) {
+    throw new Error(`${displayPath(filePath)} 超出内容目录 ${displayPath(resolvedRoot)}，拒绝写入`);
   }
   const initial = readRegularFileState(filePath);
   if (initial.content !== expected) {
@@ -533,16 +542,17 @@ export function applyContentMigration(plan: ContentMigrationPlan): void {
     }
   }
   const appliedChanges: ContentMigrationChange[] = [];
+  const contentRoot = plan.snapshot.contentDir;
   try {
     for (const change of plan.changes) {
-      writeFileAtomically(change.sourcePath, change.original, change.updated);
+      writeFileAtomically(change.sourcePath, change.original, change.updated, contentRoot);
       appliedChanges.push(change);
     }
   } catch (writeError) {
     const rollbackErrors: Error[] = [];
     for (const change of appliedChanges.toReversed()) {
       try {
-        writeFileAtomically(change.sourcePath, change.updated, change.original);
+        writeFileAtomically(change.sourcePath, change.updated, change.original, contentRoot);
       } catch (rollbackError) {
         const message = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
         rollbackErrors.push(new Error(`${change.file}: ${message}`));

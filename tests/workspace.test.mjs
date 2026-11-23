@@ -8,7 +8,13 @@ import test from 'node:test';
 const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const workspaceYaml = readFileSync(new URL('../pnpm-workspace.yaml', import.meta.url), 'utf8');
 
-test('cms:install honors workspace build approvals and shares the root lockfile', () => {
+// The CMS sub-package was removed from this fork, so `pnpm --filter astro-koharu-cms`
+// has no project to match; keep the assertion for checkouts that still ship `cms/`.
+const cmsSkip = existsSync(new URL('../cms/package.json', import.meta.url))
+  ? false
+  : 'cms/ was removed from this fork; the CMS workspace member does not exist';
+
+test('cms:install honors workspace build approvals and shares the root lockfile', { skip: cmsSkip }, () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'koharu-workspace-'));
   const packageName = 'koharu-cms-build-fixture';
 

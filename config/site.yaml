@@ -609,23 +609,25 @@ navigation:
     # path: # 用于区分不同文章的自定义 js 路径，如果您的文章路径不是 location.pathname，需传此参数
     # lang: # 语言 (默认: 'zh-CN')
 comment:
-  # TODO: 恢复评论——旧站用的是 giscus（mapping: title，reactions 开启，lang: zh-CN）。
-  # 到 https://giscus.app 用本仓库生成 repo/repoId/category/categoryId 后，
-  # 取消下方 giscus 注释并填入四个 ID，再把 provider 改为 'giscus'。
-  provider: none  # 'remark42' | 'giscus' | 'waline' | 'twikoo' | 'none'
+  # giscus：基于本仓库的 GitHub Discussions。App 已授权 huqinyuan923-hue/huqinyuan923-hue.github.io，
+  # discussions 已开启，分类 General（id 见下）。首次有人评论时 giscus bot 自动建 discussion。
+  # mapping 用 pathname（文章 URL 稳定）；旧站的 title 映射在改标题时会掉评论，不沿用。
+  provider: giscus  # 'remark42' | 'giscus' | 'waline' | 'twikoo' | 'none'
   # remark42:
   #   host: https://comment.example.com/
   #   siteId: your-site-id
-  # giscus:
-  #   repo: username/repo              # GitHub 仓库名 (owner/repo 格式)
-  #   repoId: R_kgDOxxxxxx             # 仓库 ID (从 giscus.app 获取)
-  #   category: Announcements          # Discussion 分类名称
-  #   categoryId: DIC_kwDOxxxxxx       # 分类 ID (从 giscus.app 获取)
-  #   mapping: pathname                # 映射方式
-  #   reactionsEnabled: '1'            # 启用 reactions ('0' | '1')
-  #   emitMetadata: '0'                # 发送元数据 ('0' | '1')
-  #   inputPosition: top               # 输入框位置 ('top' | 'bottom')
-  #   lang: zh-CN                      # 语言
+  giscus:
+    repo: huqinyuan923-hue/huqinyuan923-hue.github.io
+    repoId: R_kgDOT2dF8Q
+    category: General
+    categoryId: DIC_kwDOT2dF8c4DHKNA
+    mapping: pathname
+    strict: '0'
+    reactionsEnabled: '1'
+    emitMetadata: '0'
+    inputPosition: top
+    lang: zh-CN
+    loading: lazy
 
   # waline:
   #   serverURL: https://your-waline.vercel.app  # Waline 服务端地址 (必填)
@@ -683,8 +685,10 @@ comment:
 # -----------------------------------------------------------------------------
 analytics:
   umami:
-    # TODO: 旧站接入了 Umami（websiteId 原配置在 Vercel 环境变量 NEXT_UMAMI_ID 里）。
-    # 从 Vercel 项目设置或 Umami 后台拿到 websiteId 后填入并改回 enabled: true。
+    # 旧站从未真正上报过：Next 版是 if (websiteId) 才挂载 <Script>，而 websiteId 读的是
+    # 未配置的 NEXT_UMAMI_ID，产物里连 Umami 脚本都没有（92 次部署记录已逐个核对）。
+    # 所以不存在「从 Vercel 找回来」的 websiteId，要用就在 cloud.umami.is 新建站点后填这里。
+    # 当前站点统计由 Cloudflare Web Analytics 提供（Zone 级自动注入，无需本配置）。
     enabled: false
     id: your-umami-id
     endpoint: https://cloud.umami.is

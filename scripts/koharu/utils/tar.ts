@@ -4,6 +4,21 @@ import path from 'node:path';
 
 import { PROJECT_ROOT } from '../constants';
 
+/**
+ * Split tar's stdout into entry names.
+ *
+ * Windows ships bsdtar, which terminates lines with CRLF. Splitting on `\n` alone
+ * left a trailing `\r` on every entry, so `./manifest.json` never matched the
+ * expected `manifest.json` and every restore/migrate on Windows failed with
+ * "备份必须且只能包含一个 manifest.json".
+ */
+function splitTarLines(stdout: string): string[] {
+  return stdout
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\r$/, ''))
+    .filter((line) => line.length > 0);
+}
+
 function validateTarEntries(entries: string[], archivePath: string): void {
   for (const entry of entries) {
     if (!entry) {
@@ -39,7 +54,7 @@ function validateTarEntryTypes(archivePath: string, entryCount: number): void {
     throw new Error(`tar verbose list failed: ${result.stderr?.toString() || 'unknown error'}`);
   }
 
-  const lines = result.stdout.split('\n').filter(Boolean);
+  const lines = splitTarLines(result.stdout);
   if (lines.length !== entryCount) {
     throw new Error(`tar verbose listing is inconsistent: ${archivePath}`);
   }
@@ -60,7 +75,7 @@ function listTarEntries(archivePath: string): string[] {
   if (result.status !== 0) {
     throw new Error(`tar list failed: ${result.stderr?.toString() || 'unknown error'}`);
   }
-  const entries = result.stdout.split('\n').filter(Boolean);
+  const entries = splitTarLines(result.stdout);
   validateTarEntries(entries, archivePath);
   validateTarEntryTypes(archivePath, entries.length);
   return entries;

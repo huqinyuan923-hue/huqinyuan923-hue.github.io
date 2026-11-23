@@ -1,0 +1,35 @@
+# Cloudflare Pages 响应头（CSP / HSTS / 缓存策略）
+# 旧 Next 版有 public/_headers，迁到 astro-koharu 时丢了，线上只剩 x-content-type-options
+# 和 referrer-policy。这里按当前构建产物的真实外链重建，改前端依赖后要同步改这里。
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://giscus.app https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' https:; font-src 'self' data:; connect-src 'self' https:; frame-src https://giscus.app; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-DNS-Prefetch-Control: on
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# 构建产物带内容哈希，可以长缓存 + immutable
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/pagefind/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/img/*
+  Cache-Control: public, max-age=604800
+
+/static/*
+  Cache-Control: public, max-age=604800
+
+/music/*
+  Cache-Control: public, max-age=604800
+
+# HTML 每次回源校验，保证发版立即生效
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

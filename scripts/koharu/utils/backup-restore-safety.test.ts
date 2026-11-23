@@ -18,6 +18,50 @@ function createTestWorkspace(prefix: string): KoharuWorkspace {
   return workspace;
 }
 
+/**
+ * Creating symlinks needs a privilege Windows does not grant by default
+ * (SeCreateSymbolicLinkPrivilege / Developer Mode). The symlink-rejection tests
+ * probe behaviour that cannot exist where the fixture itself cannot be built,
+ * so they skip instead of reporting a false failure.
+ */
+function detectSymlinkSupport(): boolean {
+  const probeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-symlink-probe-'));
+  try {
+    const target = path.join(probeRoot, 'target');
+    fs.writeFileSync(target, '');
+    fs.symlinkSync(target, path.join(probeRoot, 'link'));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    fs.rmSync(probeRoot, { recursive: true, force: true });
+  }
+}
+
+const symlinkSupported = detectSymlinkSupport();
+const symlinkSkipReason = symlinkSupported
+  ? false
+  : 'the platform does not allow creating symlinks here (Windows needs Developer Mode or an elevated shell)';
+
+/**
+ * Windows mode bits are synthesised (every file reads back as 0o666 / 0o444) and do
+ * not express the POSIX permissions the backup code sets, so mode assertions are
+ * only meaningful where chmod actually round-trips.
+ */
+const posixModeSupported = (() => {
+  const probeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-mode-probe-'));
+  try {
+    const probe = path.join(probeRoot, 'probe');
+    fs.writeFileSync(probe, '');
+    fs.chmodSync(probe, 0o600);
+    return (fs.statSync(probe).mode & 0o777) === 0o600;
+  } catch {
+    return false;
+  } finally {
+    fs.rmSync(probeRoot, { recursive: true, force: true });
+  }
+})();
+
 function removeWorkspace(workspace: KoharuWorkspace): void {
   fs.rmSync(workspace.root, { recursive: true, force: true });
 }
@@ -82,7 +126,9 @@ test('backup archives are private and historical v1 manifests remain valid', () 
     writeBasicManifest(stage, [], null);
     const archive = createArchive(workspace, stage);
 
-    assert.equal(fs.statSync(archive).mode & 0o777, 0o600);
+    if (posixModeSupported) {
+      assert.equal(fs.statSync(archive).mode & 0o777, 0o600);
+    }
     assert.equal(validateBackupArchive(archive, workspace.backupDir).manifest.schemaVersion, 1);
   } finally {
     fs.rmSync(stage, { recursive: true, force: true });
@@ -111,7 +157,9 @@ test('validation and extraction use one private immutable archive snapshot', () 
       (validated) => {
         snapshotPath = validated.path;
         assert.notEqual(snapshotPath, originalArchive);
-        assert.equal(fs.statSync(snapshotPath).mode & 0o777, 0o400);
+        if (posixModeSupported) {
+          assert.equal(fs.statSync(snapshotPath).mode & 0o777, 0o400);
+        }
 
         fs.copyFileSync(replacementArchive, originalArchive);
         tarExtract(validated.path, extractDir);
@@ -235,7 +283,7 @@ test('historical full image snapshots supersede the overlapping avatar item', ()
   }
 });
 
-test('backup source validation rejects contract mismatches and nested symlinks', () => {
+test('backup source validation rejects contract mismatches and nested symlinks', { skip: symlinkSkipReason }, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-backup-source-contract-'));
   const external = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-backup-source-external-'));
   const directoryItem = BACKUP_ITEMS.find((item) => item.dest === 'content/blog');
@@ -322,7 +370,7 @@ test('restore rejects archive items whose type disagrees with the backup contrac
   }
 });
 
-test('restore rejects symlink archive entries before extraction', () => {
+test('restore rejects symlink archive entries before extraction', { skip: symlinkSkipReason }, () => {
   const workspace = createTestWorkspace('koharu-restore-archive-symlink-target-');
   const external = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-restore-archive-symlink-external-'));
   const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'koharu-restore-archive-symlink-stage-'));
