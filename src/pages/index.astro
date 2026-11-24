@@ -10,6 +10,7 @@ import { getHomePagePosts } from '@lib/content';
 import { toPostCardDataList } from '@lib/content/transforms';
 import type { Page } from 'astro';
 import type { BlogPost } from 'types/blog';
+import PageSketch from '@/components/aemeath/PageSketch.astro';
 import CategoryCards from '@/components/post/CategoryCards.astro';
 import Divider from '@/components/ui/divider';
 import { defaultLocale, localizedPath, t } from '@/i18n';
@@ -55,6 +56,7 @@ const page: Page<BlogPost> = {
 ---
 
 <Layout locale={locale} title={seoConfig.title}>
+  <PageSketch />
   <TwoColumnLayout>
     <Cover slot="cover" />
     <HomeSider slot="sider" />
