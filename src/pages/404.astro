@@ -4,6 +4,7 @@ import Cover from '@components/ui/cover/Cover.astro';
 import Layout from '@layouts/Layout.astro';
 import TwoColumnLayout from '@layouts/TwoColumnLayout.astro';
 import { Icon } from 'astro-icon/components';
+import avatarTrace from '@/assets/aemeath/avatar-trace.svg?url';
 import { defaultLocale, getHtmlLang, localeList, localizedPath, t } from '@/i18n';
 
 // Static hosts serve a single /404.html for every unknown URL, so this page cannot be
@@ -127,14 +128,21 @@ const DEBUG_CAT_STATE = false;
 
         {/* 爱弥斯（飞行雪绒）：迷路时陪你看一眼星图。纯装饰，读屏跳过。 */}
         <figure class="aemeath-aside" aria-hidden="true">
-          <img
-            src="/img/aemeath/aemeath-figure.webp"
-            alt=""
-            width="280"
-            height="360"
-            loading="lazy"
-            decoding="async"
-          />
+          <div class="aemeath-media">
+            {/* 头像的线条勾画：从左到右扫过去，像有人正一笔一笔把它画出来。 */}
+            <div class="aemeath-trace">
+              <img src={avatarTrace} alt="" width="132" height="132" loading="lazy" decoding="async" />
+            </div>
+            <img
+              class="aemeath-figure"
+              src="/img/aemeath/aemeath-figure.webp"
+              alt=""
+              width="280"
+              height="360"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
           <figcaption>
             <span class="aemeath-star">✦</span>
             星炬引路，这一页走丢了
@@ -173,11 +181,74 @@ const DEBUG_CAT_STATE = false;
     text-align: center;
   }
 
-  .aemeath-aside img {
-    width: min(280px, 62vw);
+  /* 立绘与勾画并排：勾画是「正在被画出来」的头像，立绘是完成品，左右呼应。 */
+  .aemeath-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.75rem, 2.5vw, 1.75rem);
+  }
+
+  .aemeath-aside .aemeath-figure {
+    width: min(280px, 52vw);
     height: auto;
     /* 立绘边缘做了羽化，这里再补一层柔光是让它坐进粉白底而不是浮在上面。 */
     filter: drop-shadow(0 1.25rem 2rem rgb(233 84 107 / 0.22));
+  }
+
+  /*
+    头像的线条勾画：用遮罩从左往右扫过去，读起来像有人正在落笔。
+    线条本身是 0.85 个 viewBox 单位的细线，缩到 190px 后约等于 1.2px，
+    在浅粉底上偏淡，所以这里靠颜色和一层同色描边把它压实。
+  */
+  .aemeath-trace {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(190px, 42vw);
+    color: hsl(var(--primary) / 0.95);
+    /* 同色描边把 1.2px 的细线撑到约 2px，再叠一层浅光晕让它坐进纸面。 */
+    filter:
+      drop-shadow(0 0 0.4px currentColor)
+      drop-shadow(0 0 0.4px currentColor)
+      drop-shadow(0 0.5rem 1.25rem rgb(233 84 107 / 0.2));
+  }
+
+  .aemeath-trace img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .aemeath-trace::after {
+      content: "";
+      position: absolute;
+      inset: -6%;
+      pointer-events: none;
+      /* A soft leading edge instead of a hard wipe: the pen line appears to bloom into place. */
+      background: linear-gradient(
+        100deg,
+        transparent 0%,
+        transparent 43%,
+        rgb(255 255 255 / 0.55) 49%,
+        rgb(255 228 240 / 0.85) 52%,
+        transparent 58%,
+        transparent 100%
+      );
+      background-size: 300% 100%;
+      background-position: 100% 0;
+      animation: aemeath-draw 2.8s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+      mix-blend-mode: screen;
+    }
+  }
+
+  @keyframes aemeath-draw {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: 0% 0;
+    }
   }
 
   .aemeath-aside figcaption {

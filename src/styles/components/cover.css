@@ -32,6 +32,61 @@
     0 0.4rem 1.6rem rgb(233 84 107 / 0.35);
 }
 
+/* The brand title paints with a transparent fill, so a text-shadow would show through the
+   glyphs as a dark smear — its depth comes from the drop-shadow filter instead. */
+.cover-copy .hero-brand {
+  text-shadow: none;
+}
+
+/*
+  首页头图的大字：粉白渐变填充 + 同色系辉光。
+
+  用 background-clip: text 而不是给文字上色，才能让渐变横跨整个字面；字重和字号都在
+  这里定，不交给 utility class，否则 `text-transparent` 会被 Tailwind 的
+  `text-5xl` 之类的 font-size 工具类误伤（两者都写在 text-* 上）。
+  描边用 paint-order 压到填充下面，保证笔画细的地方不会被描边吃掉。
+*/
+.hero-brand {
+  font-family: "Bear Days", "寒蝉全圆体", sans-serif;
+  font-size: clamp(4.5rem, 17vw, 11rem);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+
+  background-image: linear-gradient(152deg, #fffdfe 0%, #ffe3ef 22%, #ffb3d1 46%, #ff7fb3 68%, #f0669e 88%, #ffc2dc 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+
+  /* The glow is a separate layer so it survives the transparent fill. */
+  filter: drop-shadow(0 0.05em 0.02em rgb(120 24 66 / 0.45)) drop-shadow(0 0.28em 0.6em rgb(255 138 178 / 0.55));
+  user-select: none;
+}
+
+/* 暗色下压亮渐变，否则粉字在深背景上会糊成一团光。 */
+.dark .hero-brand {
+  background-image: linear-gradient(152deg, #ffffff 0%, #ffd9ea 24%, #ffa4cb 50%, #f978aa 74%, #e35b92 92%, #ffb9d6 100%);
+  filter: drop-shadow(0 0.05em 0.02em rgb(10 2 8 / 0.6)) drop-shadow(0 0.28em 0.7em rgb(240 110 160 / 0.45));
+}
+
+/* 高对比度偏好下退回实心粉色：渐变填充在部分浏览器里会降低可读性。 */
+@media (prefers-contrast: more) {
+  .hero-brand {
+    background-image: none;
+    color: #d6407b;
+    -webkit-text-fill-color: #d6407b;
+    filter: drop-shadow(0 0.05em 0.02em rgb(120 24 66 / 0.6));
+  }
+
+  .dark .hero-brand {
+    background-image: none;
+    color: #ffc2dc;
+    -webkit-text-fill-color: #ffc2dc;
+  }
+}
+
 @media screen and (prefers-reduced-motion: no-preference) {
   html:is([data-motion="lively"], [data-motion="subtle"]) .cover-copy .motion-rise {
     animation-name: motion-rise-focus;

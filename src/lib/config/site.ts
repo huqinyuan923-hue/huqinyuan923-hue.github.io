@@ -85,4 +85,5 @@ export const siteConfig: ResolvedSiteConfig = {
   featuredCategories: yamlConfig.featuredCategories,
   featuredSeries: featuredSeriesList,
   enableSlugTransliteration: yamlConfig.site.enableSlugTransliteration,
+  heroTitle: yamlConfig.site.heroTitle,
 };

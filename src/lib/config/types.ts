@@ -29,6 +29,11 @@ export interface SiteBasicConfig {
   icp?: string | { text: string; link?: string };
   /** Enable slug transliteration (converts CJK characters to pinyin/romaji) @default false */
   enableSlugTransliteration?: boolean;
+  /**
+   * 首页头图上的大标题，渲染成粉色渐变大字。
+   * 不填则回退到 `alternate`（站点英文名）。
+   */
+  heroTitle?: string;
 }
 
 // =============================================================================
