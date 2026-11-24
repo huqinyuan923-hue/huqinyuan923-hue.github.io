@@ -50,9 +50,9 @@ const copyFailedLabel = t(locale, 'common.copyFailed');
 
 /**
  * 首页头图的大字：优先取 `site.heroTitle`，否则回退到站点英文名。
- * 大写化在这里做而不是写死在 YAML 里，这样配置写 `adc` 或 `ADC` 都得到同一个结果。
+ * 大小写按配置原样渲染——品牌名是 `ADCakeyuan`，转成全大写会读成另一个词。
  */
-const heroBrand = (siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.title).toUpperCase();
+const heroBrand = siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.title;
 ---
 
 <div
@@ -143,7 +143,7 @@ const heroBrand = (siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.ti
       ) : (
         <>
           <h1 class="motion-rise hero-brand" data-text={heroBrand}>{heroBrand}</h1>
-          <p class="motion-rise shadow-text mt-6 text-sm tracking-[0.2em]" style="--i: 2">= {siteConfig?.subtitle} =</p>
+          <p class="motion-rise shadow-text mt-6 text-sm tracking-[0.2em]" style="--i: 1">= {siteConfig?.subtitle} =</p>
         </>
       )
     }

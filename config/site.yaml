@@ -12,7 +12,7 @@
 # =============================================================================
 site:
   title: ADCakeyuan's blog # 网站名称
-  heroTitle: ADC # 首页头图上的粉色渐变大字；留空则回退到 alternate
+  heroTitle: ADCakeyuan # 首页头图上的粉色渐变大字；留空则回退到 alternate
   alternate: ADCakeyuan # 网站英文名称 用于页脚、Logo、@ handle 等
   subtitle: 记录学习、生活与思考 # 网站副标题
   name: ADCakeyuan # 作者名称

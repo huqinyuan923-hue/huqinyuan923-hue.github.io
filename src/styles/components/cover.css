@@ -44,15 +44,21 @@
   用 background-clip: text 而不是给文字上色，才能让渐变横跨整个字面；字重和字号都在
   这里定，不交给 utility class，否则 `text-transparent` 会被 Tailwind 的
   `text-5xl` 之类的 font-size 工具类误伤（两者都写在 text-* 上）。
-  描边用 paint-order 压到填充下面，保证笔画细的地方不会被描边吃掉。
+
+  字体选寒蝉全圆体而不是 Bear Days：Bear Days 的小写字形就是大写形状（实测小写
+  `akeyuan` 799.8px vs 大写 `AKEYUAN` 783.8px，只差 2%），`ADCakeyuan` 会被读成
+  `ADCAKEYUAN`。圆体有真正的小写，字重也够撑起大字号。
+
+  字号按「一行放得下」反推：可用宽度约 1240px（max-w-7xl 减内边距），
+  所以上限压在 7rem；窄屏随视口线性收缩。
 */
 .hero-brand {
-  font-family: "Bear Days", "寒蝉全圆体", sans-serif;
-  font-size: clamp(4.5rem, 17vw, 11rem);
+  font-family: "寒蝉全圆体", "Gen Jyuu Gothic P", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2.1rem, 8.4vw, 7rem);
   font-weight: 700;
-  line-height: 0.92;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  line-height: 1.06;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 
   background-image: linear-gradient(152deg, #fffdfe 0%, #ffe3ef 22%, #ffb3d1 46%, #ff7fb3 68%, #f0669e 88%, #ffc2dc 100%);
   background-clip: text;
