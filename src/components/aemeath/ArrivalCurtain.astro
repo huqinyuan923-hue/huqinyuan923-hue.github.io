@@ -1,0 +1,354 @@
+---
+/**
+ * 首页入场：爱弥斯「星炬启程」。
+ *
+ * 动作顺序对应角色的能力描述——「轻盈化作星光，在无尽长夜中低声歌唱，
+ * 点亮黑暗中的星辰」：
+ *   1. 星炬点亮：中心一点金光扩散成圆
+ *   2. 光带扫过：一道横光自左向右掠过
+ *   3. 头像浮现：像素头像从金光里升起
+ *   4. 名字亮起：ADCakeyuan 逐字从暗到亮
+ *   5. 化光散去：整层向上淡出，露出首页
+ *
+ * 只在「本次会话第一次进首页」播放：刷新或从别的页面跳回来都不再播，
+ * 否则每次导航都被挡两秒会很难受。动效档位为 reduced 时整层不渲染。
+ */
+import { siteConfig } from '@constants/site-config';
+import { STAR_MASK } from '@lib/aemeath/star';
+
+const avatar = siteConfig.avatar ?? '/img/avatar.webp';
+const brand = (siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.title).trim();
+---
+
+<div
+  class="arrival-curtain"
+  data-arrival-curtain
+  data-brand={brand}
+  data-avatar={avatar}
+  style={`--arrival-star-mask: ${STAR_MASK}`}
+  aria-hidden="true"
+>
+  <div class="arrival-glow"></div>
+  <div class="arrival-beam"></div>
+  {/* 星屑：几颗四芒星从不同位置升起，呼应首页留白里那种金色四芒星。 */}
+  <div class="arrival-stars">
+    {Array.from({ length: 14 }, (_, index) => (
+      <span class="arrival-star" style={`--n:${index}`}></span>
+    ))}
+  </div>
+  <div class="arrival-avatar">
+    <img src={avatar} alt="" width="128" height="128" decoding="async" />
+  </div>
+  <p class="arrival-name">
+    {[...brand].map((char) => (
+      <span class="arrival-char">{char}</span>
+    ))}
+  </p>
+  <p class="arrival-tagline">= {siteConfig.subtitle} =</p>
+</div>
+
+<style>
+  /*
+    开场层压在页面之上，但只在播放期间存在。z-index 高于头部与浮动按钮，
+    低于点击花瓣层（2147483000），这样开场时穿过它的点击不会漏到下面。
+  */
+  .arrival-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 2147482000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    overflow: hidden;
+    background: radial-gradient(ellipse 62% 52% at 50% 46%, #2a1220 0%, #1a0c14 55%, #12070d 100%);
+    /* 第一帧就盖住页面，避免首页内容先闪一下再被盖住。 */
+    opacity: 1;
+    transition: opacity 620ms var(--ease-out-quart);
+  }
+
+  /* 星炬：中心的一点金光，由小到大扩散。 */
+  .arrival-glow {
+    position: absolute;
+    width: min(58vw, 26rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 226 168 / 0.95) 0%, rgb(255 138 178 / 0.45) 42%, transparent 70%);
+    filter: blur(14px);
+    scale: 0.2;
+    opacity: 0;
+    animation: arrival-glow 1500ms var(--ease-out-quart) 120ms forwards;
+  }
+
+  /* 横光：符号化「化光而行」的那一道。 */
+  .arrival-beam {
+    position: absolute;
+    inset-block: 0;
+    width: 34vw;
+    left: -40vw;
+    background: linear-gradient(90deg, transparent, rgb(255 240 210 / 0.5), transparent);
+    filter: blur(22px);
+    animation: arrival-beam 1150ms var(--ease-in-out-quart) 520ms forwards;
+  }
+
+  /*
+    星屑：14 颗四芒星，位置与延迟由 `--n` 推出（不用写 14 条规则）。
+    只做加减乘，**不要用 `%` 取模**——CSS `calc()` 没有取模运算，
+    `calc(6px + (var(--n) % 4) * 4px)` 是无效值，宽高会退化成 0（踩过）。
+    尺寸改成按 nth-child 分三组。
+  */
+  .arrival-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /*
+    位置用一张手写的分布表（下面 14 条 nth-child），而不是 cos/sin：
+    CSS 三角函数要 Chrome 111+，而这张表在任何浏览器都一样，也不依赖 `--n` 的算法。
+    坐标以视口百分比给出，绕着头像与名字围成一圈。
+  */
+  .arrival-star {
+    --size: 7px;
+
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    background: linear-gradient(160deg, #fffdf5, #ffd166);
+    -webkit-mask: var(--arrival-star-mask) center / contain no-repeat;
+    mask: var(--arrival-star-mask) center / contain no-repeat;
+    opacity: 0;
+    animation: arrival-star 2200ms var(--ease-out-quart) forwards;
+    animation-delay: calc(220ms + var(--n) * 68ms);
+  }
+
+  .arrival-star:nth-child(1) { left: 22%; top: 34%; }
+  .arrival-star:nth-child(2) { left: 30%; top: 68%; }
+  .arrival-star:nth-child(3) { left: 36%; top: 24%; }
+  .arrival-star:nth-child(4) { left: 40%; top: 78%; }
+  .arrival-star:nth-child(5) { left: 45%; top: 16%; }
+  .arrival-star:nth-child(6) { left: 47%; top: 86%; }
+  .arrival-star:nth-child(7) { left: 54%; top: 12%; }
+  .arrival-star:nth-child(8) { left: 57%; top: 82%; }
+  .arrival-star:nth-child(9) { left: 62%; top: 26%; }
+  .arrival-star:nth-child(10) { left: 66%; top: 72%; }
+  .arrival-star:nth-child(11) { left: 71%; top: 40%; }
+  .arrival-star:nth-child(12) { left: 76%; top: 60%; }
+  .arrival-star:nth-child(13) { left: 20%; top: 54%; }
+  .arrival-star:nth-child(14) { left: 80%; top: 30%; }
+
+  /* 三档大小，避免每颗都一样大。 */
+  .arrival-star:nth-child(3n) {
+    --size: 11px;
+  }
+
+  .arrival-star:nth-child(3n + 1) {
+    --size: 15px;
+  }
+
+  @keyframes arrival-star {
+    0% {
+      opacity: 0;
+      translate: 0 0;
+      scale: 0.3;
+    }
+    /* 长一点的可见段：星屑要和头像、名字同时在场，而不是一闪而过。 */
+    18% {
+      opacity: 1;
+      scale: 1;
+    }
+    70% {
+      opacity: 0.85;
+      scale: 0.9;
+    }
+    100% {
+      opacity: 0;
+      translate: 0 calc(-22vh - (var(--n) * 1.5vh));
+      scale: 0.5;
+    }
+  }
+
+  .arrival-avatar {
+    position: relative;
+    width: clamp(4.5rem, 15vw, 7rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(150deg, #ffe6b8, #ff9ec4 55%, #f0669e);
+    box-shadow:
+      0 0 0 1px rgb(255 236 200 / 0.4),
+      0 1rem 3rem -0.5rem rgb(240 102 158 / 0.7);
+    opacity: 0;
+    scale: 0.72;
+    translate: 0 1.25rem;
+    animation: arrival-avatar 900ms var(--ease-out-expo) 700ms forwards;
+  }
+
+  .arrival-avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .arrival-name {
+    position: relative;
+    display: flex;
+    font-family: "寒蝉全圆体", "Gen Jyuu Gothic P", sans-serif;
+    font-size: clamp(1.6rem, 6.2vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  /*
+    逐字亮起：每个字先暗着，再依次被点亮。
+    用 `--i` 排延迟，用 `both` 保证未轮到的字保持暗态。
+  */
+  .arrival-char {
+    color: transparent;
+    background-image: linear-gradient(160deg, #fffdf6 0%, #ffe0b8 38%, #ff9ec4 78%, #f0669e 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    opacity: 0;
+    filter: blur(6px);
+    animation: arrival-char 620ms var(--ease-out-quart) forwards;
+    animation-delay: calc(1080ms + var(--i, 0) * 72ms);
+  }
+
+  .arrival-tagline {
+    position: relative;
+    font-size: clamp(0.7rem, 2.6vw, 0.85rem);
+    letter-spacing: 0.28em;
+    color: rgb(255 226 240 / 0.72);
+    opacity: 0;
+    animation: arrival-tagline 800ms var(--ease-out-quart) 1350ms forwards;
+  }
+
+  /* 散场：整层上移淡出，露出首页。 */
+  .arrival-curtain[data-leaving] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @keyframes arrival-glow {
+    0% {
+      scale: 0.2;
+      opacity: 0;
+    }
+    38% {
+      opacity: 1;
+    }
+    100% {
+      scale: 1.6;
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes arrival-beam {
+    from {
+      left: -40vw;
+      opacity: 0;
+    }
+    35% {
+      opacity: 1;
+    }
+    to {
+      left: 100vw;
+      opacity: 0;
+    }
+  }
+
+  @keyframes arrival-avatar {
+    to {
+      opacity: 1;
+      scale: 1;
+      translate: 0 0;
+    }
+  }
+
+  @keyframes arrival-char {
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes arrival-tagline {
+    to {
+      opacity: 1;
+    }
+  }
+
+  /*
+    动效减弱时不留空等：直接把开场层隐藏。
+    这里不用 `display: none` 的媒体查询，而是靠脚本判断后不挂载——
+    脚本没跑（禁用 JS）时媒体查询兜底，避免黑幕永远盖着页面。
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .arrival-curtain {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { readMotionLevel } from '@lib/motion-level';
+
+  /** 本次会话是否已经看过开场。刷新页面算同一次会话，不再重播。 */
+  const SEEN_KEY = 'site-arrival-seen';
+  /** 播完到散场开始的时间：逐字亮起的最后一个字约在 1080 + n*72ms，再留一点停顿。 */
+  const HOLD_MS = 2100;
+  const FADE_MS = 640;
+
+  function playArrival(): void {
+    const curtain = document.querySelector<HTMLElement>('[data-arrival-curtain]');
+    if (!curtain) return;
+
+    // 逐字延迟用内联 `--i`，避免为每个字生成一条 CSS 规则。
+    curtain.querySelectorAll<HTMLElement>('.arrival-char').forEach((char, index) => {
+      char.style.setProperty('--i', String(index));
+    });
+
+    const reduce = readMotionLevel() === 'reduced';
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem(SEEN_KEY) === '1';
+    } catch {
+      // 隐私模式禁用存储时按「没看过」处理：能看到一次动画总比永远看不到好。
+    }
+
+    if (reduce || seen) {
+      curtain.remove();
+      return;
+    }
+
+    // 播放期间锁滚动，防止开场还没散场就滚到下面去。
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = 'hidden';
+
+    const finish = () => {
+      curtain.dataset.leaving = '';
+      root.style.overflow = previousOverflow;
+      window.setTimeout(() => curtain.remove(), FADE_MS);
+      try {
+        sessionStorage.setItem(SEEN_KEY, '1');
+      } catch {
+        /* 存不进去就下次再播，不影响这次。 */
+      }
+    };
+
+    window.setTimeout(finish, HOLD_MS + FADE_MS);
+  }
+
+  // 首帧就挂上了，脚本随模块执行；DOM 未就绪时等一次 DOMContentLoaded。
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', playArrival, { once: true });
+  } else {
+    playArrival();
+  }
+</script>
