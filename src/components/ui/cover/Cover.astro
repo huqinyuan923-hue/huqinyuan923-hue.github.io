@@ -58,7 +58,21 @@ const heroBrand = siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.tit
 <div
   class:list={[
     'cover-hero relative z-0 flex overflow-hidden',
-    compact ? 'h-[42svh] min-h-72 max-h-120 tablet:h-[36svh] tablet:min-h-64' : 'h-[60svh] max-h-200',
+    /**
+     * 头图高度。**只能用本项目定义的断点**，且要注意两件事：
+     *
+     * 1. 全部是「向下匹配」：xs(max-480) / md(max-768) / tablet(max-992) / lg(max-1440)。
+     * 2. **没有定义 `sm`**，写 `sm:` 会被静默丢弃。
+     * 3. `tablet` 覆盖到 992px —— 手机也落在里面。Tailwind 按断点从宽到窄输出，
+     *    `@media (width<=992px)` 排在 `@media (width<=480px)` 之后，
+     *    所以 tablet 的规则会压掉 xs 的。手机若想更低，就不能给 tablet 写高度。
+     *
+     * 结论：手机高度写在无前缀上（最宽兜底 + 手机），只给 md / lg 放大，
+     * tablet 只调 padding 之类不与手机冲突的东西。
+     */
+    compact
+      ? 'h-[38svh] min-h-64 max-h-100 xs:h-[42svh]'
+      : 'h-[46svh] max-h-100 xs:h-[50svh] md:h-[54svh] lg:h-[60svh] lg:max-h-200',
   ]}
 >
   <div class="cover-scrim absolute inset-0 h-full"></div>
@@ -66,7 +80,9 @@ const heroBrand = siteConfig.heroTitle ?? siteConfig.alternate ?? siteConfig.tit
   <div
     class:list={[
       'cover-copy absolute inset-0 flex flex-col items-center justify-center px-5 text-white',
-      compact ? 'bottom-[4svh]' : 'bottom-[8svh]',
+      /* 手机上的下缘偏移同步收紧：8svh 在 390x844 上约 67px，全是空出来的底边。
+         同样避开 tablet 断点（它覆盖到 992px，会把手机一起改掉），用 lg 放大。 */
+      compact ? 'bottom-[4svh]' : 'bottom-[3svh] lg:bottom-[8svh]',
     ]}
   >
     {

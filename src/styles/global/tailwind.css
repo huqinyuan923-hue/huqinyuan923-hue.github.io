@@ -116,7 +116,13 @@
     clip-path: polygon(0 0%, 100% 0%, 100% 100%, 8% 100%);
   }
   .logo-text {
-    font-size: 2rem;
+    /*
+      顶部站点名。原来固定 2rem，360px 宽的机器上会折成两行（实测 S8：
+      `ADCAKEYUA` / `N`），因为 Bear Days 是全大写字形、字宽偏大。
+      改成随视口收缩并禁止折行：宁可字小一点，也不要断词。
+    */
+    font-size: clamp(1.15rem, 5.2vw, 2rem);
+    white-space: nowrap;
     text-shadow:
       3px 4px 2px #060000,
       -1px -1px 0px #ffffff;

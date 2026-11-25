@@ -16,29 +16,33 @@ import avatarTrace from '@/assets/aemeath/avatar-trace.svg?url';
 
 <style>
   /*
-    落在头图与正文之间的过渡留白里：贴右侧、压在波浪线下方那片干净的粉白上。
+    宽屏：落在头图与正文之间的过渡留白里，贴右侧、压在波浪线下方那片干净的粉白上。
+    滚动时随 fixed 层停住，不跟正文滚。
+    右缘再让出 3.25rem：那是右下浮动按钮（音乐/设置/回到顶部）的宽度，压上去会读成两层 UI。
 
-    不用 `top: 28vh` 硬编码视口比例——头图高度是 60svh（桌机），用 `top` 落在
-    头图下沿更好估：`calc(60svh + 2rem)`。滚动时它随 fixed 层停住，不跟正文滚。
-    宽度门槛 1280px：1200px 时右侧只剩 8px 留白，图根本放不下。
+    手机（< 1280px）：没有那圈侧边留白，fixed 层会直接盖在正文上，所以改成
+    文档流里的装饰行，夹在头图与正文之间——那里本来就是留白，也不会挡任何东西。
+    见下方 `.page-sketch` 的默认（静态）规则。
   */
   .page-sketch {
-    position: fixed;
-    z-index: 1;
-    top: calc(60svh + 1.5rem);
-    /* 右缘再让出 3.25rem：那是右下浮动按钮（音乐/设置/回到顶部）的宽度，压上去会读成两层 UI。 */
-    right: max(3.25rem, calc((100vw - 64rem) / 2 - 8.5rem));
-    width: 7rem;
+    /* 手机默认：文档流内的装饰行，头图之后、正文之前。 */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    /* 上下各留一点气口就够：这块本来就在头图与列表之间，留太多会读成空档。 */
+    padding-block: 0.25rem;
+    /* 往回收一点，别把「文章列表」标题推得太远。 */
+    margin-block: -0.75rem -0.25rem;
     pointer-events: none;
-    display: none;
     color: hsl(var(--primary) / 0.42);
     opacity: 0;
-    animation: page-sketch-in 1s var(--ease-out-quart) 900ms forwards;
+    animation: page-sketch-in 1s var(--ease-out-quart) 700ms forwards;
   }
 
   .page-sketch img {
     display: block;
-    width: 100%;
+    /* 手机上别太大：这是留白处的点缀，不该抢正文的注意力。 */
+    width: 4.75rem;
     height: auto;
     /* 线条本身很细，靠同色描边把它压实成可辨的钩线。 */
     filter:
@@ -52,10 +56,20 @@ import avatarTrace from '@/assets/aemeath/avatar-trace.svg?url';
     }
   }
 
-  /* 只有真正空出来的视口才挂得下：1280 起右侧留白 ≥ 84px。 */
+  /* 宽屏：变成固定层，挂到右侧留白里。 */
   @media (width >= 1280px) {
     .page-sketch {
+      position: fixed;
+      z-index: 1;
+      top: calc(60svh + 1.5rem);
+      right: max(3.25rem, calc((100vw - 64rem) / 2 - 8.5rem));
+      width: 7rem;
+      padding-block: 0;
       display: block;
+    }
+
+    .page-sketch img {
+      width: 100%;
     }
   }
 
